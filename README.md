@@ -36,6 +36,7 @@ One row represents one batting-team innings in one match. The outcome is `battin
 - A standard-library Cricsheet JSON extractor for first-10-over runs, wickets, run rate, boundary-ball percentage, dot-ball percentage, match context, and outcome.
 - Definitions for legal deliveries, dots, boundaries, wickets lost, incomplete powerplays, ties/no-results, and super overs.
 - A secure Cricsheet ODI downloader that records the URL, retrieval time, and SHA-256 checksum.
+- An auditable cleaning stage that separates raw data, all extracted innings, retained matches, exclusions, and the World Cup pilot cohort.
 - Human-audited pitch and match-start-time templates.
 - A research design, data dictionary, pitch codebook, transformation log, paper outline, and staged execution roadmap.
 - Tests using a small synthetic ODI fixture.
@@ -62,6 +63,7 @@ python scripts/download_cricsheet.py --output-dir data/raw/cricsheet
 python scripts/extract_cricsheet.py \
   --input-dir data/raw/cricsheet \
   --output data/interim/powerplay_innings.csv
+python scripts/build_clean_dataset.py
 ```
 
 Then copy and complete:
