@@ -1,0 +1,49 @@
+{
+  "meta": {"data_version": "1.1.0", "created": "2025-01-01", "revision": 1},
+  "info": {
+    "balls_per_over": 6,
+    "city": "Example City",
+    "dates": ["2023-10-05"],
+    "event": {"name": "ICC Cricket World Cup"},
+    "gender": "male",
+    "match_type": "ODI",
+    "outcome": {"winner": "Alpha", "by": {"runs": 10}},
+    "season": 2023,
+    "team_type": "international",
+    "teams": ["Alpha", "Beta"],
+    "toss": {"winner": "Beta", "decision": "field"},
+    "venue": "Example Ground"
+  },
+  "innings": [
+    {
+      "team": "Alpha",
+      "overs": [
+        {
+          "over": 0,
+          "deliveries": [
+            {"batter": "A1", "bowler": "B1", "non_striker": "A2", "runs": {"batter": 0, "extras": 0, "total": 0}},
+            {"batter": "A1", "bowler": "B1", "non_striker": "A2", "runs": {"batter": 4, "extras": 0, "total": 4}},
+            {"batter": "A1", "bowler": "B1", "non_striker": "A2", "extras": {"wides": 1}, "runs": {"batter": 0, "extras": 1, "total": 1}},
+            {"batter": "A1", "bowler": "B1", "non_striker": "A2", "runs": {"batter": 0, "extras": 0, "total": 0}, "wickets": [{"player_out": "A1", "kind": "bowled"}]},
+            {"batter": "A3", "bowler": "B1", "non_striker": "A2", "runs": {"batter": 1, "extras": 0, "total": 1}},
+            {"batter": "A2", "bowler": "B1", "non_striker": "A3", "runs": {"batter": 6, "extras": 0, "total": 6}},
+            {"batter": "A2", "bowler": "B1", "non_striker": "A3", "runs": {"batter": 4, "extras": 0, "total": 4, "non_boundary": true}}
+          ]
+        }
+      ]
+    },
+    {
+      "team": "Beta",
+      "overs": [
+        {
+          "over": 0,
+          "deliveries": [
+            {"batter": "B1", "bowler": "A1", "non_striker": "B2", "runs": {"batter": 0, "extras": 0, "total": 0}},
+            {"batter": "B1", "bowler": "A1", "non_striker": "B2", "runs": {"batter": 0, "extras": 0, "total": 0}, "wickets": [{"player_out": "B1", "kind": "retired hurt"}]}
+          ]
+        }
+      ]
+    }
+  ]
+}
+

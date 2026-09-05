@@ -1,0 +1,21 @@
+.DS_Store
+.venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/
+
+# Raw and derived datasets are reproduced by scripts.
+data/raw/cricsheet/*
+data/raw/weather/*
+data/interim/*
+data/processed/*
+!data/**/.gitkeep
+!data/manual/*_template.csv
+
+# Generated artifacts
+artifacts/figures/*
+artifacts/models/*
+artifacts/tables/*
+!artifacts/**/.gitkeep
+

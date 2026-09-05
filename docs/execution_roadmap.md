@@ -1,0 +1,119 @@
+# Execution Roadmap
+
+## Build order
+
+The project should be built in seven gates. Do not begin final modeling until the preceding gate passes.
+
+### Gate 1 — Lock the protocol and scope
+
+**Goal:** prevent outcome-driven decisions.
+
+- Confirm pilot years/events and gender.
+- Freeze primary hypotheses, cohort rules, prediction timestamp, pitch codebook, weather rule, feature sets, and final test period.
+- Choose confirmatory versus exploratory interactions.
+- Create an empty results shell before examining final-test outcomes.
+
+**Pass condition:** a dated protocol is committed and the 2023 outcomes are treated as locked test data.
+
+### Gate 2 — Validate Cricsheet extraction
+
+**Goal:** create a trusted match/innings foundation.
+
+- Download official ODI JSON and record checksums.
+- Run the existing extractor.
+- Build a cohort-flow table.
+- Randomly choose at least 20 team-innings across years and hand-check first-10-over score, wickets, legal balls, boundaries, dots, toss, innings order, and result against the source JSON/scorecard.
+- Add a regression test for every discovered edge case.
+
+**Pass condition:** all unit tests pass and the hand-audit discrepancy rate is reported and resolved.
+
+### Gate 3 — Build the context tables
+
+**Goal:** create only pre-match context.
+
+- Construct a canonical venue/coordinates/timezone crosswalk.
+- Add cited scheduled local start times.
+- Calculate pre-match Elo and rolling strength without same-day/future leakage.
+- Produce unmatched/ambiguous audit reports.
+
+**Pass condition:** every eligible match has validated IDs; no post-match strength data are used.
+
+### Gate 4 — Collect and validate pitch/weather
+
+**Goal:** make subjective and modeled conditions transparent.
+
+- Manually code the World Cup pilot's eligible pre-match pitch reports.
+- Double-code a stratified random 20% and calculate reliability.
+- Download raw hourly Open-Meteo responses.
+- Derive start-hour primary weather and early-window sensitivity weather.
+- Inspect missingness and impossible values.
+
+**Pass condition:** source coverage, inter-coder reliability, weather offsets, and missingness are documented.
+
+### Gate 5 — Freeze the model table
+
+**Goal:** prevent leakage and analytic drift.
+
+- Merge one-to-one match tables before expanding to team-innings.
+- Apply the feature allowlist.
+- Create a correlation report.
+- Remove deterministic/redundant pairs from the same specification.
+- Save development/test IDs and hash the table.
+
+**Pass condition:** no match crosses splits, no forbidden column enters predictors, and test IDs are locked.
+
+### Gate 6 — Model and evaluate
+
+**Goal:** compare simple and complex models fairly.
+
+- Fit baseline and logistic models first.
+- Tune RF/XGBoost only in chronological development folds.
+- Freeze all model objects and parameters.
+- Score the locked test once.
+- Compute match-clustered bootstrap CIs, calibration, permutation importance, and SHAP.
+
+**Pass condition:** every model has the same eligible test rows, saved probabilities, required metrics, and confidence intervals.
+
+### Gate 7 — Write and release
+
+**Goal:** produce an honest, reproducible paper.
+
+- Build figures from saved tables, never by manual editing.
+- Write methods before interpreting results.
+- Distinguish confirmatory and exploratory results.
+- Discuss measurement error, selection bias, sample size, source coverage, and non-causal interpretation.
+- Run the project from a clean environment and compare output hashes.
+
+**Pass condition:** a new user can reproduce the derived analysis from documented inputs, subject to source access terms.
+
+## Suggested 10-week schedule
+
+| Week | Deliverable |
+|---|---|
+| 1 | protocol, hypotheses, scope, source/legal check |
+| 2 | Cricsheet extraction and 20-match hand audit |
+| 3 | cohort flow, venue crosswalk, start-time table |
+| 4 | first half of pitch reports and coding log |
+| 5 | remaining pitch reports and inter-coder sample |
+| 6 | weather retrieval, Elo, merge, missingness audit |
+| 7 | descriptive analysis and frozen feature/split manifest |
+| 8 | logistic models, interactions, marginal effects |
+| 9 | RF/XGBoost, calibration, bootstrap CIs, SHAP |
+| 10 | paper, appendix, reproducibility run, revision |
+
+## What to build next
+
+The highest-value next implementation is **Gate 2**, not XGBoost:
+
+1. download the Cricsheet ODI archive;
+2. run extraction;
+3. filter the pilot cohort;
+4. generate the cohort flow/exclusion table;
+5. hand-audit 20 innings and turn every issue into a test.
+
+Modeling before this point would produce impressive-looking but unreliable results.
+
+## Definition of a strong student paper
+
+The paper does not need a new algorithm. Its sophistication comes from a precise question, honest scope, careful measurement, temporal validation, leakage prevention, uncertainty/calibration, transparent subjective coding, reproducible artifacts, and clear limits on causal interpretation.
+
