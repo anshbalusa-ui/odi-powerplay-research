@@ -8,6 +8,19 @@ study:
   primary_test_year: 2023
   random_seed: 20250905
 
+deliverables:
+  long_term:
+    name: "Expanded ODI research paper"
+    scope: "broader than the initial World Cup pilot"
+  ssac27:
+    role: "near-term milestone, not final project boundary"
+    track: "Other Sports"
+    abstract_due_et: "2026-10-01T23:59:00-04:00"
+    abstract_word_limit_including_title: 499
+    maximum_tables_and_figures_combined: 2
+    repository_must_be_open_source_at_submission: true
+    require_actual_results: true
+
 cohort:
   require_two_regulation_innings: true
   require_complete_ten_overs: true
@@ -71,4 +84,3 @@ modeling:
     repetitions: 2000
     cluster: "match_id"
     confidence_level: 0.95
-

@@ -1,5 +1,7 @@
 # Paper Outline
 
+This outline is for the expanded paper. The SSAC27 abstract is a focused extract with actual pilot results, not a substitute for the full manuscript. Its separate plan is in `docs/ssac27_submission_plan.md`.
+
 ## Title page and abstract (200–250 words)
 
 - One-sentence background.
@@ -131,4 +133,3 @@ One short paragraph. Answer the question, give the practical/statistical takeawa
 - robustness tables;
 - source and software manifests;
 - extra calibration and SHAP plots.
-

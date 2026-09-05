@@ -1,5 +1,14 @@
 # Execution Roadmap
 
+## Delivery strategy
+
+The project has two linked timelines:
+
+1. **SSAC27 pilot:** a narrow, complete, reproducible result by the October 1, 2026 abstract deadline.
+2. **Expanded paper:** the broader ODI study continues after submission, whether or not the abstract advances.
+
+The SSAC deadline changes sequencing, not scientific standards. The pilot favors a smaller audited cohort and a few prespecified interactions over a broad but unreliable dataset.
+
 ## Build order
 
 The project should be built in seven gates. Do not begin final modeling until the preceding gate passes.
@@ -101,6 +110,8 @@ The project should be built in seven gates. Do not begin final modeling until th
 | 9 | RF/XGBoost, calibration, bootstrap CIs, SHAP |
 | 10 | paper, appendix, reproducibility run, revision |
 
+This remains the expansion schedule. For the accelerated SSAC27 milestone, follow `docs/ssac27_submission_plan.md` first and return to this schedule after abstract submission.
+
 ## What to build next
 
 The highest-value next implementation is **Gate 2**, not XGBoost:
@@ -116,4 +127,3 @@ Modeling before this point would produce impressive-looking but unreliable resul
 ## Definition of a strong student paper
 
 The paper does not need a new algorithm. Its sophistication comes from a precise question, honest scope, careful measurement, temporal validation, leakage prevention, uncertainty/calibration, transparent subjective coding, reproducible artifacts, and clear limits on causal interpretation.
-

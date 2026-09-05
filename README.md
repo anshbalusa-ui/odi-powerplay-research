@@ -14,6 +14,13 @@ Start with a defensible pilot before attempting every ODI:
 
 This scope spans Australia/New Zealand, England/Wales, and India; produces substantial variation in venue and conditions; and keeps manual pitch coding feasible. The pipeline itself is not tied to this scope.
 
+## Two-track deliverables
+
+- **SSAC27 milestone:** finish a focused, results-complete World Cup pilot for the abstract deadline on October 1, 2026 at 11:59 p.m. ET. The submission is a milestone, not the endpoint of the research.
+- **Full research paper:** continue expanding the cohort, condition coding, robustness analyses, and paper after the SSAC abstract is submitted, regardless of the competition decision.
+
+The SSAC version will emphasize one applied contribution: a conditions-adjusted assessment of whether an ODI powerplay was genuinely strong given wickets, opposition strength, pitch, weather, and innings order. See `docs/ssac27_submission_plan.md`.
+
 ## Primary research question
 
 > How do runs and wickets in the first 10 overs of an ODI relate to the batting team's eventual win probability, and how does that relationship vary with pre-match pitch characteristics and early-match weather?
@@ -84,6 +91,7 @@ Do not automate bulk collection from ESPNcricinfo until its current terms and ac
 - `docs/transformation_log.md` — every planned transformation and audit artifact
 - `docs/execution_roadmap.md` — the build order and milestone checklist
 - `docs/paper_outline.md` — section-by-section paper structure
+- `docs/ssac27_submission_plan.md` — focused deadline, abstract requirements, and sprint scope
 
 ## Data-source attribution
 
@@ -92,4 +100,3 @@ Match data: Cricsheet JSON. Weather data: Open-Meteo Historical Weather API. Pit
 ## Licence
 
 The original code and documentation in this repository are released under the MIT Licence. Third-party data and report content remain governed by their respective licences and terms; the MIT Licence does not relicense them.
-
