@@ -20,6 +20,6 @@ The historical API exposes the required hourly temperature, relative humidity, p
 ## ESPNcricinfo
 
 - ESPN terms entry point: https://support.espn.com/hc/en-us/articles/360035445091-Terms-of-Use
+- Governing Disney terms: https://disneytermsofuse.com/english/
 
-Use individually cited, eligible pre-match reports. Before automating any collection, review the current terms and access rules. The pilot is designed for manual, source-audited coding. Store short paraphrases and metadata instead of reproducing report text.
-
+Terms review on 2026-09-05 found that the governing terms prohibit using robots, scripts, or other automated means to copy or extract the products for data mining, web scraping, or building a dataset. Automated ESPNcricinfo collection is therefore disabled for this project unless written permission or a suitable licensed data route is obtained. Any proposed human coding workflow must also receive an appropriate rights/terms review before the resulting dataset is published. Do not reproduce report text; retain only permitted provenance metadata and short original research codes or paraphrases.
