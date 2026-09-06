@@ -22,6 +22,9 @@
 | `match_date` | ISO date | pre-match | first value in `info.dates` |
 | `year` | integer | pre-match | calendar year from `match_date` |
 | `event_name` | category | pre-match | `info.event.name` when present |
+| `competition_type` | category | pre-match | documented broad label: bilateral series, World Cup, Champions Trophy, continental cup, multi-team series, qualification pathway, or other ODI |
+| `is_world_cup` | binary | pre-match | 1 only for the main World Cup event; qualifiers and Super League matches remain separate |
+| `rule_era` | category | pre-match | prespecified era label; `modern_2015_plus` in the primary cohort |
 | `gender` | category | pre-match | Cricsheet match gender |
 | `match_type` | category | pre-match | must equal `ODI` in main extractor |
 | `venue` | string/category | pre-match | original Cricsheet venue text |
@@ -108,6 +111,8 @@ Do not bin continuous weather in the primary model. Standardization is learned i
 
 ## Team strength
 
+These variables form the pre-match baseline adjustment block. They control for confounding by prior team quality; they are not the main substantive exposure.
+
 | Variable | Type | Definition |
 |---|---|---|
 | `team_elo_pre` | float | focal team rating before match date |
@@ -123,10 +128,9 @@ Do not bin continuous weather in the primary model. Standardization is learned i
 | `pitch_join_status` | category | exact ID, composite verified, unmatched, ambiguous |
 | `weather_join_status` | category | matched, coordinates missing, start missing, API missing |
 | `exclusion_reasons` | string/list | semicolon-delimited prespecified reason codes |
-| `analysis_eligible_primary` | binary | passes every primary cohort rule |
+| `analysis_eligible_primary` | binary | passes core cleaning and the 2015-forward men's ODI primary rules; no event restriction |
 | `source_snapshot_id` | string | hash/date identifier for raw-source manifest |
 
 ## Final-model anti-leakage allowlist
 
 The final training matrix may contain only approved powerplay, pre-match pitch, leakage-safe weather, pre-match team strength, toss, innings order, venue/grouping, and year features. Match ID is a grouping key, not a predictor. Outcome, winner, margin, result method, full innings total, and later-match data are prohibited.
-

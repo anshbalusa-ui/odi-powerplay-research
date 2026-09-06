@@ -113,21 +113,84 @@ def clean_rows(
     return cleaned, audit, excluded
 
 
-def select_pilot(
+def classify_competition(event_name: Any) -> str:
+    """Map a Cricsheet event name to a documented broad ODI competition type."""
+
+    name = " ".join(str(event_name or "Unknown").lower().replace("-", " ").split())
+
+    if "world cup" in name and not any(
+        marker in name
+        for marker in ("qualif", "world cup super league", "league 2", "challenge league")
+    ):
+        return "world_cup"
+    if any(
+        marker in name
+        for marker in (
+            "qualif",
+            "world cup super league",
+            "league 2",
+            "challenge league",
+            "world cricket league",
+            "intercontinental cup one day",
+        )
+    ):
+        return "qualification_pathway"
+    if "champions trophy" in name:
+        return "champions_trophy"
+    if any(marker in name for marker in ("asia cup", "africa cup", "european championship")):
+        return "continental_cup"
+    if any(
+        marker in name
+        for marker in (
+            "tri nation",
+            "tri series",
+            "triangular",
+            "quadrangular",
+            "pentangular",
+        )
+    ):
+        return "multi_team_series"
+    if " in " in f" {name} " or " tour of " in f" {name} ":
+        return "bilateral_series"
+    return "other_odi"
+
+
+def select_primary_cohort(
     rows: Iterable[dict[str, Any]],
     *,
-    years: set[int] | None = None,
+    start_year: int = 2015,
+    end_year: int | None = None,
     gender: str = "male",
-    event_names: set[str] | None = None,
 ) -> list[dict[str, Any]]:
-    """Select the prespecified World Cup pilot from already-clean rows."""
+    """Select all clean men's ODIs in the prespecified modern primary era."""
 
-    selected_years = years or {2015, 2019, 2023}
-    selected_events = event_names or {"ICC Cricket World Cup", "World Cup"}
+    selected: list[dict[str, Any]] = []
+    for row in rows:
+        year = int(row["year"])
+        if year < start_year or (end_year is not None and year > end_year):
+            continue
+        if str(row["gender"]) != gender:
+            continue
+
+        selected_row = dict(row)
+        competition_type = classify_competition(selected_row.get("event_name"))
+        selected_row["competition_type"] = competition_type
+        selected_row["is_world_cup"] = int(competition_type == "world_cup")
+        selected_row["rule_era"] = (
+            "modern_2015_plus" if year >= 2015 else "historical_pre_2015"
+        )
+        selected_row["analysis_eligible_primary"] = 1
+        selected.append(selected_row)
+
+    return selected
+
+
+def select_world_cup_subgroup(rows: Iterable[dict[str, Any]]) -> list[dict[str, Any]]:
+    """Return World Cup rows as a subgroup, never as the default study cohort."""
+
     return [
         dict(row)
         for row in rows
-        if int(row["year"]) in selected_years
-        and str(row["gender"]) == gender
-        and str(row["event_name"]) in selected_events
+        if str(row.get("competition_type") or classify_competition(row.get("event_name")))
+        == "world_cup"
     ]

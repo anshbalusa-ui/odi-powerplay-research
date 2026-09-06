@@ -14,7 +14,11 @@ from pathlib import Path
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(PROJECT_ROOT / "src"))
 
-from odi_powerplay.clean import clean_rows, select_pilot  # noqa: E402
+from odi_powerplay.clean import (  # noqa: E402
+    clean_rows,
+    select_primary_cohort,
+    select_world_cup_subgroup,
+)
 from odi_powerplay.extract_cricsheet import extract_directory, write_csv  # noqa: E402
 
 
@@ -40,26 +44,37 @@ def main() -> None:
     raw_manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
     rows = extract_directory(args.input_dir)
     cleaned, audit, excluded = clean_rows(rows)
-    pilot = select_pilot(cleaned)
+    primary = select_primary_cohort(cleaned)
+    world_cup_subgroup = select_world_cup_subgroup(primary)
 
     args.interim_dir.mkdir(parents=True, exist_ok=True)
     args.processed_dir.mkdir(parents=True, exist_ok=True)
 
     all_path = args.interim_dir / "powerplay_innings_all.csv"
     clean_path = args.processed_dir / "powerplay_innings_clean.csv"
-    pilot_path = args.processed_dir / "powerplay_innings_world_cup_pilot.csv"
+    primary_path = args.processed_dir / "powerplay_innings_primary.csv"
+    world_cup_path = args.processed_dir / "powerplay_innings_world_cup_subgroup.csv"
     audit_path = args.processed_dir / "match_cohort_audit.csv"
     excluded_path = args.processed_dir / "match_exclusions.csv"
 
     write_csv(rows, all_path)
     write_csv(cleaned, clean_path)
-    write_csv(pilot, pilot_path)
+    write_csv(primary, primary_path)
+    write_csv(world_cup_subgroup, world_cup_path)
     write_csv(audit, audit_path)
     write_csv(excluded, excluded_path)
 
     exclusion_counts = Counter()
     for match in excluded:
         exclusion_counts.update(filter(None, str(match["exclusion_reasons"]).split(";")))
+
+    competition_counts = Counter()
+    counted_match_ids: set[str] = set()
+    for row in primary:
+        match_id = str(row["match_id"])
+        if match_id not in counted_match_ids:
+            competition_counts[str(row["competition_type"])] += 1
+            counted_match_ids.add(match_id)
 
     summary = {
         "created_at_utc": datetime.now(timezone.utc).isoformat(),
@@ -71,16 +86,27 @@ def main() -> None:
         "core_clean_matches": len(cleaned) // 2,
         "excluded_matches": len(excluded),
         "exclusion_counts_nonexclusive": dict(sorted(exclusion_counts.items())),
-        "pilot_team_innings_rows": len(pilot),
-        "pilot_matches": len(pilot) // 2,
-        "pilot_definition": {
+        "primary_team_innings_rows": len(primary),
+        "primary_matches": len(primary) // 2,
+        "primary_matches_by_competition_type": dict(sorted(competition_counts.items())),
+        "primary_definition": {
             "gender": "male",
-            "event_names": ["ICC Cricket World Cup", "World Cup"],
-            "years": [2015, 2019, 2023],
+            "start_year": 2015,
+            "end_year": max(int(row["year"]) for row in primary),
+            "competition_scope": "all Cricsheet men's ODI competition types",
         },
+        "world_cup_subgroup_team_innings_rows": len(world_cup_subgroup),
+        "world_cup_subgroup_matches": len(world_cup_subgroup) // 2,
         "outputs": {
             str(path.relative_to(PROJECT_ROOT)): file_sha256(path)
-            for path in (all_path, clean_path, pilot_path, audit_path, excluded_path)
+            for path in (
+                all_path,
+                clean_path,
+                primary_path,
+                world_cup_path,
+                audit_path,
+                excluded_path,
+            )
         },
     }
     summary_path = args.processed_dir / "dataset_summary.json"

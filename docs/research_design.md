@@ -2,7 +2,7 @@
 
 ## 1. Study identity
 
-**Working title:** *Early Advantage or Conditions? ODI Powerplay Performance and Win Probability Across Pitches and Weather*
+**Working title:** *What Is a Good ODI Powerplay? Conditions-Adjusted Associations Between First-10-Over Performance and Match Outcomes*
 
 **Design:** retrospective observational prediction/association study using ball-by-ball match data, manually coded pre-match pitch descriptions, and historical reanalysis weather.
 
@@ -12,7 +12,7 @@
 
 ### Primary question
 
-How do first-10-over runs and wickets relate to the batting team's eventual win probability after accounting for pre-match pitch, early-match weather, team strength, opposition strength, toss, innings order, venue, and year?
+Among men's One Day International cricket matches, how are runs scored and wickets lost during the first 10 overs associated with the batting team's probability of winning after accounting for pre-match team strength, opponent strength, innings order, toss, venue, year, pitch characteristics, and weather—and how do these associations vary across different playing conditions?
 
 ### Prespecified hypotheses
 
@@ -25,18 +25,19 @@ Weather interactions are exploratory unless the final protocol names a small num
 
 ## 3. Cohort and scope
 
-### Recommended pilot
+### Primary cohort
 
-Men's ICC ODI World Cups in 2015, 2019, and 2023.
+All clean men's ODIs from January 1, 2015 through the fixed Cricsheet data-snapshot date, with no restriction to World Cups or any other event type.
 
-- Train and tune on 2015 and 2019 with rolling-origin folds.
-- Use 2023 exactly once as the locked final test set.
-- If the sample is too small for stable interaction estimates, present wide confidence intervals honestly and treat nonlinear models as exploratory.
+- Include bilateral series, World Cups, Champions Trophies, continental cups, multi-team series, and qualification pathways.
+- Label `competition_type` so event mix can be described and used in sensitivity analyses.
+- Treat World Cup matches only as a subgroup/generalizability check.
+- Use earlier ODIs as a historical sensitivity cohort with explicit era controls rather than silently pooling them into the primary analysis.
 
 ### Primary inclusion criteria
 
 - Cricsheet `match_type == "ODI"`.
-- Requested gender and event/year scope.
+- Men's matches in the prespecified primary year range; all ODI competition types are eligible.
 - Two regulation innings.
 - A decided winner.
 - At least 60 legal balls in each analyzed powerplay for six-ball overs.
@@ -131,6 +132,8 @@ Open-Meteo historical data are reanalysis/model estimates, not exact measurement
 
 ## 9. Team and opponent strength
 
+Team strength is a baseline confounding adjustment, not the paper's central explanatory variable. Its purpose is to account for the fact that stronger teams may both produce better powerplays and win more often.
+
 Primary measure: pre-match Elo rating.
 
 - Start teams at 1500.
@@ -140,7 +143,15 @@ Primary measure: pre-match Elo rating.
 
 Sensitivity measure: rolling win rate over the prior 20 decided ODIs, again excluding the focal date and future matches. Do not use a ranking downloaded after the study period.
 
-## 10. Feature sets
+## 10. Feature sets and incremental research design
+
+Fit nested feature blocks so the contribution of the powerplay is evaluated relative to a credible pre-match baseline:
+
+1. **M0 pre-match baseline:** Elo difference, pitch/weather, toss, innings order, venue/grouping, year/rule era, and competition type.
+2. **M1 powerplay model:** M0 plus `pp_runs` and `pp_wickets`.
+3. **M2 interaction model:** M1 plus the small prespecified set of pitch/weather and innings-order interactions.
+
+The main comparison is the change from M0 to M1/M2 in held-out discrimination, proper scoring rules, calibration, and estimated marginal win probabilities. This keeps team strength as a control while making first-10-over performance the substantive focus.
 
 ### Primary score-and-wickets model
 
@@ -153,6 +164,7 @@ Sensitivity measure: rolling win rate over the prior 20 decided ODIs, again excl
 - toss winner and decision
 - venue or a defensible venue grouping
 - year
+- competition type or prespecified competition grouping
 
 Do **not** include `pp_run_rate` alongside `pp_runs` in complete 10-over rows; they are deterministic multiples. Keep run rate for description and use it only in an alternative specification.
 
@@ -176,8 +188,9 @@ Limit weather interactions to a small, prespecified set such as runs × humidity
 ### Baselines
 
 1. prevalence/intercept-only probability;
-2. logistic regression with runs and wickets only;
-3. logistic regression with runs, wickets, and context but no pitch/weather interactions.
+2. M0 pre-match/context logistic model without powerplay outcomes;
+3. runs-and-wickets-only descriptive benchmark;
+4. M1 logistic model with pre-match/context variables plus runs and wickets.
 
 ### Interpretable model
 
@@ -194,10 +207,13 @@ Nonlinear models are challengers, not automatically superior. Hyperparameters ar
 
 Never make a random row split.
 
-### Pilot outer split
+### Primary outer split
 
-- Development: 2015 and 2019.
-- Locked final test: 2023.
+- Development and rolling-origin tuning: January 1, 2015 through December 31, 2023.
+- Temporal validation: calendar year 2024.
+- Locked final test: January 1, 2025 through the fixed 2026 data-snapshot date.
+
+Record the exact snapshot cutoff and row counts before fitting. If a split is too small for stable estimation, revise the date boundaries before examining test outcomes and document the change.
 
 ### Inner tuning
 
@@ -237,7 +253,7 @@ SHAP explains the fitted model, not causal effects. Prefer held-out permutation 
 - Primary pitch coding versus multidimensional coding.
 - Runs versus run rate alternative specification.
 - Team-innings versus paired match dataset.
-- World Cup pilot versus broader ODI sample.
+- all-modern-ODI primary cohort versus World Cup, competition-type, and historical-era subgroups.
 - Excluding neutral venues or separating host advantage.
 - Adding DLS/revised matches only in a documented sensitivity cohort.
 - Weather at scheduled start versus start-to-plus-60-minute mean.
@@ -246,4 +262,3 @@ SHAP explains the fitted model, not causal effects. Prefer held-out permutation 
 ## 16. Minimum reporting standard
 
 Report cohort counts, class balance, missingness, unmatched joins, source coverage, inter-coder reliability, exclusions, feature correlations, chronological split dates, all model settings, confidence intervals, calibration, and limitations. Publish code and non-restricted derived data where licences allow; otherwise publish data-building instructions and checksums.
-

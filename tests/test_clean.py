@@ -7,7 +7,13 @@ from pathlib import Path
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(PROJECT_ROOT / "src"))
 
-from odi_powerplay.clean import clean_rows, exclusion_reasons, select_pilot  # noqa: E402
+from odi_powerplay.clean import (  # noqa: E402
+    classify_competition,
+    clean_rows,
+    exclusion_reasons,
+    select_primary_cohort,
+    select_world_cup_subgroup,
+)
 
 
 def row(**updates):
@@ -72,16 +78,43 @@ class CleaningTests(unittest.TestCase):
         rows = [row(), row(batting_team="Beta", opponent="Alpha", innings_number=2)]
         self.assertIn("INCONSISTENT_OUTCOME_LABELS", exclusion_reasons(rows))
 
-    def test_pilot_selector_uses_year_gender_and_event(self) -> None:
+    def test_primary_selector_uses_year_and_gender_but_keeps_all_events(self) -> None:
         candidates = [
             row(),
-            row(match_id="m2", year=2019, event_name="World Cup"),
-            row(match_id="m3", year=2022),
+            row(match_id="m2", year=2019, event_name="Pakistan in Australia ODI Series"),
+            row(match_id="m3", year=2014),
             row(match_id="m4", gender="female"),
             row(match_id="m5", event_name="ICC Cricket World Cup Qualifier"),
         ]
-        selected = select_pilot(candidates)
-        self.assertEqual([item["match_id"] for item in selected], ["m1", "m2"])
+        selected = select_primary_cohort(candidates)
+        self.assertEqual([item["match_id"] for item in selected], ["m1", "m2", "m5"])
+        self.assertTrue(all(item["analysis_eligible_primary"] == 1 for item in selected))
+
+    def test_competition_labels_distinguish_world_cup_from_qualifier(self) -> None:
+        self.assertEqual(classify_competition("ICC Cricket World Cup"), "world_cup")
+        self.assertEqual(
+            classify_competition("ICC Cricket World Cup Qualifier"),
+            "qualification_pathway",
+        )
+        self.assertEqual(
+            classify_competition("ICC Men's Cricket World Cup Super League"),
+            "qualification_pathway",
+        )
+        self.assertEqual(
+            classify_competition("Asia Cup Qualifier"),
+            "qualification_pathway",
+        )
+        self.assertEqual(
+            classify_competition("Pakistan in Australia ODI Series"),
+            "bilateral_series",
+        )
+
+    def test_world_cup_is_only_a_subgroup_of_primary_rows(self) -> None:
+        primary = select_primary_cohort(
+            [row(), row(match_id="m2", event_name="Pakistan in Australia ODI Series")]
+        )
+        subgroup = select_world_cup_subgroup(primary)
+        self.assertEqual([item["match_id"] for item in subgroup], ["m1"])
 
 
 if __name__ == "__main__":

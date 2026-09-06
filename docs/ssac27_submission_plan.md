@@ -23,7 +23,7 @@ Recheck the page immediately before submission in case instructions change.
 
 ## Focused contribution
 
-Avoid framing the pilot as only another match-winner classifier. The stronger applied question is:
+Avoid framing the study as only another match-winner classifier. The stronger applied question is:
 
 > How much does the value of an ODI powerplay start change after accounting for wickets, opposition strength, innings order, pitch, and early-match weather?
 
@@ -33,7 +33,8 @@ The practical output is a conditions-adjusted benchmark that estimates whether a
 
 ### Required
 
-- auditable Cricsheet extraction for the 2015, 2019, and 2023 men's ODI World Cups;
+- auditable Cricsheet extraction for all eligible men's ODIs from 2015 through the fixed data snapshot;
+- competition-type labels, with World Cups used only as a subgroup check;
 - complete cohort/exclusion flow;
 - leakage-safe pre-match Elo difference;
 - innings order and toss context;
@@ -41,7 +42,7 @@ The practical output is a conditions-adjusted benchmark that estimates whether a
 - a manageable, source-audited pitch representation;
 - baseline plus interpretable logistic model;
 - one nonlinear challenger only after the logistic analysis is stable;
-- chronological evaluation with 2023 held out;
+- chronological evaluation with development through 2023, validation in 2024, and 2025 through the fixed 2026 snapshot held out;
 - ROC-AUC, log loss, Brier score, calibration, and match-clustered confidence intervals;
 - one conditions-adjusted win-probability figure;
 - one compact model-performance/calibration table or figure;
@@ -49,7 +50,7 @@ The practical output is a conditions-adjusted benchmark that estimates whether a
 
 ### Defer until after the abstract if necessary
 
-- every non-World-Cup ODI;
+- historical pre-2015 ODI expansion and era-comparison models;
 - large interaction grids;
 - many competing nonlinear models;
 - exhaustive SHAP panels;
@@ -62,10 +63,10 @@ Deferral means sequencing, not abandonment.
 
 | Dates | Deliverable | Go/no-go test |
 |---|---|---|
-| Sep 5–8 | download/extract Cricsheet; freeze cohort; hand-audit powerplays | no unresolved extraction discrepancies |
+| Sep 5–8 | download/extract Cricsheet; freeze broad modern-ODI cohort; hand-audit powerplays | no unresolved extraction discrepancies |
 | Sep 9–13 | Elo, venue crosswalk, start times, weather | no future information in feature audit |
 | Sep 14–18 | pitch-source collection/coding and reliability check | adequate source coverage or documented reduced pitch scope |
-| Sep 19–22 | merge, missingness report, descriptive analysis, frozen split | 2023 test IDs locked and untouched |
+| Sep 19–22 | merge, missingness report, descriptive analysis, frozen split | 2025–snapshot test IDs locked and untouched |
 | Sep 23–25 | logistic model, selected interactions, marginal predictions | interpretable and calibrated baseline comparison |
 | Sep 26–27 | nonlinear challenger, bootstrap confidence intervals, final figures | identical held-out rows across models |
 | Sep 28 | freeze results and repository snapshot | results reproduce from a clean run |
@@ -76,10 +77,10 @@ Deferral means sequencing, not abandonment.
 
 If pitch collection becomes the bottleneck, reduce complexity transparently rather than using post-match information:
 
-1. keep all three World Cups but use a smaller, high-reliability pitch code;
+1. simplify the pitch code to a smaller, high-reliability set of dimensions;
 2. use only reports with verified publication times and add an explicit missing indicator;
-3. make pitch-conditioned analysis secondary while retaining weather/context in the primary model;
-4. reduce the cohort only if coverage is severely outcome- or venue-dependent.
+3. define a prespecified, stratified pitch-analysis subset that spans years and competition types;
+4. make pitch-conditioned analysis secondary while retaining weather/context in the broad primary model.
 
 Never fill missing pre-match pitch descriptions using post-match reports.
 
@@ -114,4 +115,3 @@ State the conditions-adjusted cricket insight, the practical application, and th
 - installation and reproduction instructions work from a clean environment;
 - links in the form and abstract are correct;
 - final submission occurs before the Eastern Time deadline.
-

@@ -7,7 +7,7 @@ This file defines the required transformation trail. Each completed run should p
 | 01 | Cricsheet ODI ZIP | download without modifying content; calculate SHA-256; safe extract | `data/raw/cricsheet/` + source manifest | URL, UTC retrieval time, archive hash, JSON count |
 | 02 | each match JSON | validate ODI; parse stable metadata/result | match table | unique `match_id`; two teams; valid date |
 | 03 | regulation innings | restrict delivery events to over indexes 0–9; compute documented measures | `powerplay_innings` | manually reconcile random matches; denominator tests |
-| 04 | match table | apply prespecified cohort flags without deleting rows | cohort audit table | every exclusion has reason; count flow |
+| 04 | match table | apply core exclusions; select 2015-forward men's ODIs; classify competition type without event exclusion | cohort audit table | every exclusion has reason; count flow; all event types retained |
 | 05 | prior decided matches | calculate date-batched Elo and prior-20 win rates | `team_strength_pre` | no focal/future match in history |
 | 06 | eligible pre-match reports | paraphrase and code using frozen codebook | `pitch_reports` | source time precedes start; double-code ≥20% |
 | 07 | venue list | manually canonicalize venue/coordinates/timezone | venue crosswalk | no ambiguous canonical names |
@@ -26,7 +26,7 @@ This file defines the required transformation trail. Each completed run should p
 - `NON_ODI`
 - `OUT_OF_SCOPE_GENDER`
 - `OUT_OF_SCOPE_YEAR`
-- `OUT_OF_SCOPE_EVENT`
+- `OUT_OF_SCOPE_PRIMARY_ERA`
 - `NOT_TWO_REGULATION_INNINGS`
 - `TIE`
 - `NO_RESULT`
@@ -65,4 +65,3 @@ This file defines the required transformation trail. Each completed run should p
 - `config_sha256`
 
 For publication tables, remove machine-specific file paths but retain hashes and source URLs.
-

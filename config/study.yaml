@@ -2,17 +2,23 @@ study:
   title: "ODI powerplay performance, conditions, and match outcomes"
   match_type: "ODI"
   gender: "male"
-  pilot_years: [2015, 2019, 2023]
-  pilot_events:
-    - "ICC Cricket World Cup"
-    - "World Cup" # Cricsheet label used for the 2019 tournament
-  primary_test_year: 2023
+  primary_start_year: 2015
+  primary_end: "fixed_data_snapshot"
+  competition_scope: "all_mens_odi_competition_types"
+  world_cup_role: "subgroup_sensitivity_only"
   random_seed: 20250905
+
+chronological_split:
+  development_end: "2023-12-31"
+  validation_start: "2024-01-01"
+  validation_end: "2024-12-31"
+  locked_test_start: "2025-01-01"
+  locked_test_end: "fixed_data_snapshot"
 
 deliverables:
   long_term:
     name: "Expanded ODI research paper"
-    scope: "broader than the initial World Cup pilot"
+    scope: "all modern men's ODIs with historical and competition-type sensitivity analyses"
   ssac27:
     role: "near-term milestone, not final project boundary"
     track: "Other Sports"
@@ -69,11 +75,16 @@ modeling:
   outcome: "batting_team_won"
   baseline_models:
     - "intercept_only"
+    - "prematch_context_logistic"
     - "powerplay_only_logistic"
   primary_models:
     - "penalized_logistic_regression"
     - "random_forest"
     - "xgboost"
+  nested_feature_blocks:
+    m0: "prematch_strength_pitch_weather_toss_innings_venue_year_competition"
+    m1: "m0_plus_powerplay_runs_and_wickets"
+    m2: "m1_plus_prespecified_condition_interactions"
   metrics:
     - "accuracy"
     - "roc_auc"

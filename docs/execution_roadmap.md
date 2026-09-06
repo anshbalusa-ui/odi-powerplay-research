@@ -4,10 +4,10 @@
 
 The project has two linked timelines:
 
-1. **SSAC27 pilot:** a narrow, complete, reproducible result by the October 1, 2026 abstract deadline.
+1. **SSAC27 milestone:** a complete, reproducible result from the broad modern men's ODI cohort by the October 1, 2026 abstract deadline.
 2. **Expanded paper:** the broader ODI study continues after submission, whether or not the abstract advances.
 
-The SSAC deadline changes sequencing, not scientific standards. The pilot favors a smaller audited cohort and a few prespecified interactions over a broad but unreliable dataset.
+The SSAC deadline changes sequencing, not scientific standards. Scope may be reduced for specific condition variables if source coverage is inadequate, but the match cohort is not World-Cup-only.
 
 ## Build order
 
@@ -17,12 +17,12 @@ The project should be built in seven gates. Do not begin final modeling until th
 
 **Goal:** prevent outcome-driven decisions.
 
-- Confirm pilot years/events and gender.
+- Confirm the 2015-forward men's ODI primary era and fixed data-snapshot cutoff; do not filter by event.
 - Freeze primary hypotheses, cohort rules, prediction timestamp, pitch codebook, weather rule, feature sets, and final test period.
 - Choose confirmatory versus exploratory interactions.
 - Create an empty results shell before examining final-test outcomes.
 
-**Pass condition:** a dated protocol is committed and the 2023 outcomes are treated as locked test data.
+**Pass condition:** a dated protocol is committed and all matches from 2025 through the fixed 2026 snapshot are treated as locked test data.
 
 ### Gate 2 — Validate Cricsheet extraction
 
@@ -51,7 +51,8 @@ The project should be built in seven gates. Do not begin final modeling until th
 
 **Goal:** make subjective and modeled conditions transparent.
 
-- Manually code the World Cup pilot's eligible pre-match pitch reports.
+- Collect eligible pre-match pitch reports using a prespecified design spanning years, venues, teams, outcomes, and competition types.
+- If complete pitch-report coverage is infeasible, define a source-audited analysis subset without inspecting outcomes and report its selection/coverage limits.
 - Double-code a stratified random 20% and calculate reliability.
 - Download raw hourly Open-Meteo responses.
 - Derive start-hour primary weather and early-window sensitivity weather.
@@ -110,7 +111,7 @@ The project should be built in seven gates. Do not begin final modeling until th
 | 9 | RF/XGBoost, calibration, bootstrap CIs, SHAP |
 | 10 | paper, appendix, reproducibility run, revision |
 
-This remains the expansion schedule. For the accelerated SSAC27 milestone, follow `docs/ssac27_submission_plan.md` first and return to this schedule after abstract submission.
+For the accelerated SSAC27 milestone, follow `docs/ssac27_submission_plan.md` while preserving the same broad-cohort protocol and leakage rules.
 
 ## What to build next
 
@@ -118,7 +119,7 @@ The highest-value next implementation is **Gate 2**, not XGBoost:
 
 1. download the Cricsheet ODI archive;
 2. run extraction;
-3. filter the pilot cohort;
+3. filter the 2015-forward men's ODI primary cohort and label competition types;
 4. generate the cohort flow/exclusion table;
 5. hand-audit 20 innings and turn every issue into a test.
 

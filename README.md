@@ -4,26 +4,22 @@
 
 Reproducible Python research pipeline for an **associational** study of how first-10-over ODI batting performance relates to the batting team's probability of winning under different pitch, weather, and match conditions.
 
-## Recommended research scope
+## Research scope
 
-Start with a defensible pilot before attempting every ODI:
+The primary cohort is **all clean men's ODIs from 2015 through the fixed Cricsheet snapshot**, regardless of competition type. It includes bilateral series, World Cups, Champions Trophies, continental cups, multi-team series, and qualification pathways. It does not mix Tests or T20s into the analysis.
 
-1. **Pilot:** men's ODI World Cups in 2015, 2019, and 2023.
-2. **Chronological evaluation:** train/tune on 2015 and 2019; lock 2023 as the final test set.
-3. **Expansion:** add other ODIs only after the pitch-report matching and leakage audit work reliably.
-
-This scope spans Australia/New Zealand, England/Wales, and India; produces substantial variation in venue and conditions; and keeps manual pitch coding feasible. The pipeline itself is not tied to this scope.
+World Cups are a labeled subgroup and sensitivity analysis, not the main dataset. A broader historical ODI cohort can be used as a second sensitivity analysis with explicit era controls; it is not silently pooled into the modern primary analysis.
 
 ## Two-track deliverables
 
-- **SSAC27 milestone:** finish a focused, results-complete World Cup pilot for the abstract deadline on October 1, 2026 at 11:59 p.m. ET. The submission is a milestone, not the endpoint of the research.
+- **SSAC27 milestone:** finish a results-complete, reproducible analysis from the broad modern-ODI cohort for the abstract deadline on October 1, 2026 at 11:59 p.m. ET. The submission is a milestone, not the endpoint of the research.
 - **Full research paper:** continue expanding the cohort, condition coding, robustness analyses, and paper after the SSAC abstract is submitted, regardless of the competition decision.
 
-The SSAC version will emphasize one applied contribution: a conditions-adjusted assessment of whether an ODI powerplay was genuinely strong given wickets, opposition strength, pitch, weather, and innings order. See `docs/ssac27_submission_plan.md`.
+The SSAC version will emphasize one applied contribution: a conditions-adjusted assessment of whether an ODI powerplay was genuinely strong given wickets, pre-match team-strength difference, pitch, weather, and innings order. See `docs/ssac27_submission_plan.md`.
 
 ## Primary research question
 
-> How do runs and wickets in the first 10 overs of an ODI relate to the batting team's eventual win probability, and how does that relationship vary with pre-match pitch characteristics and early-match weather?
+> Among men's One Day International cricket matches, how are runs scored and wickets lost during the first 10 overs associated with the batting team's probability of winning after accounting for pre-match team strength, opponent strength, innings order, toss, venue, year, pitch characteristics, and weather—and how do these associations vary across different playing conditions?
 
 The wording is intentionally **relates to**, not **causes**. This is observational data.
 
@@ -36,10 +32,12 @@ One row represents one batting-team innings in one match. The outcome is `battin
 - A standard-library Cricsheet JSON extractor for first-10-over runs, wickets, run rate, boundary-ball percentage, dot-ball percentage, match context, and outcome.
 - Definitions for legal deliveries, dots, boundaries, wickets lost, incomplete powerplays, ties/no-results, and super overs.
 - A secure Cricsheet ODI downloader that records the URL, retrieval time, and SHA-256 checksum.
-- An auditable cleaning stage that separates raw data, all extracted innings, retained matches, exclusions, and the World Cup pilot cohort.
+- An auditable cleaning stage that separates raw data, all extracted innings, retained matches, exclusions, the broad 2015-forward primary cohort, and competition-type subgroups.
 - Human-audited pitch and match-start-time templates.
 - A research design, data dictionary, pitch codebook, transformation log, paper outline, and staged execution roadmap.
 - Tests using a small synthetic ODI fixture.
+
+For the current checksummed Cricsheet snapshot, the cleaning pipeline found 3,178 matches, retained 2,739 in the core clean dataset, and selected 1,093 matches (2,186 team-innings) for the 2015-forward men's ODI primary cohort. The World Cup subgroup contains 110 of those matches; it is not the primary sample.
 
 ## Planned pipeline
 
@@ -66,13 +64,15 @@ python scripts/extract_cricsheet.py \
 python scripts/build_clean_dataset.py
 ```
 
+The cleaning command creates `data/processed/powerplay_innings_primary.csv` for the main analysis and `data/processed/powerplay_innings_world_cup_subgroup.csv` only for subgroup checks. Generated datasets are ignored by Git and reproduced from the checksummed raw snapshot.
+
 Then copy and complete:
 
 - `data/manual/pitch_reports_template.csv`
 - `data/manual/match_start_times_template.csv`
 - `data/manual/venue_coordinates_template.csv`
 
-Do not automate bulk collection from ESPNcricinfo until its current terms and access rules have been reviewed. For this project, manually coding the smaller World Cup pilot is transparent, auditable, and academically stronger than an opaque scraper.
+Do not automate bulk collection from ESPNcricinfo under the terms reviewed for this project. Use a documented, source-audited manual collection design and report pitch-source coverage across years, venues, competition types, and outcomes. Never replace a missing pre-match pitch report with a post-match description.
 
 ## Reproducibility rules
 
@@ -88,6 +88,7 @@ Do not automate bulk collection from ESPNcricinfo until its current terms and ac
 ## Key documents
 
 - `docs/research_design.md` — hypotheses, cohort, leakage rules, modeling, evaluation, and robustness checks
+- `docs/research_question_and_introduction.md` — final working title, research question, and paper introduction
 - `docs/data_dictionary.md` — row-level schema and exact definitions
 - `docs/pitch_codebook.md` — reproducible text-to-category rules
 - `docs/transformation_log.md` — every planned transformation and audit artifact

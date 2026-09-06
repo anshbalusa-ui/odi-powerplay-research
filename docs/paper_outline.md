@@ -1,6 +1,6 @@
 # Paper Outline
 
-This outline is for the expanded paper. The SSAC27 abstract is a focused extract with actual pilot results, not a substitute for the full manuscript. Its separate plan is in `docs/ssac27_submission_plan.md`.
+This outline is for the full paper. The SSAC27 abstract is a focused extract with actual results from the same broad modern-ODI design, not a separate World-Cup-only study. Its separate plan is in `docs/ssac27_submission_plan.md`.
 
 ## Title page and abstract (200–250 words)
 
@@ -34,6 +34,7 @@ Use academic or authoritative sources. Do not pad this section with generic mach
 ### 3.1 Study cohort
 
 - dates/events/gender;
+- competition-type distribution and the role of World Cups as one subgroup;
 - inclusion/exclusion rules;
 - cohort flow diagram;
 - final match and team-innings counts.

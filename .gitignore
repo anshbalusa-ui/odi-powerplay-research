@@ -13,9 +13,14 @@ data/processed/*
 !data/**/.gitkeep
 !data/manual/*_template.csv
 
+# Local pitch-research working files may contain source-derived notes that are
+# not cleared for redistribution. Publish only after a separate rights review.
+data/manual/pitch_reports.csv
+data/manual/pitch_collection_queue.xlsx
+data/manual/*.inspect.ndjson
+
 # Generated artifacts
 artifacts/figures/*
 artifacts/models/*
 artifacts/tables/*
 !artifacts/**/.gitkeep
-
