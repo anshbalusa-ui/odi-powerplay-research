@@ -25,3 +25,15 @@ The primary design does not collect generic hourly temperature, humidity, precip
 - Governing Disney terms: https://disneytermsofuse.com/english/
 
 Terms review on 2026-09-05 found that the governing terms prohibit using robots, scripts, or other automated means to copy or extract the products for data mining, web scraping, or building a dataset. Automated ESPNcricinfo collection is therefore disabled for this project unless written permission or a suitable licensed data route is obtained. Any proposed human coding workflow must also receive an appropriate rights/terms review before the resulting dataset is published. Do not reproduce report text; retain only permitted provenance metadata and short original research codes or paraphrases.
+
+## Pitch-source search protocol
+
+Pitch reports are collected in outcome-blind batches. Match IDs are selected before any report, scorecard, powerplay value, or result is inspected. For each selected match, search in this order:
+
+1. match-specific pre-match ESPNcricinfo or ICC report;
+2. the relevant national cricket board or an established local/international news outlet;
+3. an established specialist cricket outlet when the first two levels have no surface description.
+
+Fantasy-prediction, betting, unattributed aggregator, social-media, live-blog, and post-match pages do not establish the primary pitch code. When higher-quality sources lack pitch evidence or lower-quality sources conflict, leave pitch dimensions missing and record the reason. One missing-source row is preferable to an unsupported classification.
+
+The working file distinguishes `source_no_pitch_evidence` from `no_eligible_source`. This makes it possible to separate a coverage problem from a source that exists but says nothing usable about the playing surface.

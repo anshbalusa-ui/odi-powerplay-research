@@ -70,7 +70,8 @@ These fields may be present in labeled data for training/evaluation but cannot b
 | Variable | Type | Definition |
 |---|---|---|
 | `source_url` | string | direct eligible pre-match report URL |
-| `published_at_utc` | timestamp | source publication time |
+| `source_title` | string | source article title |
+| `published_at_utc` | timestamp/date | source publication time in UTC when shown; ISO date only when the publisher omits time and the date still proves the article preceded play |
 | `accessed_at_utc` | timestamp | collection time |
 | `pre_match_verified` | binary | publication verified before scheduled start |
 | `coder_id` | string | anonymized coder label |
@@ -83,6 +84,7 @@ These fields may be present in labeled data for training/evaluation but cannot b
 | `two_paced_expected` | binary/nullable | report expectation; blank if unstated |
 | `dew_expected` | binary/nullable | secondary match-condition expectation; blank if unstated |
 | `short_paraphrased_note` | string | short audit note; avoid long copied text |
+| `exclusion_reason` | string/nullable | reason the source or row is not eligible for pitch modeling |
 
 Descriptions of grass, moisture, hardness, dryness, cracks, or par scores remain in `short_paraphrased_note` when they support the coded behavior. They are not separate primary model fields.
 

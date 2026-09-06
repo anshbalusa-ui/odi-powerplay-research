@@ -88,6 +88,7 @@ Do not automate bulk collection from ESPNcricinfo under the terms reviewed for t
 - `docs/research_design.md` — hypotheses, cohort, leakage rules, modeling, evaluation, and robustness checks
 - `docs/research_question_and_introduction.md` — final working title, research question, and paper introduction
 - `docs/data_dictionary.md` — row-level schema and exact definitions
+- `docs/pitch_collection_status.md` — outcome-blind pitch-source collection progress and batch audit
 - `docs/pitch_codebook.md` — reproducible text-to-category rules
 - `docs/transformation_log.md` — every planned transformation and audit artifact
 - `docs/execution_roadmap.md` — the build order and milestone checklist
