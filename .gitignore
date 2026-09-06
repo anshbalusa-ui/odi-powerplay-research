@@ -7,7 +7,6 @@ __pycache__/
 
 # Raw and derived datasets are reproduced by scripts.
 data/raw/cricsheet/*
-data/raw/weather/*
 data/interim/*
 data/processed/*
 !data/**/.gitkeep

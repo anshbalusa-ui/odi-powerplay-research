@@ -10,16 +10,14 @@ This file defines the required transformation trail. Each completed run should p
 | 04 | match table | apply core exclusions; select 2015-forward men's ODIs; classify competition type without event exclusion | cohort audit table | every exclusion has reason; count flow; all event types retained |
 | 05 | prior decided matches | calculate date-batched Elo and prior-20 win rates | `team_strength_pre` | no focal/future match in history |
 | 06 | eligible pre-match reports | paraphrase and code using frozen codebook | `pitch_reports` | source time precedes start; double-code ≥20% |
-| 07 | venue list | manually canonicalize venue/coordinates/timezone | venue crosswalk | no ambiguous canonical names |
-| 08 | coordinates + match date | retrieve and save unmodified 24-hour API response | `weather_hourly_raw` | request URL/params; units; 24/23/25-hour DST cases |
-| 09 | hourly weather + scheduled start | select nearest start-hour value; derive sensitivity window | `weather_match_features` | offset recorded; no full-day feature in model |
-| 10 | match ID/date/venue | merge pitch/weather/strength into innings | merged audit table | join cardinality; unmatched and duplicate reports |
-| 11 | merged table | enforce leakage allowlist; create primary/secondary feature sets | `model_team_innings` | forbidden-column assertion |
-| 12 | model table | order by date; build grouped chronological development/test sets | split manifest | match IDs never cross partitions |
-| 13 | development folds | fit all preprocessing and tune models inside rolling folds | fitted candidates | test period untouched |
-| 14 | locked test | create probabilities once per frozen model | predictions | range [0,1]; one row/model/eligible row |
-| 15 | predictions | calculate metrics and match-cluster bootstrap CIs | metrics tables | fixed seed; failed bootstrap count |
-| 16 | fitted models + test data | calibration, marginal predictions, importance, SHAP | figures/tables | labels/units; no causal language |
+| 07 | venue list + schedules | canonicalize venue names and verify local start time used for source eligibility | venue/start crosswalk | no ambiguous names; pitch source predates play |
+| 08 | match ID/date/venue | merge pitch and strength data into innings | merged audit table | join cardinality; unmatched and duplicate reports |
+| 09 | merged table | enforce leakage allowlist; create primary/secondary feature sets | `model_team_innings` | forbidden-column assertion; no generic weather fields |
+| 10 | model table | order by date; build grouped chronological development/test sets | split manifest | match IDs never cross partitions |
+| 11 | development folds | fit all preprocessing and tune models inside rolling folds | fitted candidates | test period untouched |
+| 12 | locked test | create probabilities once per frozen model | predictions | range [0,1]; one row/model/eligible row |
+| 13 | predictions | calculate metrics and match-cluster bootstrap CIs | metrics tables | fixed seed; failed bootstrap count |
+| 14 | fitted models + test data | calibration, marginal predictions, importance, SHAP | figures/tables | labels/units; no causal language |
 
 ## Standard exclusion codes
 
@@ -36,9 +34,7 @@ This file defines the required transformation trail. Each completed run should p
 - `MISSING_MATCH_METADATA`
 - `PITCH_NOT_PREMATCH`
 - `PITCH_SOURCE_UNMATCHED`
-- `WEATHER_COORDINATES_MISSING`
 - `SCHEDULED_START_MISSING`
-- `WEATHER_API_MISSING`
 
 ## Join policy
 
@@ -47,7 +43,7 @@ This file defines the required transformation trail. Each completed run should p
 3. If ID is unavailable, propose a composite date + canonical venue + unordered team pair match.
 4. Accept a composite match only when it is unique and human-verified.
 5. Never silently choose among multiple candidates.
-6. Pitch/weather are match-level tables and must remain one-to-one with `match_id` before expanding to two innings rows.
+6. Pitch reports are match-level and must remain one-to-one with `match_id` before expanding to two innings rows.
 
 ## Missing data policy
 
@@ -55,7 +51,7 @@ This file defines the required transformation trail. Each completed run should p
 - Report missingness by year, venue, and outcome before modeling.
 - For the primary model, categorical unknowns can use an explicit `unknown` level; numeric imputation must be learned in each training fold and accompanied by missingness indicators where justified.
 - Run a complete-case sensitivity analysis.
-- Do not fill missing pitch or weather using match reports written after play.
+- Do not fill missing pitch fields using match reports written after play.
 
 ## Provenance fields required in every derived file
 

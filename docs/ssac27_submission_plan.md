@@ -25,9 +25,9 @@ Recheck the page immediately before submission in case instructions change.
 
 Avoid framing the study as only another match-winner classifier. The stronger applied question is:
 
-> How much does the value of an ODI powerplay start change after accounting for wickets, opposition strength, innings order, pitch, and early-match weather?
+> How much does the value of an ODI powerplay start change after accounting for wickets, opposition strength, innings order, and pre-match pitch behavior?
 
-The practical output is a conditions-adjusted benchmark that estimates whether a start was stronger or weaker than its raw score suggests. This gives broadcasters, analysts, and teams a more useful interpretation than a universal rule such as “50/1 is a good powerplay.”
+The practical output is a pitch-adjusted benchmark that estimates whether a start was stronger or weaker than its raw score suggests. This gives broadcasters, analysts, and teams a more useful interpretation than a universal rule such as “50/1 is a good powerplay.”
 
 ## Minimum viable SSAC analysis
 
@@ -38,13 +38,12 @@ The practical output is a conditions-adjusted benchmark that estimates whether a
 - complete cohort/exclusion flow;
 - leakage-safe pre-match Elo difference;
 - innings order and toss context;
-- verified venue coordinates, scheduled start times, and start-hour weather;
-- a manageable, source-audited pitch representation;
+- verified source timing and a lean, source-audited, match-specific pitch representation;
 - baseline plus interpretable logistic model;
 - one nonlinear challenger only after the logistic analysis is stable;
 - chronological evaluation with development through 2023, validation in 2024, and 2025 through the fixed 2026 snapshot held out;
 - ROC-AUC, log loss, Brier score, calibration, and match-clustered confidence intervals;
-- one conditions-adjusted win-probability figure;
+- one pitch-adjusted win-probability figure;
 - one compact model-performance/calibration table or figure;
 - public repository with code, data-building instructions, permitted data, manifests, and results.
 
@@ -64,7 +63,7 @@ Deferral means sequencing, not abandonment.
 | Dates | Deliverable | Go/no-go test |
 |---|---|---|
 | Sep 5–8 | download/extract Cricsheet; freeze broad modern-ODI cohort; hand-audit powerplays | no unresolved extraction discrepancies |
-| Sep 9–13 | Elo, venue crosswalk, start times, weather | no future information in feature audit |
+| Sep 9–13 | Elo, venue crosswalk, and source-timing audit | no future information in feature audit |
 | Sep 14–18 | pitch-source collection/coding and reliability check | adequate source coverage or documented reduced pitch scope |
 | Sep 19–22 | merge, missingness report, descriptive analysis, frozen split | 2025–snapshot test IDs locked and untouched |
 | Sep 23–25 | logistic model, selected interactions, marginal predictions | interpretable and calibrated baseline comparison |
@@ -80,7 +79,7 @@ If pitch collection becomes the bottleneck, reduce complexity transparently rath
 1. simplify the pitch code to a smaller, high-reliability set of dimensions;
 2. use only reports with verified publication times and add an explicit missing indicator;
 3. define a prespecified, stratified pitch-analysis subset that spans years and competition types;
-4. make pitch-conditioned analysis secondary while retaining weather/context in the broad primary model.
+4. make individual sparse pitch dimensions secondary while retaining the high-coverage primary pitch category.
 
 Never fill missing pre-match pitch descriptions using post-match reports.
 
@@ -100,7 +99,7 @@ Report sample size, the main adjusted relationship or interaction with uncertain
 
 ### Conclusion
 
-State the conditions-adjusted cricket insight, the practical application, and the observational limitation.
+State the pitch-adjusted cricket insight, the practical application, and the observational limitation.
 
 ## Submission-day checklist
 

@@ -7,8 +7,6 @@
 | `cricsheet_matches` | one match | stable match metadata and result |
 | `powerplay_innings` | one regulation team-innings | first-10-over statistics and context |
 | `pitch_reports` | one match/source | pre-match prose provenance and human codes |
-| `weather_hourly_raw` | one match/hour | unmodified historical hourly weather |
-| `weather_match_features` | one match | leakage-safe weather snapshot/aggregation |
 | `team_strength_pre` | one match/team | ratings calculated before the match date |
 | `model_team_innings` | one team-innings | audited merged analysis table |
 | `model_match_paired` | one match | secondary difference-based analysis table |
@@ -79,35 +77,14 @@ These fields may be present in labeled data for training/evaluation but cannot b
 | `coder_confidence` | ordered category | low, medium, high |
 | `pitch_primary_category` | category | batting-friendly, balanced, pace/seam, spin, slow/two-paced, unknown |
 | `batting_ease` | ordinal 0–2 | difficult to easy/high-scoring |
-| `pace_support` | ordinal 0–2 | little to strong pace/seam help |
+| `pace_seam_support` | ordinal 0–2 | little to strong pace/seam help |
 | `spin_support` | ordinal 0–2 | little to strong spin help |
-| `grass_cover` | ordinal 0–2 | little to substantial |
-| `surface_moisture` | ordinal 0–2 | dry to damp/moist |
-| `hardness` | ordinal 0–2 | soft to hard |
-| `dryness` | ordinal 0–2 | moist/not dry to very dry |
-| `visible_cracks` | ordinal 0–2 | none to prominent |
+| `bounce_profile` | category/nullable | low, standard, steep, variable, or blank when unstated |
 | `two_paced_expected` | binary/nullable | report expectation; blank if unstated |
-| `dew_expected` | binary/nullable | report expectation; blank if unstated |
-| `expected_par_score` | float/nullable | stated value or range midpoint |
+| `dew_expected` | binary/nullable | secondary match-condition expectation; blank if unstated |
 | `short_paraphrased_note` | string | short audit note; avoid long copied text |
 
-## Weather fields
-
-Raw weather has one row per local hour. Model suffixes identify the aggregation rule, such as `_start` or `_start_plus_60_mean`.
-
-| Variable | Type/unit | Definition |
-|---|---|---|
-| `scheduled_start_local` | local timestamp | cited scheduled match start |
-| `weather_time_local` | local timestamp | Open-Meteo hourly timestamp |
-| `temperature_2m` | °C float | air temperature 2 m above ground |
-| `relative_humidity_2m` | % float | relative humidity at 2 m |
-| `precipitation` | mm float | preceding-hour precipitation sum |
-| `cloud_cover` | % float | total cloud cover |
-| `wind_speed_10m` | km/h float | wind speed at 10 m |
-| `dew_point_2m` | °C float | dew point at 2 m |
-| `weather_time_offset_minutes` | integer | selected hour minus scheduled start |
-
-Do not bin continuous weather in the primary model. Standardization is learned inside training folds.
+Descriptions of grass, moisture, hardness, dryness, cracks, or par scores remain in `short_paraphrased_note` when they support the coded behavior. They are not separate primary model fields.
 
 ## Team strength
 
@@ -126,11 +103,10 @@ These variables form the pre-match baseline adjustment block. They control for c
 | Variable | Type | Definition |
 |---|---|---|
 | `pitch_join_status` | category | exact ID, composite verified, unmatched, ambiguous |
-| `weather_join_status` | category | matched, coordinates missing, start missing, API missing |
 | `exclusion_reasons` | string/list | semicolon-delimited prespecified reason codes |
 | `analysis_eligible_primary` | binary | passes core cleaning and the 2015-forward men's ODI primary rules; no event restriction |
 | `source_snapshot_id` | string | hash/date identifier for raw-source manifest |
 
 ## Final-model anti-leakage allowlist
 
-The final training matrix may contain only approved powerplay, pre-match pitch, leakage-safe weather, pre-match team strength, toss, innings order, venue/grouping, and year features. Match ID is a grouping key, not a predictor. Outcome, winner, margin, result method, full innings total, and later-match data are prohibited.
+The final training matrix may contain only approved powerplay, pre-match pitch, pre-match team strength, toss, innings order, venue/grouping, year, and competition-type features. Match ID is a grouping key, not a predictor. Outcome, winner, margin, result method, full innings total, later-match data, and generic hourly weather variables are prohibited.

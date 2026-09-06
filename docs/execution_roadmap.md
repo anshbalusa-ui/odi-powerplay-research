@@ -18,7 +18,7 @@ The project should be built in seven gates. Do not begin final modeling until th
 **Goal:** prevent outcome-driven decisions.
 
 - Confirm the 2015-forward men's ODI primary era and fixed data-snapshot cutoff; do not filter by event.
-- Freeze primary hypotheses, cohort rules, prediction timestamp, pitch codebook, weather rule, feature sets, and final test period.
+- Freeze primary hypotheses, cohort rules, prediction timestamp, lean pitch codebook, feature sets, and final test period.
 - Choose confirmatory versus exploratory interactions.
 - Create an empty results shell before examining final-test outcomes.
 
@@ -40,25 +40,24 @@ The project should be built in seven gates. Do not begin final modeling until th
 
 **Goal:** create only pre-match context.
 
-- Construct a canonical venue/coordinates/timezone crosswalk.
+- Construct a canonical venue crosswalk.
 - Add cited scheduled local start times.
 - Calculate pre-match Elo and rolling strength without same-day/future leakage.
 - Produce unmatched/ambiguous audit reports.
 
 **Pass condition:** every eligible match has validated IDs; no post-match strength data are used.
 
-### Gate 4 — Collect and validate pitch/weather
+### Gate 4 — Collect and validate pitch conditions
 
 **Goal:** make subjective and modeled conditions transparent.
 
 - Collect eligible pre-match pitch reports using a prespecified design spanning years, venues, teams, outcomes, and competition types.
 - If complete pitch-report coverage is infeasible, define a source-audited analysis subset without inspecting outcomes and report its selection/coverage limits.
 - Double-code a stratified random 20% and calculate reliability.
-- Download raw hourly Open-Meteo responses.
-- Derive start-hour primary weather and early-window sensitivity weather.
-- Inspect missingness and impossible values.
+- Code only the prespecified pitch-behavior fields; keep explicit dew expectation secondary.
+- Inspect missingness, unsupported codes, and inconsistent values.
 
-**Pass condition:** source coverage, inter-coder reliability, weather offsets, and missingness are documented.
+**Pass condition:** source coverage, inter-coder reliability, and pitch-field missingness are documented.
 
 ### Gate 5 — Freeze the model table
 
@@ -102,10 +101,10 @@ The project should be built in seven gates. Do not begin final modeling until th
 |---|---|
 | 1 | protocol, hypotheses, scope, source/legal check |
 | 2 | Cricsheet extraction and 20-match hand audit |
-| 3 | cohort flow, venue crosswalk, start-time table |
+| 3 | cohort flow, venue crosswalk, source-timing table |
 | 4 | first half of pitch reports and coding log |
 | 5 | remaining pitch reports and inter-coder sample |
-| 6 | weather retrieval, Elo, merge, missingness audit |
+| 6 | Elo, pitch merge, missingness audit |
 | 7 | descriptive analysis and frozen feature/split manifest |
 | 8 | logistic models, interactions, marginal effects |
 | 9 | RF/XGBoost, calibration, bootstrap CIs, SHAP |

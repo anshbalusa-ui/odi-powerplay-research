@@ -14,10 +14,10 @@ This outline is for the full paper. The SSAC27 abstract is a focused extract wit
 ## 1. Introduction
 
 1. Explain why the first 10 overs are strategically important in ODIs.
-2. Explain why the same score can have different meaning across pitch/weather and innings order.
+2. Explain why the same score can have different meaning across pitch behavior and innings order.
 3. Identify the gap: early performance is often summarized without jointly addressing conditions, prior team strength, temporal validation, and calibration.
 4. State the primary question and hypotheses.
-5. Summarize contributions: reproducible extraction, audited pitch coding, leakage-safe weather, chronological model comparison, uncertainty/calibration.
+5. Summarize contributions: reproducible extraction, audited pitch-behavior coding, chronological model comparison, uncertainty/calibration.
 
 ## 2. Background and related work
 
@@ -51,11 +51,11 @@ Use academic or authoritative sources. Do not pad this section with generic mach
 - codebook and categories;
 - double coding and reliability.
 
-### 3.4 Weather
+### 3.4 Limited non-pitch conditions
 
-- venue coordinates/timezones;
-- Open-Meteo variables and reanalysis limitation;
-- start-hour timing rule and sensitivity window.
+- why generic hourly weather is excluded from the primary design;
+- how explicitly reported pre-match dew is handled as a secondary condition;
+- why blank dew coding means unstated rather than absent.
 
 ### 3.5 Context and strength
 
@@ -117,7 +117,7 @@ Use academic or authoritative sources. Do not pad this section with generic mach
 3. Why nonlinear models did or did not improve held-out prediction.
 4. Calibration and practical meaning.
 5. Comparison with prior work.
-6. Limitations: observational confounding, source coverage, subjective pitch coding, weather resolution/timing, sample size, rule/era differences, paired innings dependence, and generalizability.
+6. Limitations: observational confounding, source coverage, subjective pitch coding, within-match pitch change, sample size, rule/era differences, paired innings dependence, and generalizability.
 7. Future work: more eras/events, actual on-field timestamps/sensors, hierarchical venue/team models, external replication.
 
 ## 6. Conclusion

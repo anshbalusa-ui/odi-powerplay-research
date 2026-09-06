@@ -1,8 +1,8 @@
-# ODI Powerplay, Conditions, and Match Outcomes
+# ODI Powerplay, Pitch Conditions, and Match Outcomes
 
 [![Tests](https://github.com/anshbalusa-ui/odi-powerplay-research/actions/workflows/tests.yml/badge.svg)](https://github.com/anshbalusa-ui/odi-powerplay-research/actions/workflows/tests.yml)
 
-Reproducible Python research pipeline for an **associational** study of how first-10-over ODI batting performance relates to the batting team's probability of winning under different pitch, weather, and match conditions.
+Reproducible Python research pipeline for an **associational** study of how first-10-over ODI batting performance relates to the batting team's probability of winning on different types of pitches.
 
 ## Research scope
 
@@ -13,15 +13,15 @@ World Cups are a labeled subgroup and sensitivity analysis, not the main dataset
 ## Two-track deliverables
 
 - **SSAC27 milestone:** finish a results-complete, reproducible analysis from the broad modern-ODI cohort for the abstract deadline on October 1, 2026 at 11:59 p.m. ET. The submission is a milestone, not the endpoint of the research.
-- **Full research paper:** continue expanding the cohort, condition coding, robustness analyses, and paper after the SSAC abstract is submitted, regardless of the competition decision.
+- **Full research paper:** continue expanding the cohort, pitch coding, robustness analyses, and paper after the SSAC abstract is submitted, regardless of the competition decision.
 
-The SSAC version will emphasize one applied contribution: a conditions-adjusted assessment of whether an ODI powerplay was genuinely strong given wickets, pre-match team-strength difference, pitch, weather, and innings order. See `docs/ssac27_submission_plan.md`.
+The SSAC version will emphasize one applied contribution: a pitch-adjusted assessment of whether an ODI powerplay was genuinely strong given wickets, pre-match team-strength difference, pitch behavior, and innings order. See `docs/ssac27_submission_plan.md`.
 
 ## Primary research question
 
-> Among men's One Day International cricket matches, how are runs scored and wickets lost during the first 10 overs associated with the batting team's probability of winning after accounting for pre-match team strength, opponent strength, innings order, toss, venue, year, pitch characteristics, and weather—and how do these associations vary across different playing conditions?
+> Among men's One Day International cricket matches, how are runs scored and wickets lost during the first 10 overs associated with the batting team's probability of winning after accounting for pre-match team-strength difference, innings order, toss, venue, year, and competition type—and how do these associations vary with pre-match pitch conditions such as batting ease, pace/seam assistance, spin assistance, bounce, and two-paced behavior?
 
-The wording is intentionally **relates to**, not **causes**. This is observational data.
+The wording is intentionally **associated with**, not **causes**. This is observational data.
 
 ## Unit of analysis
 
@@ -33,7 +33,7 @@ One row represents one batting-team innings in one match. The outcome is `battin
 - Definitions for legal deliveries, dots, boundaries, wickets lost, incomplete powerplays, ties/no-results, and super overs.
 - A secure Cricsheet ODI downloader that records the URL, retrieval time, and SHA-256 checksum.
 - An auditable cleaning stage that separates raw data, all extracted innings, retained matches, exclusions, the broad 2015-forward primary cohort, and competition-type subgroups.
-- Human-audited pitch and match-start-time templates.
+- Human-audited pitch and source-timing templates.
 - A research design, data dictionary, pitch codebook, transformation log, paper outline, and staged execution roadmap.
 - Tests using a small synthetic ODI fixture.
 
@@ -45,8 +45,6 @@ For the current checksummed Cricsheet snapshot, the cleaning pipeline found 3,17
 Cricsheet JSON -> match/innings table -> rolling pre-match team strength
                                       \
 pre-match pitch coding ---------------> audited merge -> leakage-safe model table
-                                      /
-Open-Meteo hourly raw -> start-time weather features
 
 model table -> chronological splits -> logistic/RF/XGBoost -> calibration/CI/SHAP/plots
 ```
@@ -70,7 +68,7 @@ Then copy and complete:
 
 - `data/manual/pitch_reports_template.csv`
 - `data/manual/match_start_times_template.csv`
-- `data/manual/venue_coordinates_template.csv`
+- `data/manual/venue_crosswalk_template.csv`
 
 Do not automate bulk collection from ESPNcricinfo under the terms reviewed for this project. Use a documented, source-audited manual collection design and report pitch-source coverage across years, venues, competition types, and outcomes. Never replace a missing pre-match pitch report with a post-match description.
 
@@ -98,7 +96,7 @@ Do not automate bulk collection from ESPNcricinfo under the terms reviewed for t
 
 ## Data-source attribution
 
-Match data: Cricsheet JSON. Weather data: Open-Meteo Historical Weather API. Pitch-report metadata: individually cited pre-match ESPNcricinfo reports. Follow the source licences/terms and include a source statement in the final paper.
+Match data: Cricsheet JSON. Pitch conditions: individually cited, pre-match pitch/conditions reports, with ESPNcricinfo used where an eligible report is available. Generic hourly weather variables are not part of the primary design. Follow the source licences/terms and include a source statement in the final paper.
 
 ## Licence
 

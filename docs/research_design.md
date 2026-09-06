@@ -2,9 +2,9 @@
 
 ## 1. Study identity
 
-**Working title:** *What Is a Good ODI Powerplay? Conditions-Adjusted Associations Between First-10-Over Performance and Match Outcomes*
+**Working title:** *What Is a Good ODI Powerplay? Pitch-Adjusted Associations Between First-10-Over Performance and Match Outcomes*
 
-**Design:** retrospective observational prediction/association study using ball-by-ball match data, manually coded pre-match pitch descriptions, and historical reanalysis weather.
+**Design:** retrospective observational prediction/association study using ball-by-ball match data and manually coded pre-match descriptions of expected pitch behavior.
 
 **Claim boundary:** the study estimates conditional associations and predictive performance. It does not prove that scoring more quickly causes a win, because team quality, strategy, opposition, and other unmeasured factors influence both powerplay performance and the result.
 
@@ -12,7 +12,7 @@
 
 ### Primary question
 
-Among men's One Day International cricket matches, how are runs scored and wickets lost during the first 10 overs associated with the batting team's probability of winning after accounting for pre-match team strength, opponent strength, innings order, toss, venue, year, pitch characteristics, and weather—and how do these associations vary across different playing conditions?
+Among men's One Day International cricket matches, how are runs scored and wickets lost during the first 10 overs associated with the batting team's probability of winning after accounting for pre-match team-strength difference, innings order, toss, venue, year, and competition type—and how do these associations vary with pre-match pitch conditions such as batting ease, pace/seam assistance, spin assistance, bounce, and two-paced behavior?
 
 ### Prespecified hypotheses
 
@@ -21,7 +21,7 @@ Among men's One Day International cricket matches, how are runs scored and wicke
 - **H3:** The runs-win and wickets-win relationships vary across pitch categories.
 - **H4:** Innings order modifies these relationships because the strategic meaning of a start differs when batting first versus chasing.
 
-Weather interactions are exploratory unless the final protocol names a small number before looking at outcomes. Testing every possible interaction would create a multiple-comparisons problem.
+Bounce and two-paced interactions are exploratory unless adequate source coverage is established before outcomes are modeled. Testing every possible interaction would create a multiple-comparisons problem.
 
 ## 3. Cohort and scope
 
@@ -101,10 +101,8 @@ The prediction timestamp is the end of the focal batting team's tenth over. A ca
 | Pre-match pitch report published before play | Post-match pitch summary or result article |
 | Toss, batting order, teams, venue, date | Player-of-match, victory margin, final totals |
 | Team ratings computed only from earlier dates | End-of-year ranking or tournament-final rating |
-| Weather at scheduled start hour | Full match-day mean using later hours |
+| Explicit pre-match pitch and dew expectations | Post-match descriptions or observed later-match dew |
 | Year and prior history | Statistics calculated using the test/future period |
-
-Cricsheet does not supply delivery timestamps. The primary weather model therefore uses the hourly value nearest the scheduled local start. A start-to-plus-60-minute mean is a sensitivity analysis and must be described as an approximation to early-match conditions. Full-day weather can be stored and graphed but cannot be a predictor.
 
 For second innings, the first-innings total and target are technically known by over 10, but the primary model excludes them so first- and second-innings rows answer a comparable question. A chasing-only sensitivity model may include the pre-innings target if it is declared in advance.
 
@@ -115,20 +113,17 @@ Use only reports demonstrably published before the match began. Record the URL, 
 The pitch representation has two layers:
 
 1. a mutually exclusive primary category for summaries; and
-2. multidimensional ordinal/binary features for models.
+2. a lean set of model features: batting ease, pace/seam support, spin support, bounce profile, and expected two-paced behavior.
+
+Descriptions of grass, moisture, hardness, dryness, or cracks may be retained in the short source paraphrase as coding evidence, but they are not separate primary predictors. This avoids a wide collection form full of sparse and correlated proxy variables.
 
 At least 20% of reports should be independently coded twice. Report raw agreement and weighted Cohen's kappa for ordinal dimensions. Resolve disagreements without inspecting match outcomes.
 
-## 8. Weather construction
+## 8. Limited non-pitch conditions
 
-1. Manually validate each venue's latitude, longitude, IANA timezone, and canonical name.
-2. Request all hourly variables for the local match date and save the unmodified JSON response.
-3. Join scheduled start time from a cited pre-match schedule source.
-4. Select the nearest hourly observation to scheduled start for the primary model.
-5. Preserve temperature, humidity, precipitation, cloud cover, wind speed, and dew point as continuous variables.
-6. Keep precipitation zero-inflated as continuous; consider `log1p(precipitation)` only as a prespecified sensitivity transform.
+Generic hourly temperature, humidity, precipitation, cloud cover, wind speed, and dew point are excluded from the primary design. They add collection and modeling complexity without directly describing the surface behavior that motivates the research question.
 
-Open-Meteo historical data are reanalysis/model estimates, not exact measurements at the pitch. State that limitation.
+`dew_expected` may be retained as a secondary match-condition variable only when an eligible pre-match report explicitly discusses it. Blank means unstated, not no dew. Do not reconstruct later-match dew from a result report or use it as a substitute for pitch coding.
 
 ## 9. Team and opponent strength
 
@@ -147,9 +142,9 @@ Sensitivity measure: rolling win rate over the prior 20 decided ODIs, again excl
 
 Fit nested feature blocks so the contribution of the powerplay is evaluated relative to a credible pre-match baseline:
 
-1. **M0 pre-match baseline:** Elo difference, pitch/weather, toss, innings order, venue/grouping, year/rule era, and competition type.
+1. **M0 pre-match baseline:** Elo difference, pitch features, toss, innings order, venue/grouping, year/rule era, and competition type.
 2. **M1 powerplay model:** M0 plus `pp_runs` and `pp_wickets`.
-3. **M2 interaction model:** M1 plus the small prespecified set of pitch/weather and innings-order interactions.
+3. **M2 interaction model:** M1 plus the small prespecified set of pitch and innings-order interactions.
 
 The main comparison is the change from M0 to M1/M2 in held-out discrimination, proper scoring rules, calibration, and estimated marginal win probabilities. This keeps team strength as a control while making first-10-over performance the substantive focus.
 
@@ -157,8 +152,11 @@ The main comparison is the change from M0 to M1/M2 in held-out discrimination, p
 
 - `pp_runs`
 - `pp_wickets`
-- pitch variables
-- start-hour weather variables
+- `batting_ease`
+- `pace_seam_support`
+- `spin_support`
+- `bounce_profile`
+- `two_paced_expected`
 - `elo_difference`
 - batting first/chasing
 - toss winner and decision
@@ -176,12 +174,14 @@ Use wickets, boundary percentage, and dot-ball percentage without powerplay runs
 
 Primary confirmatory interactions:
 
-- runs × pitch primary category;
-- wickets × pitch primary category;
+- runs × batting ease;
+- wickets × batting ease;
+- wickets × pace/seam support;
+- wickets × spin support;
 - runs × innings order;
 - wickets × innings order.
 
-Limit weather interactions to a small, prespecified set such as runs × humidity and wickets × precipitation. Standardize continuous variables using training-fold statistics before interactions. Plot marginal predictions rather than interpreting interaction coefficients alone.
+Treat bounce and two-paced interactions as exploratory unless their coding coverage is sufficient before outcome modeling. Plot marginal predictions rather than interpreting interaction coefficients alone.
 
 ## 11. Models
 
@@ -256,7 +256,7 @@ SHAP explains the fitted model, not causal effects. Prefer held-out permutation 
 - all-modern-ODI primary cohort versus World Cup, competition-type, and historical-era subgroups.
 - Excluding neutral venues or separating host advantage.
 - Adding DLS/revised matches only in a documented sensitivity cohort.
-- Weather at scheduled start versus start-to-plus-60-minute mean.
+- models with and without the secondary `dew_expected` variable.
 - Elo versus rolling prior-20 win rate.
 
 ## 16. Minimum reporting standard

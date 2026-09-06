@@ -1,5 +1,5 @@
 study:
-  title: "ODI powerplay performance, conditions, and match outcomes"
+  title: "ODI powerplay performance, pitch conditions, and match outcomes"
   match_type: "ODI"
   gender: "male"
   primary_start_year: 2015
@@ -47,19 +47,23 @@ powerplay:
   wicket_kinds_not_counted:
     - "retired hurt"
 
-weather:
-  raw_provider: "Open-Meteo Historical Weather API"
-  timezone: "venue_local"
-  raw_hourly_variables:
-    - "temperature_2m"
-    - "relative_humidity_2m"
+pitch:
+  source_timing: "published_before_match_start"
+  primary_features:
+    - "batting_ease"
+    - "pace_seam_support"
+    - "spin_support"
+    - "bounce_profile"
+    - "two_paced_expected"
+  secondary_match_condition:
+    - "dew_expected_when_explicitly_reported"
+  excluded_generic_weather_features:
+    - "temperature"
+    - "humidity"
     - "precipitation"
     - "cloud_cover"
-    - "wind_speed_10m"
-    - "dew_point_2m"
-  primary_feature_rule: "nearest_hour_to_scheduled_start"
-  sensitivity_feature_rule: "mean_from_start_through_start_plus_60_minutes"
-  prohibit_full_day_features_in_models: true
+    - "wind_speed"
+    - "dew_point"
 
 strength:
   primary_method: "elo"
@@ -82,9 +86,9 @@ modeling:
     - "random_forest"
     - "xgboost"
   nested_feature_blocks:
-    m0: "prematch_strength_pitch_weather_toss_innings_venue_year_competition"
+    m0: "prematch_strength_pitch_toss_innings_venue_year_competition"
     m1: "m0_plus_powerplay_runs_and_wickets"
-    m2: "m1_plus_prespecified_condition_interactions"
+    m2: "m1_plus_prespecified_pitch_and_innings_interactions"
   metrics:
     - "accuracy"
     - "roc_auc"
