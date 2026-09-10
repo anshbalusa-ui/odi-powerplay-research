@@ -128,6 +128,8 @@ and report source coverage across years, venues, competition types, and outcomes
 ## Key documents
 
 - `docs/research_design.md` — hypotheses, cohort, leakage rules, modeling, evaluation, and robustness checks
+- `docs/results.md` — preliminary cohort, powerplay, and 2024 validation findings
+- `docs/limitations.md` — interpretation boundaries, data constraints, and external blockers
 - `docs/research_question_and_introduction.md` — final working title, research question, and paper introduction
 - `docs/data_dictionary.md` — row-level schema and exact definitions
 - `docs/pitch_collection_status.md` — outcome-blind pitch-source collection progress and batch audit

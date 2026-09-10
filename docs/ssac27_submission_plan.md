@@ -58,6 +58,25 @@ The practical output is a pitch-adjusted benchmark that estimates whether a star
 
 Deferral means sequencing, not abandonment.
 
+## Current readiness gate
+
+As of the reproducible September 2026 run, the Cricsheet cohort, automated metric
+audit, pre-match team strength, chronological splits, six logistic specifications,
+two constrained nonlinear challengers, rolling-origin diagnostics, 2024 validation,
+clustered uncertainty, calibration, and preliminary figures are complete. The
+current numeric narrative is in `docs/results.md`.
+
+The pitch requirement is **not met**: verified coverage is 0/1,094, scheduled-start
+timestamps are unavailable, and independent double coding has not occurred. The
+hand-audit worksheet is generated but still needs external scorecard reconciliation.
+The 2025–2026 locked test remains correctly unscored.
+
+Go/no-go decision: do not submit the current analysis as a pitch-adjusted result.
+Either complete a source-audited pitch subset with timing and reliability evidence,
+or explicitly reframe the abstract around pitch-free powerplay prediction and revise
+the focused contribution. Never manufacture pitch labels from live/post-match
+commentary or unlock test outcomes to compensate for missing pitch data.
+
 ## September 5–October 1 sprint
 
 | Dates | Deliverable | Go/no-go test |
@@ -95,11 +114,15 @@ State the cohort and sources, unit of analysis, leakage cutoff, conditions/conte
 
 ### Results
 
-Report sample size, the main adjusted relationship or interaction with uncertainty, final held-out metrics versus baseline, and one calibration result. Do not fill this section until outputs are frozen.
+Report sample size, the main 2024 validation association with uncertainty, and one
+calibration result. Replace these with locked-test values only after every freeze
+gate passes; never label validation estimates as final held-out performance.
 
 ### Conclusion
 
-State the pitch-adjusted cricket insight, the practical application, and the observational limitation.
+State the pitch-adjusted cricket insight only if verified pitch results exist.
+Otherwise state the narrower powerplay-prediction result and make missing pitch
+coverage the main limitation.
 
 ## Submission-day checklist
 

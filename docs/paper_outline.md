@@ -2,6 +2,16 @@
 
 This outline is for the full paper. The SSAC27 abstract is a focused extract with actual results from the same broad modern-ODI design, not a separate World-Cup-only study. Its separate plan is in `docs/ssac27_submission_plan.md`.
 
+## Current drafting status
+
+The cohort, powerplay extraction, pre-match strength, chronological model table,
+2024 validation, uncertainty estimates, and preliminary figures are reproducible.
+`docs/results.md` contains the current quantitative narrative and
+`docs/limitations.md` fixes its interpretation boundary. Pitch-report collection,
+source-timing verification, inter-coder reliability, pitch-adjusted models, and the
+single locked-test evaluation remain incomplete. No current paragraph may present
+the study as pitch-adjusted or final.
+
 ## Title page and abstract (200–250 words)
 
 - One-sentence background.
@@ -81,7 +91,9 @@ Use academic or authoritative sources. Do not pad this section with generic mach
 
 ### 4.1 Cohort and data quality
 
-- row counts, exclusions, missingness, join coverage, pitch-coding reliability.
+- row counts, exclusions, missingness, and join coverage;
+- report current pitch coverage as 0/1,094 until verified rows exist;
+- report inter-coder reliability only after independent double coding.
 
 ### 4.2 Descriptive results
 
@@ -96,9 +108,10 @@ Use academic or authoritative sources. Do not pad this section with generic mach
 
 ### 4.4 Predictive performance
 
-- test metrics with CIs versus baselines;
-- calibration plots;
-- avoid claiming success from accuracy alone.
+- report the completed 2024 validation metrics and clustered intervals as
+  preliminary model-selection evidence;
+- report locked-test metrics only after the pitch and model freeze gates pass;
+- include calibration plots and avoid claiming success from accuracy alone.
 
 ### 4.5 Nonlinear interpretation
 
@@ -133,4 +146,6 @@ One short paragraph. Answer the question, give the practical/statistical takeawa
 - full metrics/CIs;
 - robustness tables;
 - source and software manifests;
+- preliminary result provenance in `docs/results.md`;
+- fixed caveats and external blockers in `docs/limitations.md`;
 - extra calibration and SHAP plots.
