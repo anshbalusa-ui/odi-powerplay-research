@@ -21,10 +21,43 @@ The primary design does not collect generic hourly temperature, humidity, precip
 
 ## ESPNcricinfo
 
-- ESPN terms entry point: https://support.espn.com/hc/en-us/articles/360035445091-Terms-of-Use
+- Current ESPNcricinfo terms: https://www.espncricinfo.com/terms-of-use
+- ESPN support terms entry point: https://support.espn.com/hc/en-us/articles/360035445091-Terms-of-Use
 - Governing Disney terms: https://disneytermsofuse.com/english/
 
-Terms review on 2026-09-05 found that the governing terms prohibit using robots, scripts, or other automated means to copy or extract the products for data mining, web scraping, or building a dataset. Automated ESPNcricinfo collection is therefore disabled for this project unless written permission or a suitable licensed data route is obtained. Any proposed human coding workflow must also receive an appropriate rights/terms review before the resulting dataset is published. Do not reproduce report text; retain only permitted provenance metadata and short original research codes or paraphrases.
+The current ESPNcricinfo terms were rechecked on 2026-09-10. They explicitly
+prohibit using data-mining, robots, or similar collection or extraction tools.
+Automated ESPNcricinfo collection is therefore disabled unless written permission
+or a suitable licensed route is obtained. Any proposed human coding workflow must
+also receive a rights review before publication. Do not reproduce report text;
+retain only permitted provenance metadata and short original research codes or
+paraphrases.
+
+
+### Third-party commentary dataset review
+
+Potential substitutes were checked rather than accepted from their uploader labels:
+
+- Kaggle's *Cricket Scorecard and Commentary Dataset* covers roughly 2017–2020
+  international and league matches, but its API metadata reports the licence as
+  `Unknown`. It cannot support a redistributable research pipeline.
+  Metadata: https://www.kaggle.com/api/v1/datasets/view/raghuvansht/cricket-scorecard-and-commentary-dataset
+- Kaggle's *Ultimate Ball-by-Ball Cricket Dataset* is labelled CC0 by its uploader,
+  but its own description says the commentary and enriched fields were scraped from
+  ESPNcricinfo. An uploader declaration does not establish rights to relicense the
+  underlying ESPN material. Its line, length, shot, and direction fields also do
+  not constitute match-level pre-match pitch conditions.
+  Metadata: https://www.kaggle.com/api/v1/datasets/view/ariadaikalam/the-ultimate-ball-by-ball-cricket-dataset
+- Kaggle's CC0-labelled *Cricket Commentary Dataset* points to a small Hugging Face
+  text-generation dataset but documents no match-ID/date/venue join keys or
+  authoritative source provenance. It cannot be aligned to the primary ODI cohort
+  or establish pre-match timing.
+  Metadata: https://www.kaggle.com/api/v1/datasets/view/thedevastator/cricket-commentary-dataset
+
+None of these datasets is imported. A claimed dataset licence is not treated as
+permission to republish source text when provenance or underlying rights are
+unresolved, and post-start commentary remains temporally ineligible regardless of
+licence.
 
 ## Pitch-source search protocol
 
