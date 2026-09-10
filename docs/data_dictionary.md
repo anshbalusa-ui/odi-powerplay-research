@@ -94,6 +94,13 @@ These variables form the pre-match baseline adjustment block. They control for c
 
 | Variable | Type | Definition |
 |---|---|---|
+| `team_1_elo_pre` | float | first-innings batting team's Elo before any match on the same date is updated |
+| `team_2_elo_pre` | float | second-innings batting team's Elo before any match on the same date is updated |
+| `elo_difference_team_1` | float | `team_1_elo_pre - team_2_elo_pre` in the match-level strength table |
+| `team_1_prior_matches` | integer | number of earlier results retained in team 1's rolling window, from 0 to 20 |
+| `team_2_prior_matches` | integer | number of earlier results retained in team 2's rolling window, from 0 to 20 |
+| `team_1_rolling_win_rate` | float/nullable | team 1 wins divided by available prior matches; blank before its first appearance |
+| `team_2_rolling_win_rate` | float/nullable | team 2 wins divided by available prior matches; blank before its first appearance |
 | `team_elo_pre` | float | focal team rating before match date |
 | `opponent_elo_pre` | float | opposing team rating before match date |
 | `elo_difference` | float | team minus opponent pre-match Elo |
