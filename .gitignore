@@ -4,6 +4,7 @@ __pycache__/
 *.py[cod]
 .pytest_cache/
 .ruff_cache/
+*.egg-info/
 
 # Raw and derived datasets are reproduced by scripts.
 data/raw/cricsheet/*
@@ -19,6 +20,7 @@ data/manual/pitch_collection_queue.xlsx
 data/manual/*.inspect.ndjson
 
 # Generated artifacts
+artifacts/run_manifest.json
 artifacts/figures/*
 artifacts/models/*
 artifacts/tables/*

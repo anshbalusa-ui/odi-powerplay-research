@@ -1,0 +1,59 @@
+{
+  "schema_version": 1,
+  "label": "batting_team_won",
+  "group_key": "match_id",
+  "split_key": "split",
+  "feature_sets": {
+    "pre_match_context": [
+      "team_elo_pre",
+      "opponent_elo_pre",
+      "elo_difference",
+      "team_prior_matches",
+      "opponent_prior_matches",
+      "team_prior20_win_rate",
+      "opponent_prior20_win_rate",
+      "batting_first",
+      "chasing",
+      "batting_team_won_toss",
+      "toss_decision",
+      "venue",
+      "year",
+      "rule_era",
+      "competition_type",
+      "pitch_available",
+      "pitch_primary_category",
+      "batting_ease",
+      "pace_seam_support",
+      "spin_support",
+      "bounce_profile",
+      "two_paced_expected",
+      "dew_expected"
+    ],
+    "powerplay_primary": [
+      "pp_runs",
+      "pp_wickets"
+    ],
+    "powerplay_intensity_sensitivity": [
+      "pp_boundary_pct",
+      "pp_dot_ball_pct"
+    ],
+    "prespecified_interactions": [
+      "pp_runs__x__batting_ease",
+      "pp_wickets__x__batting_ease",
+      "pp_wickets__x__pace_seam_support",
+      "pp_wickets__x__spin_support",
+      "pp_runs__x__batting_first",
+      "pp_wickets__x__batting_first"
+    ]
+  },
+  "prohibited_predictors": [
+    "batting_team_won",
+    "winner",
+    "match_status",
+    "result_method",
+    "exclusion_reasons",
+    "source_url",
+    "source_title",
+    "short_paraphrased_note"
+  ]
+}

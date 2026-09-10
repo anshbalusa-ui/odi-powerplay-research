@@ -19,6 +19,20 @@ This file defines the required transformation trail. Each completed run should p
 | 13 | predictions | calculate metrics and match-cluster bootstrap CIs | metrics tables | fixed seed; failed bootstrap count |
 | 14 | fitted models + test data | calibration, marginal predictions, importance, SHAP | figures/tables | labels/units; no causal language |
 
+## Current preliminary model run
+
+The September 2026 reproducible run fits six fixed logistic specifications plus
+constrained Random Forest and shallow XGBoost challengers on 2015–2023 development
+rows and evaluates only the 2024 validation rows. Expanding rolling-origin folds
+validate on 2021, 2022, and 2023 with preprocessing refit inside each fold. The
+pipeline saves model binaries and hashes, one validation prediction per
+model/team-innings, fixed-width calibration tables with whole-match uncertainty,
+calibration intercept/slope, and 2,000 whole-match cluster-bootstrap intervals
+using study seed `20250905`. It does not score or inspect outcomes from the
+2025–2026 locked-test partition. No hyperparameter search has been conducted; the
+current settings are prespecified. See `docs/modeling_status.md` for exact
+specifications and preliminary results.
+
 ## Standard exclusion codes
 
 - `NON_ODI`

@@ -94,17 +94,23 @@ These variables form the pre-match baseline adjustment block. They control for c
 
 | Variable | Type | Definition |
 |---|---|---|
-| `team_elo_pre` | float | focal team rating before match date |
-| `opponent_elo_pre` | float | opposing team rating before match date |
-| `elo_difference` | float | team minus opponent pre-match Elo |
-| `team_prior20_win_rate` | float/nullable | wins among prior 20 decided ODIs |
-| `opponent_prior20_win_rate` | float/nullable | same for opponent |
+| `team_1_elo_pre` | float | innings-one batting team's rating before the match date |
+| `team_2_elo_pre` | float | innings-two batting team's rating before the match date |
+| `elo_difference_team_1` | float | team 1 minus team 2 pre-match Elo |
+| `team_1_prior_matches` | integer | all decided matches available before the match date |
+| `team_2_prior_matches` | integer | all decided matches available before the match date |
+| `team_1_prior20_win_rate` | float/nullable | wins in the prior 20 decided matches; blank at cold start |
+| `team_2_prior20_win_rate` | float/nullable | same for team 2 |
+| `team_elo_pre` | float | focal batting team's mapped pre-match rating |
+| `opponent_elo_pre` | float | focal opponent's mapped pre-match rating |
+| `elo_difference` | float | focal batting team minus opponent pre-match Elo |
 
 ## Merge and audit fields
 
 | Variable | Type | Definition |
 |---|---|---|
 | `pitch_available` | binary | 1 only when a validated, timing-eligible pre-match pitch row joined by exact match ID |
+| `split` | category | `development` through 2023, `validation` in 2024, or locked `locked_test` from 2025 onward |
 | `exclusion_reasons` | string/list | semicolon-delimited prespecified reason codes |
 | `analysis_eligible_primary` | binary | passes core cleaning and the 2015-forward men's ODI primary rules; no event restriction |
 | `source_snapshot_id` | string | hash/date identifier for raw-source manifest |

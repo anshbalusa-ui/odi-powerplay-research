@@ -37,6 +37,13 @@ One row represents one batting-team innings in one match. The outcome is `battin
 - An auditable cleaning stage separating raw innings, retained matches, exclusions,
   the broad 2015-forward primary cohort, and competition-type subgroups.
 - A full-cohort metric audit covering formulas, ranges, match pairing, and outcome labels.
+- Date-batched pre-match Elo and rolling prior-20 win rates computed from all
+  available clean history without same-day or future leakage.
+- A hashed, feature-allowlisted model table with development (through 2023),
+  temporal-validation (2024), and locked-test (2025+) partitions.
+- Fixed nested logistic models, constrained Random Forest and XGBoost challengers,
+  rolling-origin diagnostics, calibration estimates, and 2,000-repetition
+  whole-match bootstrap confidence intervals.
 - A deterministic 24-innings hand-audit worksheet spanning every year from 2015–2026.
 - An outcome-blind 1,094-match pitch-source queue plus validators, coverage reporting,
   and a leakage-safe pitch/model-table merge.
@@ -60,18 +67,28 @@ model table -> chronological splits -> logistic/RF/XGBoost -> calibration/CI/SHA
 
 ## Quick start
 
-Use Python 3.11. Dataset construction and audits use the standard library.
+Use Python 3.11. Dataset construction and audits use the standard library; model
+training uses the pinned project dependencies. On macOS, XGBoost also requires
+`brew install libomp`.
 
 ```bash
+python3.11 -m venv .venv
+.venv/bin/python -m pip install -e .
 python -m unittest discover -s tests -v
 python scripts/download_cricsheet.py --output-dir data/raw/cricsheet
 python scripts/extract_cricsheet.py \
   --input-dir data/raw/cricsheet \
   --output data/interim/powerplay_innings.csv
 python scripts/build_clean_dataset.py
+python scripts/build_team_strength.py
+python scripts/build_model_table.py
 python scripts/audit_powerplay_metrics.py
 python scripts/build_hand_audit_sample.py
 python scripts/build_pitch_collection_queue.py
+.venv/bin/python scripts/train_models.py --fit-without-locked-test
+.venv/bin/python scripts/evaluate_models.py
+.venv/bin/python scripts/make_figures.py
+.venv/bin/python scripts/reproduce.py --skip-download
 ```
 
 Generated primary/cohort datasets are ignored by Git and reproduced from the
@@ -86,7 +103,7 @@ eligible, cited pre-match reports plus verified match-start timestamps. Then run
 python scripts/audit_pitch_collection.py \
   --pitch-input data/manual/pitch_reports.csv \
   --match-start-input data/manual/match_start_times.csv
-python scripts/build_pitch_model_table.py \
+python scripts/build_model_table.py \
   --pitch-input data/manual/pitch_reports.csv \
   --match-start-input data/manual/match_start_times.csv
 ```
@@ -114,6 +131,7 @@ and report source coverage across years, venues, competition types, and outcomes
 - `docs/research_question_and_introduction.md` — final working title, research question, and paper introduction
 - `docs/data_dictionary.md` — row-level schema and exact definitions
 - `docs/pitch_collection_status.md` — outcome-blind pitch-source collection progress and batch audit
+- `docs/modeling_status.md` — exact preliminary model specifications, split counts, validation results, and lock state
 - `docs/pitch_codebook.md` — reproducible text-to-category rules
 - `docs/transformation_log.md` — every planned transformation and audit artifact
 - `docs/execution_roadmap.md` — the build order and milestone checklist
