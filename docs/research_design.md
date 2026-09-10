@@ -12,7 +12,7 @@
 
 ### Primary question
 
-Among men's One Day International cricket matches, how are runs scored and wickets lost during the first 10 overs associated with the batting team's probability of winning after accounting for pre-match team-strength difference, innings order, toss, venue, year, and competition type—and how do these associations vary with pre-match pitch conditions such as batting ease, pace/seam assistance, spin assistance, bounce, and two-paced behavior?
+Which powerplay approaches are most successful in ODIs under different pitch and opposition conditions, based on condition-adjusted runs, wickets lost, boundary percentage, and dot-ball percentage?
 
 ### Prespecified hypotheses
 
@@ -27,17 +27,17 @@ Bounce and two-paced interactions are exploratory unless adequate source coverag
 
 ### Primary cohort
 
-All clean men's ODIs from January 1, 2015 through the fixed Cricsheet data-snapshot date, with no restriction to World Cups or any other event type.
+All clean men's ODIs available in the fixed Cricsheet data snapshot, with no restriction to World Cups or any other event type.
 
 - Include bilateral series, World Cups, Champions Trophies, continental cups, multi-team series, and qualification pathways.
 - Label `competition_type` so event mix can be described and used in sensitivity analyses.
 - Treat World Cup matches only as a subgroup/generalizability check.
-- Use earlier ODIs as a historical sensitivity cohort with explicit era controls rather than silently pooling them into the primary analysis.
+- Use year/rule-era controls and historical sensitivity analyses rather than restricting the main cohort to one tournament or era.
 
 ### Primary inclusion criteria
 
 - Cricsheet `match_type == "ODI"`.
-- Men's matches in the prespecified primary year range; all ODI competition types are eligible.
+- Men's matches in the fixed data snapshot; all ODI competition types are eligible.
 - Two regulation innings.
 - A decided winner.
 - At least 60 legal balls in each analyzed powerplay for six-ball overs.
@@ -99,10 +99,12 @@ The prediction timestamp is the end of the focal batting team's tenth over. A ca
 |---|---|
 | Focal team's first-10-over score events | Any focal-team event after over 10 |
 | Pre-match pitch report published before play | Post-match pitch summary or result article |
-| Toss, batting order, teams, venue, date | Player-of-match, victory margin, final totals |
+| Batting order, teams, venue, date | Player-of-match, victory margin, final totals |
 | Team ratings computed only from earlier dates | End-of-year ranking or tournament-final rating |
 | Explicit pre-match pitch and dew expectations | Post-match descriptions or observed later-match dew |
 | Year and prior history | Statistics calculated using the test/future period |
+
+Toss winner and toss decision are not part of the core research model. The study is intended to evaluate powerplay strategy relative to underlying conditions and opposition difficulty rather than a random pre-match event.
 
 For second innings, the first-innings total and target are technically known by over 10, but the primary model excludes them so first- and second-innings rows answer a comparable question. A chasing-only sensitivity model may include the pre-innings target if it is declared in advance.
 
@@ -119,11 +121,11 @@ Descriptions of grass, moisture, hardness, dryness, or cracks may be retained in
 
 At least 20% of reports should be independently coded twice. Report raw agreement and weighted Cohen's kappa for ordinal dimensions. Resolve disagreements without inspecting match outcomes.
 
-## 8. Limited non-pitch conditions
+## 8. Environmental conditions
 
-Generic hourly temperature, humidity, precipitation, cloud cover, wind speed, and dew point are excluded from the primary design. They add collection and modeling complexity without directly describing the surface behavior that motivates the research question.
+Historical weather is retained as contextual information rather than treated as a direct measurement of pitch behavior. Match-day temperature, humidity, precipitation, cloud cover, wind speed, and dew point may be included when sourced reproducibly from the Open-Meteo historical archive and clearly labeled with their timing and aggregation window.
 
-`dew_expected` may be retained as a secondary match-condition variable only when an eligible pre-match report explicitly discusses it. Blank means unstated, not no dew. Do not reconstruct later-match dew from a result report or use it as a substitute for pitch coding.
+`dew_expected` may also be retained as a secondary match-condition variable when an eligible pre-match report explicitly discusses it. Blank means unstated, not no dew. Do not reconstruct later-match dew from a result report or use it as a substitute for pitch coding.
 
 ## 9. Team and opponent strength
 
@@ -142,11 +144,11 @@ Sensitivity measure: rolling win rate over the prior 20 decided ODIs, again excl
 
 Fit nested feature blocks so the contribution of the powerplay is evaluated relative to a credible pre-match baseline:
 
-1. **M0 pre-match baseline:** Elo difference, pitch features, toss, innings order, venue/grouping, year/rule era, and competition type.
+1. **M0 pre-match baseline:** Elo difference, pitch features, weather context, innings order, venue/grouping, year/rule era, and competition type.
 2. **M1 powerplay model:** M0 plus `pp_runs` and `pp_wickets`.
-3. **M2 interaction model:** M1 plus the small prespecified set of pitch and innings-order interactions.
+3. **M2 aggression/process model:** M1 plus boundary-ball percentage, dot-ball percentage, and the small prespecified set of pitch and innings-order interactions.
 
-The main comparison is the change from M0 to M1/M2 in held-out discrimination, proper scoring rules, calibration, and estimated marginal win probabilities. This keeps team strength as a control while making first-10-over performance the substantive focus.
+The main comparison is the change from M0 to M1/M2 in held-out discrimination, proper scoring rules, calibration, and estimated marginal win probabilities. This keeps team strength and conditions as controls while making first-10-over strategy the substantive focus.
 
 ### Primary score-and-wickets model
 
@@ -159,16 +161,16 @@ The main comparison is the change from M0 to M1/M2 in held-out discrimination, p
 - `two_paced_expected`
 - `elo_difference`
 - batting first/chasing
-- toss winner and decision
+- weather context where available
 - venue or a defensible venue grouping
 - year
 - competition type or prespecified competition grouping
 
 Do **not** include `pp_run_rate` alongside `pp_runs` in complete 10-over rows; they are deterministic multiples. Keep run rate for description and use it only in an alternative specification.
 
-### Secondary scoring-process model
+### Aggression/scoring-process model
 
-Use wickets, boundary percentage, and dot-ball percentage without powerplay runs/run rate. This asks whether *how* a start was produced carries information.
+Use wickets, boundary percentage, and dot-ball percentage alongside condition-adjusted scoring measures. Boundary percentage is treated as a direct indicator of attacking intent, while wickets lost represent risk/cost rather than aggression by themselves. This asks whether *how* a start was produced carries information beyond the raw score.
 
 ### Interactions
 
@@ -178,6 +180,7 @@ Primary confirmatory interactions:
 - wickets × batting ease;
 - wickets × pace/seam support;
 - wickets × spin support;
+- boundary percentage × batting ease;
 - runs × innings order;
 - wickets × innings order.
 
@@ -209,7 +212,7 @@ Never make a random row split.
 
 ### Primary outer split
 
-- Development and rolling-origin tuning: January 1, 2015 through December 31, 2023.
+- Development and rolling-origin tuning: all eligible matches before January 1, 2024.
 - Temporal validation: calendar year 2024.
 - Locked final test: January 1, 2025 through the fixed 2026 data-snapshot date.
 
@@ -237,9 +240,9 @@ Compare against the prevalence baseline and simple runs+wickets baseline. Accura
 Required figures:
 
 1. cohort flow diagram;
-2. distributions of runs/wickets by year, innings order, and pitch category;
+2. distributions of runs/wickets and aggression indicators by year, innings order, and pitch category;
 3. observed win rate with binomial intervals across sensible run/wicket bins (descriptive only);
-4. logistic marginal win-probability surfaces across runs, wickets, and selected conditions;
+4. condition-adjusted win-probability surfaces across runs, wickets, boundary percentage, and selected conditions;
 5. calibration curves for every final model;
 6. permutation importance for nonlinear models;
 7. SHAP summary and dependence plots for the locked test set;
@@ -253,10 +256,10 @@ SHAP explains the fitted model, not causal effects. Prefer held-out permutation 
 - Primary pitch coding versus multidimensional coding.
 - Runs versus run rate alternative specification.
 - Team-innings versus paired match dataset.
-- all-modern-ODI primary cohort versus World Cup, competition-type, and historical-era subgroups.
+- full-ODI primary cohort versus World Cup, competition-type, and historical-era subgroups.
 - Excluding neutral venues or separating host advantage.
 - Adding DLS/revised matches only in a documented sensitivity cohort.
-- models with and without the secondary `dew_expected` variable.
+- models with and without weather context and the secondary `dew_expected` variable.
 - Elo versus rolling prior-20 win rate.
 
 ## 16. Minimum reporting standard
