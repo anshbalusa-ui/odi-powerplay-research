@@ -52,6 +52,25 @@ class EloTests(unittest.TestCase):
         self.assertTrue(all(row["team_elo_pre"] == 1500.0 for row in alpha_rows))
         self.assertTrue(all(row["opponent_elo_pre"] == 1500.0 for row in alpha_rows))
 
+    def test_excluded_prior_match_can_still_inform_strength_history(self) -> None:
+        prior = [
+            innings("rain_game", "2024-01-01", "Alpha", "Beta", "Alpha", 1),
+            innings("rain_game", "2024-01-01", "Beta", "Alpha", "Alpha", 2),
+        ]
+        target = [
+            innings("clean_game", "2024-01-02", "Alpha", "Gamma", "Gamma", 1),
+            innings("clean_game", "2024-01-02", "Gamma", "Alpha", "Gamma", 2),
+        ]
+        enriched = add_pre_match_elo(
+            target,
+            history_rows=[*prior, *target],
+            initial_rating=1500.0,
+            k_factor=20.0,
+        )
+        alpha = next(row for row in enriched if row["batting_team"] == "Alpha")
+        self.assertAlmostEqual(alpha["team_elo_pre"], 1510.0, places=6)
+        self.assertAlmostEqual(alpha["elo_difference"], 10.0, places=6)
+
 
 if __name__ == "__main__":
     unittest.main()
