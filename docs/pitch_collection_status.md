@@ -58,3 +58,29 @@ Copy completed batch rows into the ignored `data/manual/pitch_reports.csv` worki
 file. Recover any authorized prior rows first. Run `audit_pitch_collection.py` with
 verified UTC match starts before merging. Independently double-code at least 20% of
 usable rows before fitting any pitch-adjusted model.
+
+## Independent coding reliability gate
+
+Select at least 20% of verified reference rows at random without inspecting their
+pitch codes. Give the second coder the same eligible pre-match source documents,
+match identity, and coding guide, but do not disclose the first coder's codes,
+powerplay metrics, or result. Store the independent rows in the ignored
+`data/manual/pitch_reports_double_coded.csv` file with genuinely different
+`coder_id` values.
+
+After both files pass source and timestamp validation, run:
+
+```bash
+python scripts/audit_pitch_reliability.py \
+  --reference-input data/manual/pitch_reports.csv \
+  --recoded-input data/manual/pitch_reports_double_coded.csv \
+  --match-start-input data/manual/match_start_times.csv
+```
+
+The audit refuses rows outside the primary cohort, sources published at or after
+match start, unsupported codes, duplicate match IDs, and same-coder pairs. It
+reports comparable item counts, raw agreement, and unweighted Cohen's kappa for
+each pitch field. Blank optional codes are excluded from that field's agreement
+denominator rather than counted as agreements; field completion remains explicit.
+The command exits nonzero until at least 20% of verified reference matches have
+independent paired codes.

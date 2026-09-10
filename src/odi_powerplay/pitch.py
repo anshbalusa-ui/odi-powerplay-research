@@ -2,8 +2,10 @@
 
 from __future__ import annotations
 
-from collections import Counter, defaultdict
+import hashlib
+import math
 import random
+from collections import Counter, defaultdict
 from datetime import datetime
 from typing import Any, Iterable
 from urllib.parse import urlparse
@@ -293,6 +295,144 @@ def pitch_coverage_summary(rows: Iterable[dict[str, Any]]) -> dict[str, Any]:
         "coverage_pct": round(100 * len(verified) / len(materialized), 6) if materialized else 0.0,
         "verified_by_year": dict(sorted(by_year.items())),
         "verified_by_primary_category": dict(sorted(by_category.items())),
+    }
+
+
+def _verified_pitch_rows_by_match(
+    rows: Iterable[dict[str, Any]],
+    *,
+    coding_set: str,
+) -> tuple[int, dict[str, dict[str, Any]]]:
+    materialized = list(rows)
+    verified: dict[str, dict[str, Any]] = {}
+    for row in materialized:
+        match_id = str(row.get("cricsheet_match_id", "")).strip()
+        flag = str(row.get("pre_match_verified", "")).strip()
+        if flag not in {"0", "1"}:
+            raise ValueError(f"{coding_set}: pre_match_verified must be 0 or 1")
+        if flag == "0":
+            continue
+        if not match_id:
+            raise ValueError(f"{coding_set}: verified row is missing cricsheet_match_id")
+        if match_id in verified:
+            raise ValueError(f"{coding_set}: duplicate verified match ID {match_id}")
+        if not str(row.get("coder_id", "")).strip():
+            raise ValueError(f"{coding_set}: verified match {match_id} is missing coder_id")
+        for field in PITCH_FIELDS:
+            value = str(row.get(field, "")).strip()
+            if value not in ALLOWED_VALUES[field]:
+                raise ValueError(
+                    f"{coding_set}: verified match {match_id} has unsupported "
+                    f"{field} value {value!r}"
+                )
+        verified[match_id] = row
+    return len(materialized), verified
+
+
+def _categorical_agreement(
+    first: list[str],
+    second: list[str],
+) -> dict[str, int | float | None]:
+    comparable = [
+        (left, right) for left, right in zip(first, second, strict=True) if left and right
+    ]
+    n = len(comparable)
+    if not n:
+        return {
+            "comparable_pairs": 0,
+            "agreement_count": 0,
+            "agreement_pct": None,
+            "cohen_kappa": None,
+        }
+
+    agreements = sum(left == right for left, right in comparable)
+    first_counts = Counter(left for left, _ in comparable)
+    second_counts = Counter(right for _, right in comparable)
+    labels = first_counts.keys() | second_counts.keys()
+    expected = sum(first_counts[label] * second_counts[label] for label in labels) / (n * n)
+    observed = agreements / n
+    kappa = None if math.isclose(expected, 1.0) else (observed - expected) / (1.0 - expected)
+    return {
+        "comparable_pairs": n,
+        "agreement_count": agreements,
+        "agreement_pct": round(100 * observed, 6),
+        "cohen_kappa": round(kappa, 6) if kappa is not None else None,
+    }
+
+
+def pitch_intercoder_reliability(
+    reference_rows: Iterable[dict[str, Any]],
+    recoded_rows: Iterable[dict[str, Any]],
+    *,
+    minimum_double_coded_fraction: float = 0.2,
+) -> dict[str, Any]:
+    """Compare independently coded verified rows without reading match outcomes."""
+
+    if not 0 < minimum_double_coded_fraction <= 1:
+        raise ValueError("minimum_double_coded_fraction must be in (0, 1]")
+
+    reference_received, reference = _verified_pitch_rows_by_match(
+        reference_rows,
+        coding_set="reference",
+    )
+    recoded_received, recoded = _verified_pitch_rows_by_match(
+        recoded_rows,
+        coding_set="recoded",
+    )
+    paired_ids = sorted(reference.keys() & recoded.keys())
+    for match_id in paired_ids:
+        reference_coder = str(reference[match_id].get("coder_id", "")).strip()
+        recoded_coder = str(recoded[match_id].get("coder_id", "")).strip()
+        if reference_coder == recoded_coder:
+            raise ValueError(
+                f"match {match_id} was not independently coded: coder_id is "
+                f"{reference_coder!r} in both sets"
+            )
+
+    field_metrics: dict[str, dict[str, int | float | None]] = {}
+    total_comparable = 0
+    total_agreements = 0
+    for field in PITCH_FIELDS:
+        first = [str(reference[match_id].get(field, "")).strip() for match_id in paired_ids]
+        second = [str(recoded[match_id].get(field, "")).strip() for match_id in paired_ids]
+        metrics = _categorical_agreement(first, second)
+        comparable = int(metrics["comparable_pairs"])
+        field_metrics[field] = {
+            **metrics,
+            "paired_matches": len(paired_ids),
+            "missing_either": len(paired_ids) - comparable,
+            "completion_pct": (round(100 * comparable / len(paired_ids), 6) if paired_ids else 0.0),
+        }
+        total_comparable += comparable
+        total_agreements += int(metrics["agreement_count"])
+
+    reference_count = len(reference)
+    paired_count = len(paired_ids)
+    minimum_pairs = math.ceil(reference_count * minimum_double_coded_fraction)
+    paired_ids_sha256 = hashlib.sha256("\n".join(paired_ids).encode()).hexdigest()
+    return {
+        "reference_rows_received": reference_received,
+        "recoded_rows_received": recoded_received,
+        "reference_verified_matches": reference_count,
+        "recoded_verified_matches": len(recoded),
+        "paired_verified_matches": paired_count,
+        "unpaired_reference_matches": len(reference.keys() - recoded.keys()),
+        "orphan_recoded_matches": len(recoded.keys() - reference.keys()),
+        "paired_match_ids_sha256": paired_ids_sha256,
+        "minimum_double_coded_fraction": minimum_double_coded_fraction,
+        "minimum_double_coded_matches": minimum_pairs,
+        "double_coded_pct": (
+            round(100 * paired_count / reference_count, 6) if reference_count else 0.0
+        ),
+        "meets_minimum_double_coding_target": (
+            reference_count > 0 and paired_count >= minimum_pairs
+        ),
+        "overall_comparable_items": total_comparable,
+        "overall_agreement_count": total_agreements,
+        "overall_agreement_pct": (
+            round(100 * total_agreements / total_comparable, 6) if total_comparable else None
+        ),
+        "fields": field_metrics,
     }
 
 

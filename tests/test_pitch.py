@@ -10,6 +10,7 @@ sys.path.insert(0, str(ROOT / "src"))
 from odi_powerplay.pitch import (
     build_pitch_collection_queue,
     merge_pitch_conditions,
+    pitch_intercoder_reliability,
     pitch_coverage_summary,
     select_next_pitch_batch,
     validate_pitch_rows,
@@ -160,6 +161,67 @@ class PitchPipelineTests(unittest.TestCase):
         summary = pitch_coverage_summary([verified, excluded])
         self.assertEqual(summary["verified_pitch_matches"], 1)
         self.assertEqual(summary["coverage_pct"], 50.0)
+
+    def test_intercoder_reliability_reports_agreement_kappa_and_sample_target(
+        self,
+    ) -> None:
+        def coding_set(
+            coder_id: str,
+            categories: list[str],
+            batting_ease: list[str],
+        ) -> list[dict[str, str]]:
+            rows: list[dict[str, str]] = []
+            for index, (category, ease) in enumerate(
+                zip(categories, batting_ease, strict=True),
+                start=1,
+            ):
+                row = self.verified_pitch_row()
+                row.update(
+                    {
+                        "cricsheet_match_id": f"match-{index}",
+                        "coder_id": coder_id,
+                        "pitch_primary_category": category,
+                        "batting_ease": ease,
+                        "pace_seam_support": "",
+                        "spin_support": "",
+                        "bounce_profile": "",
+                        "two_paced_expected": "",
+                        "dew_expected": "",
+                    }
+                )
+                rows.append(row)
+            return rows
+
+        reference = coding_set(
+            "coder-a",
+            ["batting_friendly", "batting_friendly", "spin", "spin"],
+            ["2", "2", "1", "1"],
+        )
+        recoded = coding_set(
+            "coder-b",
+            ["batting_friendly", "spin", "spin", "spin"],
+            ["2", "1", "1", "1"],
+        )
+
+        summary = pitch_intercoder_reliability(reference, recoded)
+
+        self.assertEqual(summary["paired_verified_matches"], 4)
+        self.assertEqual(summary["double_coded_pct"], 100.0)
+        self.assertTrue(summary["meets_minimum_double_coding_target"])
+        self.assertEqual(summary["overall_comparable_items"], 8)
+        self.assertEqual(summary["overall_agreement_pct"], 75.0)
+        primary = summary["fields"]["pitch_primary_category"]
+        self.assertEqual(primary["agreement_pct"], 75.0)
+        self.assertEqual(primary["cohen_kappa"], 0.5)
+        self.assertEqual(summary["fields"]["dew_expected"]["comparable_pairs"], 0)
+        self.assertIsNone(summary["fields"]["dew_expected"]["cohen_kappa"])
+
+    def test_intercoder_reliability_requires_independent_coders(self) -> None:
+        reference = self.verified_pitch_row()
+        recoded = dict(reference)
+
+        with self.assertRaisesRegex(ValueError, "not independently coded"):
+            pitch_intercoder_reliability([reference], [recoded])
 
 
 if __name__ == "__main__":

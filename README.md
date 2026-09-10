@@ -106,6 +106,10 @@ verified match-start timestamps. Then run:
 python scripts/audit_pitch_collection.py \
   --pitch-input data/manual/pitch_reports.csv \
   --match-start-input data/manual/match_start_times.csv
+python scripts/audit_pitch_reliability.py \
+  --reference-input data/manual/pitch_reports.csv \
+  --recoded-input data/manual/pitch_reports_double_coded.csv \
+  --match-start-input data/manual/match_start_times.csv
 python scripts/build_model_table.py \
   --pitch-input data/manual/pitch_reports.csv \
   --match-start-input data/manual/match_start_times.csv
