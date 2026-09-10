@@ -76,6 +76,7 @@ def main() -> None:
             competition_counts[str(row["competition_type"])] += 1
             counted_match_ids.add(match_id)
 
+    primary_years = [int(row["year"]) for row in primary]
     summary = {
         "created_at_utc": datetime.now(timezone.utc).isoformat(),
         "raw_archive_sha256": raw_manifest["archive_sha256"],
@@ -91,9 +92,9 @@ def main() -> None:
         "primary_matches_by_competition_type": dict(sorted(competition_counts.items())),
         "primary_definition": {
             "gender": "male",
-            "start_year": 2015,
-            "end_year": max(int(row["year"]) for row in primary),
-            "competition_scope": "all Cricsheet men's ODI competition types",
+            "start_year": min(primary_years),
+            "end_year": max(primary_years),
+            "competition_scope": "all available clean Cricsheet men's ODI competition types",
         },
         "world_cup_subgroup_team_innings_rows": len(world_cup_subgroup),
         "world_cup_subgroup_matches": len(world_cup_subgroup) // 2,
