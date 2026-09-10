@@ -6,7 +6,7 @@
 
 ## Final research question
 
-> Among men's One Day International cricket matches, how are runs scored and wickets lost during the first 10 overs associated with the batting team's probability of winning after accounting for pre-match team-strength difference, innings order, toss, venue, year, and competition type—and how do these associations vary with pre-match pitch conditions such as batting ease, pace/seam assistance, spin assistance, bounce, and two-paced behavior?
+> Which powerplay approaches are most successful in ODIs under different pitch and opposition conditions, based on condition-adjusted runs, wickets lost, boundary percentage, and dot-ball percentage?
 
 ## Introduction
 
