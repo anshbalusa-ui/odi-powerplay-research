@@ -6,12 +6,12 @@ This file defines the required transformation trail. Each completed run should p
 |---|---|---|---|---|
 | 01 | Cricsheet ODI ZIP | download without modifying content; calculate SHA-256; safe extract | `data/raw/cricsheet/` + source manifest | URL, UTC retrieval time, archive hash, JSON count |
 | 02 | each match JSON | validate ODI; parse stable metadata/result | match table | unique `match_id`; two teams; valid date |
-| 03 | regulation innings | restrict delivery events to over indexes 0–9; compute documented measures | `powerplay_innings` | manually reconcile random matches; denominator tests |
+| 03 | regulation innings | restrict delivery events to over indexes 0–9; compute documented measures | `powerplay_innings` + metric audit + hand-audit worksheet | zero automated invariant issues; independently reconcile ≥20 sampled innings |
 | 04 | match table | apply core exclusions; select 2015-forward men's ODIs; classify competition type without event exclusion | cohort audit table | every exclusion has reason; count flow; all event types retained |
 | 05 | prior decided matches | calculate date-batched Elo and prior-20 win rates | `team_strength_pre` | no focal/future match in history |
-| 06 | eligible pre-match reports | paraphrase and code using frozen codebook | `pitch_reports` | source time precedes start; double-code ≥20% |
-| 07 | venue list + schedules | canonicalize venue names and verify local start time used for source eligibility | venue/start crosswalk | no ambiguous names; pitch source predates play |
-| 08 | match ID/date/venue | merge pitch and strength data into innings | merged audit table | join cardinality; unmatched and duplicate reports |
+| 06 | outcome-blind eligible match queue | manually locate and paraphrase eligible pre-match reports; code using frozen codebook | local `pitch_reports` working file | no automated ESPN extraction; source time precedes start; double-code ≥20% |
+| 07 | venue list + schedules | canonicalize venue names and verify local/UTC start time used for source eligibility | venue/start crosswalk | no ambiguous names; pitch source predates play |
+| 08 | innings + validated pitch rows | left-join verified pitch dimensions by exact match ID | `powerplay_pitch_model_table` | one pitch row per match; invalid/unverified reports excluded; unmatched coverage reported |
 | 09 | merged table | enforce leakage allowlist; create primary/secondary feature sets | `model_team_innings` | forbidden-column assertion; no generic weather fields |
 | 10 | model table | order by date; build grouped chronological development/test sets | split manifest | match IDs never cross partitions |
 | 11 | development folds | fit all preprocessing and tune models inside rolling folds | fitted candidates | test period untouched |

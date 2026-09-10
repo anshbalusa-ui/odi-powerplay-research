@@ -1,26 +1,40 @@
 # Pitch Collection Status
 
-Last updated: 2026-09-06
+Last updated: 2026-09-09
 
-The primary cohort contains 1,093 men's ODIs from 2015 through the fixed Cricsheet snapshot. Pitch collection is performed in outcome-blind, deterministic batches across competition types. Source-derived working rows remain local pending a separate rights review; this document reports only aggregate progress and the prespecified selection method.
+The current primary cohort contains 1,094 men's ODIs (2,188 team-innings) from
+2015 through the checksummed Cricsheet snapshot. `build_pitch_collection_queue.py`
+now creates one deterministic, outcome-blind source row per match. The tracked queue
+contains identifiers, date, competition type, venue, teams, and a search query, but
+no result or powerplay fields.
 
-## Batch 001 selection
-
-Batch 001 selected 12 matches without reading outcomes or powerplay values. Within each `competition_type`, matches were sorted by date and match ID and selected at evenly spaced quantiles. Quotas were three bilateral-series matches, three qualification-pathway matches, two multi-team-series matches, and one match each from the World Cup, Champions Trophy, continental cup, and other ODI groups.
-
-## Current coverage
+## Current reproducible coverage
 
 | Status | Matches |
 |---|---:|
-| Previously coded provisional rows | 4 |
-| New usable pitch codes from Batch 001 | 5 |
-| `source_no_pitch_evidence` | 3 |
-| `no_eligible_source` | 4 |
-| Total working rows | 16 |
-| Usable pitch-coded rows | 9 |
+| Eligible matches queued | 1,094 |
+| Source rows present in this clone | 0 |
+| Timing-verified pitch codes | 0 |
+| Current reproducible coverage | 0% |
 
-The five new usable rows include two spin/slow-surface expectations, two batting-friendly expectations, and one pace/seam expectation. These counts are collection progress only and are not evidence about match outcomes.
+Earlier project notes reported 16 local working rows and 9 usable provisional codes.
+Those source-derived rows were intentionally Git-ignored pending a rights review and
+are not present in this clone, so they cannot be audited or counted as current data.
+Recover them from the original authorized working copy before collecting duplicates.
+
+## Collection constraint
+
+ESPNcricinfo's reviewed terms prohibit automated extraction for dataset building.
+Ball-by-ball commentary and live/post-match pages are also post-start information and
+cannot be used as pitch predictors. A human or licensed workflow must collect only
+eligible match-specific pre-match reports, record publication and match-start times,
+retain short original paraphrases rather than article text, and mark unsupported
+matches explicitly.
 
 ## Next collection step
 
-Repeat the deterministic selection procedure with the next unsearched quantiles, report coverage by year and competition type, and independently double-code a stratified 20% of usable rows before any pitch-adjusted model is fitted.
+Copy `data/manual/pitch_collection_queue_template.csv` to the ignored local working
+file `data/manual/pitch_reports.csv`. Recover any authorized prior rows, then collect
+the next outcome-blind batch. Run `audit_pitch_collection.py` with verified UTC match
+starts before merging. Independently double-code at least 20% of usable rows before
+fitting any pitch-adjusted model.

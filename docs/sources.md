@@ -36,4 +36,9 @@ Pitch reports are collected in outcome-blind batches. Match IDs are selected bef
 
 Fantasy-prediction, betting, unattributed aggregator, social-media, live-blog, and post-match pages do not establish the primary pitch code. When higher-quality sources lack pitch evidence or lower-quality sources conflict, leave pitch dimensions missing and record the reason. One missing-source row is preferable to an unsupported classification.
 
+ESPNcricinfo ball-by-ball commentary and match-day live coverage are never pitch
+inputs: they are post-start sources, can reveal powerplay performance and outcome
+information, and are outside the permitted automated-use policy. Only a separately
+identified match preview or pre-match conditions report can qualify.
+
 The working file distinguishes `source_no_pitch_evidence` from `no_eligible_source`. This makes it possible to separate a coverage problem from a source that exists but says nothing usable about the playing surface.

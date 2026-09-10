@@ -29,15 +29,24 @@ One row represents one batting-team innings in one match. The outcome is `battin
 
 ## What is already implemented
 
-- A standard-library Cricsheet JSON extractor for first-10-over runs, wickets, run rate, boundary-ball percentage, dot-ball percentage, match context, and outcome.
-- Definitions for legal deliveries, dots, boundaries, wickets lost, incomplete powerplays, ties/no-results, and super overs.
+- A standard-library Cricsheet JSON extractor for first-10-over runs, wickets,
+  run rate, boundary-ball percentage, dot-ball percentage, match context, and outcome.
+- Definitions and regression tests for legal deliveries, dots, boundaries, wickets
+  lost, incomplete powerplays, ties/no-results, and super overs.
 - A secure Cricsheet ODI downloader that records the URL, retrieval time, and SHA-256 checksum.
-- An auditable cleaning stage that separates raw data, all extracted innings, retained matches, exclusions, the broad 2015-forward primary cohort, and competition-type subgroups.
-- Human-audited pitch and source-timing templates.
-- A research design, data dictionary, pitch codebook, transformation log, paper outline, and staged execution roadmap.
-- Tests using a small synthetic ODI fixture.
+- An auditable cleaning stage separating raw innings, retained matches, exclusions,
+  the broad 2015-forward primary cohort, and competition-type subgroups.
+- A full-cohort metric audit covering formulas, ranges, match pairing, and outcome labels.
+- A deterministic 24-innings hand-audit worksheet spanning every year from 2015–2026.
+- An outcome-blind 1,094-match pitch-source queue plus validators, coverage reporting,
+  and a leakage-safe pitch/model-table merge.
+- Human-audited pitch and source-timing templates, research design, data dictionary,
+  pitch codebook, transformation log, paper outline, and execution roadmap.
 
-For the current checksummed Cricsheet snapshot, the cleaning pipeline found 3,178 matches, retained 2,739 in the core clean dataset, and selected 1,093 matches (2,186 team-innings) for the 2015-forward men's ODI primary cohort. The World Cup subgroup contains 110 of those matches; it is not the primary sample.
+For the Cricsheet snapshot retrieved on September 10, 2026, the pipeline found
+3,182 matches, retained 2,742 in the core clean dataset, and selected 1,094 matches
+(2,188 team-innings) for the 2015-forward men's ODI primary cohort. The World Cup
+subgroup contains 110 matches; it is not the primary sample.
 
 ## Planned pipeline
 
@@ -51,7 +60,7 @@ model table -> chronological splits -> logistic/RF/XGBoost -> calibration/CI/SHA
 
 ## Quick start
 
-Use Python 3.11. The extraction smoke test has no third-party runtime dependency.
+Use Python 3.11. Dataset construction and audits use the standard library.
 
 ```bash
 python -m unittest discover -s tests -v
@@ -60,17 +69,33 @@ python scripts/extract_cricsheet.py \
   --input-dir data/raw/cricsheet \
   --output data/interim/powerplay_innings.csv
 python scripts/build_clean_dataset.py
+python scripts/audit_powerplay_metrics.py
+python scripts/build_hand_audit_sample.py
+python scripts/build_pitch_collection_queue.py
 ```
 
-The cleaning command creates `data/processed/powerplay_innings_primary.csv` for the main analysis and `data/processed/powerplay_innings_world_cup_subgroup.csv` only for subgroup checks. Generated datasets are ignored by Git and reproduced from the checksummed raw snapshot.
+Generated primary/cohort datasets are ignored by Git and reproduced from the
+checksummed raw snapshot. The tracked hand-audit and pitch-queue templates contain
+no source prose and no secret data.
 
-Then copy and complete:
+Complete the hand audit independently from the source JSON/scorecard. For pitch
+coding, copy the queue template to a local working file and complete it using
+eligible, cited pre-match reports plus verified match-start timestamps. Then run:
 
-- `data/manual/pitch_reports_template.csv`
-- `data/manual/match_start_times_template.csv`
-- `data/manual/venue_crosswalk_template.csv`
+```bash
+python scripts/audit_pitch_collection.py \
+  --pitch-input data/manual/pitch_reports.csv \
+  --match-start-input data/manual/match_start_times.csv
+python scripts/build_pitch_model_table.py \
+  --pitch-input data/manual/pitch_reports.csv \
+  --match-start-input data/manual/match_start_times.csv
+```
 
-Do not automate bulk collection from ESPNcricinfo under the terms reviewed for this project. Use a documented, source-audited manual collection design and report pitch-source coverage across years, venues, competition types, and outcomes. Never replace a missing pre-match pitch report with a post-match description.
+Do not automate bulk collection from ESPNcricinfo under the terms reviewed for
+this project. ESPN live commentary and post-match reporting are ineligible because
+they disclose match information unavailable at the prediction timestamp. Use only
+documented pre-match evidence, retain provenance and short original paraphrases,
+and report source coverage across years, venues, competition types, and outcomes.
 
 ## Reproducibility rules
 

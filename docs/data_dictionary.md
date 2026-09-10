@@ -76,7 +76,7 @@ These fields may be present in labeled data for training/evaluation but cannot b
 | `pre_match_verified` | binary | publication verified before scheduled start |
 | `coder_id` | string | anonymized coder label |
 | `coder_confidence` | ordered category | low, medium, high |
-| `pitch_primary_category` | category | batting-friendly, balanced, pace/seam, spin, slow/two-paced, unknown |
+| `pitch_primary_category` | category | `batting_friendly`, `balanced`, `pace_seam`, `spin`, `slow_two_paced`, or `unknown` |
 | `batting_ease` | ordinal 0–2 | difficult to easy/high-scoring |
 | `pace_seam_support` | ordinal 0–2 | little to strong pace/seam help |
 | `spin_support` | ordinal 0–2 | little to strong spin help |
@@ -104,7 +104,7 @@ These variables form the pre-match baseline adjustment block. They control for c
 
 | Variable | Type | Definition |
 |---|---|---|
-| `pitch_join_status` | category | exact ID, composite verified, unmatched, ambiguous |
+| `pitch_available` | binary | 1 only when a validated, timing-eligible pre-match pitch row joined by exact match ID |
 | `exclusion_reasons` | string/list | semicolon-delimited prespecified reason codes |
 | `analysis_eligible_primary` | binary | passes core cleaning and the 2015-forward men's ODI primary rules; no event restriction |
 | `source_snapshot_id` | string | hash/date identifier for raw-source manifest |
