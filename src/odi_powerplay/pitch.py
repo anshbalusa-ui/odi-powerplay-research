@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from collections import Counter, defaultdict
+import random
 from datetime import datetime
 from typing import Any, Iterable
 from urllib.parse import urlparse
@@ -34,6 +35,27 @@ ALLOWED_VALUES = {
     "dew_expected": {"", "0", "1"},
     "coder_confidence": {"high", "medium", "low"},
 }
+PITCH_QUEUE_FIELDS = (
+    "cricsheet_match_id",
+    "match_date",
+    "event_name",
+    "competition_type",
+    "venue",
+    "city",
+    "team_1",
+    "team_2",
+    "source_search_query",
+    "source_url",
+    "source_title",
+    "published_at_utc",
+    "accessed_at_utc",
+    "pre_match_verified",
+    "coder_id",
+    "coder_confidence",
+    *PITCH_FIELDS,
+    "short_paraphrased_note",
+    "exclusion_reason",
+)
 
 
 def build_pitch_collection_queue(rows: Iterable[dict[str, Any]]) -> list[dict[str, Any]]:
@@ -85,6 +107,91 @@ def build_pitch_collection_queue(rows: Iterable[dict[str, Any]]) -> list[dict[st
             }
         )
     return queue
+
+
+def select_next_pitch_batch(
+    rows: Iterable[dict[str, Any]],
+    *,
+    completed_match_ids: set[str] | None = None,
+    n: int = 25,
+    seed: int = 20250905,
+) -> list[dict[str, Any]]:
+    """Select a deterministic outcome-blind batch with year and competition coverage."""
+
+    if n < 1:
+        raise ValueError("Batch size must be positive")
+    completed = {str(value) for value in completed_match_ids or set()}
+    grouped: dict[tuple[str, str], list[dict[str, Any]]] = defaultdict(list)
+    seen: set[str] = set()
+    for row in rows:
+        match_id = str(row.get("cricsheet_match_id", "")).strip()
+        if not match_id:
+            raise ValueError("Queue row is missing cricsheet_match_id")
+        if match_id in seen:
+            raise ValueError(f"Duplicate queue match ID: {match_id}")
+        seen.add(match_id)
+        if match_id in completed:
+            continue
+        safe_row = {field: row.get(field, "") for field in PITCH_QUEUE_FIELDS}
+        stratum = (
+            str(safe_row["match_date"])[:4],
+            str(safe_row["competition_type"]),
+        )
+        grouped[stratum].append(safe_row)
+
+    random_generator = random.Random(seed)
+    for values in grouped.values():
+        values.sort(key=lambda row: str(row["cricsheet_match_id"]))
+        random_generator.shuffle(values)
+
+    selected: list[dict[str, Any]] = []
+    positions = {stratum: 0 for stratum in grouped}
+    strata = sorted(grouped)
+    random_generator.shuffle(strata)
+
+    def take(stratum: tuple[str, str]) -> bool:
+        position = positions[stratum]
+        values = grouped[stratum]
+        if position >= len(values) or len(selected) >= n:
+            return False
+        selected.append({**values[position], "batch_sequence": len(selected) + 1})
+        positions[stratum] += 1
+        return True
+
+    years = sorted({stratum[0] for stratum in strata})
+    random_generator.shuffle(years)
+    for year in years:
+        candidates = [
+            stratum
+            for stratum in strata
+            if stratum[0] == year and positions[stratum] < len(grouped[stratum])
+        ]
+        random_generator.shuffle(candidates)
+        if candidates:
+            take(candidates[0])
+
+    represented_competitions = {str(row["competition_type"]) for row in selected}
+    competitions = sorted({stratum[1] for stratum in strata} - represented_competitions)
+    random_generator.shuffle(competitions)
+    for competition in competitions:
+        candidates = [
+            stratum
+            for stratum in strata
+            if stratum[1] == competition and positions[stratum] < len(grouped[stratum])
+        ]
+        random_generator.shuffle(candidates)
+        if candidates:
+            take(candidates[0])
+
+    while len(selected) < n:
+        added = False
+        for stratum in strata:
+            added = take(stratum) or added
+            if len(selected) == n:
+                break
+        if not added:
+            break
+    return selected
 
 
 def _parse_timestamp(value: Any) -> datetime | None:
@@ -151,7 +258,9 @@ def validate_pitch_rows(
         if match_start_by_id is not None:
             match_start = _parse_timestamp(match_start_by_id.get(match_id))
             if match_start is None:
-                issue(match_id, "match_start_utc", "verified timing requires a match start timestamp")
+                issue(
+                    match_id, "match_start_utc", "verified timing requires a match start timestamp"
+                )
             elif published_at and published_at >= match_start:
                 issue(match_id, "published_at_utc", "source was not published before match start")
 

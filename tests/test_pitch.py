@@ -11,6 +11,7 @@ from odi_powerplay.pitch import (
     build_pitch_collection_queue,
     merge_pitch_conditions,
     pitch_coverage_summary,
+    select_next_pitch_batch,
     validate_pitch_rows,
 )
 
@@ -72,6 +73,57 @@ class PitchPipelineTests(unittest.TestCase):
         self.assertNotIn("winner", queue[0])
         self.assertIn("preview pitch conditions", queue[0]["source_search_query"])
 
+    def test_batch_selection_is_balanced_deterministic_and_outcome_blind(self) -> None:
+        class GuardedRow(dict):
+            def get(self, key, default=None):
+                if key in {"winner", "pp_runs", "batting_team_won"}:
+                    raise AssertionError(f"Outcome-bearing field was read: {key}")
+                return super().get(key, default)
+
+        queue = [
+            GuardedRow(
+                cricsheet_match_id=f"match-{year}-{competition}-{index}",
+                match_date=f"{year}-01-01",
+                competition_type=competition,
+                winner="must-not-be-read",
+                pp_runs=99,
+            )
+            for year, competition in (
+                (2020, "bilateral_series"),
+                (2020, "world_cup"),
+                (2021, "bilateral_series"),
+                (2021, "world_cup"),
+            )
+            for index in range(2)
+        ]
+        first = select_next_pitch_batch(
+            queue,
+            completed_match_ids={"match-2020-world_cup-0"},
+            n=5,
+            seed=7,
+        )
+        second = select_next_pitch_batch(
+            queue,
+            completed_match_ids={"match-2020-world_cup-0"},
+            n=5,
+            seed=7,
+        )
+        self.assertEqual(first, second)
+        self.assertNotIn("match-2020-world_cup-0", {row["cricsheet_match_id"] for row in first})
+        self.assertEqual({row["match_date"][:4] for row in first}, {"2020", "2021"})
+        self.assertEqual(
+            {row["competition_type"] for row in first},
+            {"bilateral_series", "world_cup"},
+        )
+        self.assertEqual([row["batch_sequence"] for row in first], [1, 2, 3, 4, 5])
+        self.assertTrue(
+            all(
+                forbidden not in row
+                for row in first
+                for forbidden in ("winner", "pp_runs", "batting_team_won")
+            )
+        )
+
     def test_verified_source_must_precede_match_start(self) -> None:
         row = self.verified_pitch_row()
         valid = validate_pitch_rows(
@@ -87,7 +139,9 @@ class PitchPipelineTests(unittest.TestCase):
             eligible_match_ids={"match-1"},
             match_start_by_id={"match-1": "2026-01-02T10:00:00+00:00"},
         )
-        self.assertIn("source was not published before match start", {issue["message"] for issue in issues})
+        self.assertIn(
+            "source was not published before match start", {issue["message"] for issue in issues}
+        )
 
     def test_only_verified_pitch_codes_enter_the_model_table(self) -> None:
         verified = self.verified_pitch_row()

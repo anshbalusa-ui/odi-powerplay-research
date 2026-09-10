@@ -1,6 +1,6 @@
 # Pitch Collection Status
 
-Last updated: 2026-09-09
+Last updated: 2026-09-10
 
 The current primary cohort contains 1,094 men's ODIs (2,188 team-innings) from
 2015 through the checksummed Cricsheet snapshot. `build_pitch_collection_queue.py`
@@ -31,10 +31,30 @@ eligible match-specific pre-match reports, record publication and match-start ti
 retain short original paraphrases rather than article text, and mark unsupported
 matches explicitly.
 
-## Next collection step
+## Contributor batch workflow
 
-Copy `data/manual/pitch_collection_queue_template.csv` to the ignored local working
-file `data/manual/pitch_reports.csv`. Recover any authorized prior rows, then collect
-the next outcome-blind batch. Run `audit_pitch_collection.py` with verified UTC match
-starts before merging. Independently double-code at least 20% of usable rows before
-fitting any pitch-adjusted model.
+GitHub issue https://github.com/anshbalusa-ui/odi-powerplay-research/issues/3
+tracks the human/licensed collection work. The tracked
+`data/manual/pitch_batch_001_template.csv` assigns the first 25 outcome-blind
+matches. It covers every cohort year from 2015 through 2026 and all seven
+competition types while containing no result, winner, or powerplay columns.
+
+To select a new batch while skipping attempts already marked `0` or `1` in the
+ignored `pitch_reports.csv` working file:
+
+```bash
+python scripts/select_pitch_batch.py \
+  --n 25 \
+  --seed 20250905 \
+  --output data/manual/pitch_batch_working.csv
+```
+
+Selection first covers unrepresented years, then unrepresented competition types,
+then fills year × competition strata in deterministic rounds. Use a different
+documented seed or output filename for parallel contributors, and reserve match IDs
+in issue #3 before starting to avoid duplicate work.
+
+Copy completed batch rows into the ignored `data/manual/pitch_reports.csv` working
+file. Recover any authorized prior rows first. Run `audit_pitch_collection.py` with
+verified UTC match starts before merging. Independently double-code at least 20% of
+usable rows before fitting any pitch-adjusted model.

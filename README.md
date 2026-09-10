@@ -85,6 +85,7 @@ python scripts/build_model_table.py
 python scripts/audit_powerplay_metrics.py
 python scripts/build_hand_audit_sample.py
 python scripts/build_pitch_collection_queue.py
+python scripts/select_pitch_batch.py --output data/manual/pitch_batch_working.csv
 .venv/bin/python scripts/train_models.py --fit-without-locked-test
 .venv/bin/python scripts/evaluate_models.py
 .venv/bin/python scripts/make_figures.py
@@ -96,8 +97,10 @@ checksummed raw snapshot. The tracked hand-audit and pitch-queue templates conta
 no source prose and no secret data.
 
 Complete the hand audit independently from the source JSON/scorecard. For pitch
-coding, copy the queue template to a local working file and complete it using
-eligible, cited pre-match reports plus verified match-start timestamps. Then run:
+coding, start with the tracked 25-match contributor template or select another
+balanced batch, then copy completed rows into the ignored local
+`data/manual/pitch_reports.csv`. Use only eligible, cited pre-match reports plus
+verified match-start timestamps. Then run:
 
 ```bash
 python scripts/audit_pitch_collection.py \
