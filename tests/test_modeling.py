@@ -34,6 +34,18 @@ class ModelingTests(unittest.TestCase):
             set(specs["m0_pre_match"].all_features)
             < set(specs["m1_context_powerplay"].all_features)
         )
+        venue_features = {
+            "venue_history_available",
+            "venue_prior_matches",
+            "venue_prior_pp_runs_mean",
+            "venue_prior_pp_wickets_mean",
+            "venue_prior_boundary_pct",
+            "venue_prior_dot_ball_pct",
+        }
+        self.assertTrue(
+            venue_features <= set(specs["venue_history_powerplay_sensitivity"].numeric_features)
+        )
+        self.assertTrue(venue_features.isdisjoint(specs["m1_context_powerplay"].numeric_features))
         self.assertEqual(
             set(specs["m2_prespecified_interactions"].interaction_features),
             {("pp_runs", "batting_first"), ("pp_wickets", "batting_first")},

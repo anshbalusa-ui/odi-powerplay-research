@@ -35,6 +35,11 @@ def main() -> int:
         type=Path,
         default=ROOT / "data/processed/team_strength_pre_match.csv",
     )
+    parser.add_argument(
+        "--venue-input",
+        type=Path,
+        default=ROOT / "data/processed/venue_conditions_pre_match.csv",
+    )
     parser.add_argument("--pitch-input", type=Path)
     parser.add_argument("--match-start-input", type=Path)
     parser.add_argument(
@@ -56,6 +61,7 @@ def main() -> int:
 
     innings_rows = read_csv(args.innings_input)
     strength_rows = read_csv(args.strength_input)
+    venue_rows = read_csv(args.venue_input)
     pitch_rows: list[dict[str, str]] = []
     if args.pitch_input:
         if not args.match_start_input:
@@ -76,7 +82,12 @@ def main() -> int:
                 f"Pitch data has {len(issues)} validation issues in fields: {', '.join(fields)}"
             )
 
-    model_rows = build_model_table(innings_rows, strength_rows, pitch_rows=pitch_rows)
+    model_rows = build_model_table(
+        innings_rows,
+        strength_rows,
+        venue_rows,
+        pitch_rows=pitch_rows,
+    )
     feature_config = json.loads(args.feature_config.read_text(encoding="utf-8"))
     feature_sets = feature_config["feature_sets"]
     base_features = [
@@ -100,6 +111,8 @@ def main() -> int:
         "rows": len(model_rows),
         "matches": len({str(row["match_id"]) for row in model_rows}),
         "pitch_matches": sum(int(row["pitch_available"]) for row in model_rows) // 2,
+        "venue_history_matches": sum(int(row["venue_history_available"]) for row in model_rows)
+        // 2,
         "row_counts_by_split": dict(sorted(split_rows.items())),
         "match_counts_by_split": {
             split: len(match_ids) for split, match_ids in sorted(match_ids_by_split.items())
@@ -110,6 +123,7 @@ def main() -> int:
         "model_table_sha256": hashlib.sha256(args.output.read_bytes()).hexdigest(),
         "feature_config_sha256": hashlib.sha256(args.feature_config.read_bytes()).hexdigest(),
         "strength_table_sha256": hashlib.sha256(args.strength_input.read_bytes()).hexdigest(),
+        "venue_table_sha256": hashlib.sha256(args.venue_input.read_bytes()).hexdigest(),
     }
     args.manifest_output.write_text(
         json.dumps(manifest, indent=2, sort_keys=True) + "\n",

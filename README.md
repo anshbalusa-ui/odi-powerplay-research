@@ -39,6 +39,8 @@ One row represents one batting-team innings in one match. The outcome is `battin
 - A full-cohort metric audit covering formulas, ranges, match pairing, and outcome labels.
 - Date-batched pre-match Elo and rolling prior-20 win rates computed from all
   available clean history without same-day or future leakage.
+- Date-batched prior-20 venue powerplay histories covering 997 of 1,094 primary
+  matches without using same-day or future performances.
 - A hashed, feature-allowlisted model table with development (through 2023),
   temporal-validation (2024), and locked-test (2025+) partitions.
 - Fixed nested logistic models, constrained Random Forest and XGBoost challengers,
@@ -58,11 +60,11 @@ subgroup contains 110 matches; it is not the primary sample.
 ## Planned pipeline
 
 ```text
-Cricsheet JSON -> match/innings table -> rolling pre-match team strength
+Cricsheet JSON -> match/innings table -> rolling team and venue history
                                       \
 pre-match pitch coding ---------------> audited merge -> leakage-safe model table
 
-model table -> chronological splits -> logistic/RF/XGBoost -> calibration/CI/SHAP/plots
+model table -> chronological splits -> logistic/RF/XGBoost -> calibration/CI/plots
 ```
 
 ## Quick start
@@ -81,6 +83,7 @@ python scripts/extract_cricsheet.py \
   --output data/interim/powerplay_innings.csv
 python scripts/build_clean_dataset.py
 python scripts/build_team_strength.py
+python scripts/build_venue_conditions.py
 python scripts/build_model_table.py
 python scripts/audit_powerplay_metrics.py
 python scripts/build_hand_audit_sample.py

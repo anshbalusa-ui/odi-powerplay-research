@@ -49,6 +49,7 @@ def main() -> int:
             ],
             [sys.executable, "scripts/build_clean_dataset.py"],
             [sys.executable, "scripts/build_team_strength.py"],
+            [sys.executable, "scripts/build_venue_conditions.py"],
             [sys.executable, "scripts/build_model_table.py"],
             [sys.executable, "scripts/audit_powerplay_metrics.py"],
             [sys.executable, "scripts/build_hand_audit_sample.py"],
@@ -78,6 +79,7 @@ def main() -> int:
         ROOT / "data/raw/cricsheet/source_manifest.json",
         ROOT / "data/processed/dataset_summary.json",
         ROOT / "artifacts/tables/team_strength_audit.json",
+        ROOT / "artifacts/tables/venue_conditions_audit.json",
         ROOT / "data/processed/model_table_manifest.json",
         ROOT / "artifacts/tables/powerplay_metric_audit.json",
         ROOT / "data/manual/pitch_batch_001_template.csv",
@@ -95,6 +97,7 @@ def main() -> int:
         "python_version": sys.version,
         "locked_test_scored": False,
         "pitch_models_run": False,
+        "venue_history_model_run": True,
         "commands": [command[1:] for command in completed],
         "artifacts": {str(path.relative_to(ROOT)): sha256(path) for path in expected},
     }

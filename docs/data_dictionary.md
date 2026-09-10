@@ -8,6 +8,7 @@
 | `powerplay_innings` | one regulation team-innings | first-10-over statistics and context |
 | `pitch_reports` | one match/source | pre-match prose provenance and human codes |
 | `team_strength_pre` | one match/team | ratings calculated before the match date |
+| `venue_conditions_pre_match` | one match | rolling prior-match venue scoring environment |
 | `model_team_innings` | one team-innings | audited merged analysis table |
 | `model_match_paired` | one match | secondary difference-based analysis table |
 | `predictions` | one row/model/team-innings | held-out prediction and label |
@@ -105,6 +106,21 @@ These variables form the pre-match baseline adjustment block. They control for c
 | `opponent_elo_pre` | float | focal opponent's mapped pre-match rating |
 | `elo_difference` | float | focal batting team minus opponent pre-match Elo |
 
+## Historical venue conditions
+
+These fields summarize at most 20 earlier matches at the exact recorded venue. All
+matches on the same date receive the state available before that date.
+
+| Variable | Type | Definition |
+|---|---|---|
+| `venue_history_available` | binary | 1 when at least one earlier-date match exists at the recorded venue |
+| `venue_prior_matches` | integer | number of earlier venue matches in the rolling window |
+| `venue_prior_innings` | integer | contributing regulation innings; retained for audit |
+| `venue_prior_pp_runs_mean` | float/nullable | prior-window powerplay runs per innings |
+| `venue_prior_pp_wickets_mean` | float/nullable | prior-window powerplay wickets per innings |
+| `venue_prior_boundary_pct` | float/nullable | prior-window boundary balls divided by legal balls × 100 |
+| `venue_prior_dot_ball_pct` | float/nullable | prior-window dot balls divided by legal balls × 100 |
+
 ## Merge and audit fields
 
 | Variable | Type | Definition |
@@ -117,4 +133,8 @@ These variables form the pre-match baseline adjustment block. They control for c
 
 ## Final-model anti-leakage allowlist
 
-The final training matrix may contain only approved powerplay, pre-match pitch, pre-match team strength, toss, innings order, venue/grouping, year, and competition-type features. Match ID is a grouping key, not a predictor. Outcome, winner, margin, result method, full innings total, later-match data, and generic hourly weather variables are prohibited.
+The final training matrix may contain only approved powerplay, pre-match pitch,
+historical venue, pre-match team strength, toss, innings order, venue/grouping,
+year, and competition-type features. Match ID is a grouping key, not a predictor.
+Outcome, winner, margin, result method, full innings total, later-match data, and
+generic hourly weather variables are prohibited.

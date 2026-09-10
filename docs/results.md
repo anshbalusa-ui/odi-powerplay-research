@@ -46,6 +46,18 @@ The ball-weighted totals are 14,821 boundary balls and 86,304 dot balls among
 associations; innings order, opposition, venue, era, and match state differ across
 rows.
 
+## Pre-match venue-history proxy
+
+An outcome-blind venue table uses the most recent 20 matches at the exact recorded
+venue, restricted to strictly earlier match dates. It summarizes prior powerplay
+runs and wickets per innings plus ball-weighted boundary and dot-ball percentages.
+Same-day matches share the same pre-date state and do not update one another.
+
+At least one prior venue match is available for 997 of 1,094 primary matches
+(91.13%); 97 matches are cold starts. This is a historical scoring-environment
+proxy, not a direct observation of the match-day surface, weather, preparation, or
+curator intent, and it does not replace verified pre-match pitch reports.
+
 ## Chronological model evaluation
 
 Models fit 1,742 development rows from 871 matches dated 2015–2023. Preliminary
@@ -59,6 +71,7 @@ resamples with seed `20250905`. Preprocessing is fit only on each training set.
 | M0 pre-match | 0.588 (0.456–0.709) | 0.701 (0.619–0.790) | 0.252 (0.216–0.290) | 0.563 |
 | powerplay runs + wickets | 0.740 (0.642–0.822) | 0.613 (0.566–0.668) | 0.212 (0.190–0.237) | 0.697 |
 | M1 context + powerplay | 0.708 (0.597–0.809) | 0.625 (0.536–0.724) | 0.218 (0.181–0.260) | 0.641 |
+| venue-history + powerplay sensitivity | 0.705 (0.594–0.806) | 0.625 (0.536–0.724) | 0.219 (0.181–0.260) | 0.648 |
 | M2 prespecified interactions | 0.710 (0.597–0.809) | 0.627 (0.537–0.730) | 0.219 (0.181–0.261) | 0.655 |
 | scoring-process sensitivity | 0.703 (0.590–0.805) | 0.626 (0.537–0.725) | 0.220 (0.182–0.261) | 0.634 |
 | constrained Random Forest | 0.644 (0.527–0.753) | 0.672 (0.649–0.694) | 0.239 (0.228–0.250) | 0.620 |
@@ -67,9 +80,11 @@ resamples with seed `20250905`. Preprocessing is fit only on each training set.
 The runs-and-wickets-only benchmark had the strongest 2024 point estimates. Adding
 high-dimensional context reduced validation discrimination and worsened proper
 scoring relative to that benchmark; the constrained nonlinear challengers also did
-not improve it. This pattern is consistent with temporal instability or overfitting,
-but the confidence intervals are wide and overlap. It is not evidence that venue,
-team strength, or pitch conditions are unimportant.
+not improve it. Adding rolling venue-history conditions to M1 produced AUC 0.7052
+versus 0.7082, log loss 0.6252 versus 0.6246, and Brier score 0.2185 versus
+0.2183. These negligible-to-adverse point-estimate differences have wide,
+overlapping intervals. They neither establish a useful venue-history contribution
+nor show that match-day pitch conditions are unimportant.
 
 The M1 calibration intercept was -0.007 (95% CI -0.089 to 0.077) and slope was
 0.767 (0.346 to 1.332). The runs-and-wickets benchmark calibration intercept was

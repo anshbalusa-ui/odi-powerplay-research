@@ -4,8 +4,9 @@ This outline is for the full paper. The SSAC27 abstract is a focused extract wit
 
 ## Current drafting status
 
-The cohort, powerplay extraction, pre-match strength, chronological model table,
-2024 validation, uncertainty estimates, and preliminary figures are reproducible.
+The cohort, powerplay extraction, pre-match team and venue histories,
+chronological model table, 2024 validation, uncertainty estimates, and preliminary
+figures are reproducible.
 `docs/results.md` contains the current quantitative narrative and
 `docs/limitations.md` fixes its interpretation boundary. Pitch-report collection,
 source-timing verification, inter-coder reliability, pitch-adjusted models, and the
@@ -71,6 +72,7 @@ Use academic or authoritative sources. Do not pad this section with generic mach
 
 - toss/innings order/venue/year;
 - leakage-safe Elo and same-date batching.
+- rolling prior-20 venue scoring proxy, same-date batching, coverage, and cold starts;
 
 ### 3.6 Statistical analysis
 
@@ -120,7 +122,7 @@ Use academic or authoritative sources. Do not pad this section with generic mach
 - disagreements with logistic model.
 
 ### 4.6 Sensitivity analyses
-
+- historical venue-condition sensitivity versus M1;
 - report which conclusions changed and which remained stable.
 
 ## 5. Discussion

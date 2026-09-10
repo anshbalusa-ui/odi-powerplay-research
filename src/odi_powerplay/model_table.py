@@ -6,6 +6,7 @@ from collections import defaultdict
 from typing import Any, Iterable
 
 from .pitch import merge_pitch_conditions
+from .venue import VENUE_CONDITION_FIELDS
 
 
 FORBIDDEN_PREDICTORS = {
@@ -77,6 +78,42 @@ def merge_strength_into_innings(
     return merged
 
 
+def merge_venue_conditions_into_innings(
+    innings_rows: Iterable[dict[str, Any]],
+    venue_rows: Iterable[dict[str, Any]],
+) -> list[dict[str, Any]]:
+    """Join pre-match venue history while copying only its predictor allowlist."""
+
+    venue_by_match: dict[str, dict[str, Any]] = {}
+    for venue_row in venue_rows:
+        match_id = str(venue_row["match_id"])
+        if match_id in venue_by_match:
+            raise ValueError(f"Duplicate venue-condition row for match {match_id}")
+        venue_by_match[match_id] = venue_row
+
+    merged: list[dict[str, Any]] = []
+    seen_match_ids: set[str] = set()
+    for innings in innings_rows:
+        match_id = str(innings["match_id"])
+        venue_row = venue_by_match.get(match_id)
+        if venue_row is None:
+            raise ValueError(f"Missing venue-condition row for match {match_id}")
+        if str(innings["match_date"]) != str(venue_row["match_date"]):
+            raise ValueError(f"Venue-condition date mismatch for match {match_id}")
+        if str(innings.get("venue", "")).strip() != str(venue_row.get("venue", "")).strip():
+            raise ValueError(f"Venue-condition venue mismatch for match {match_id}")
+
+        output = dict(innings)
+        output.update({field: venue_row[field] for field in VENUE_CONDITION_FIELDS})
+        merged.append(output)
+        seen_match_ids.add(match_id)
+
+    unused = set(venue_by_match) - seen_match_ids
+    if unused:
+        raise ValueError(f"Venue-condition table has {len(unused)} rows outside the innings cohort")
+    return merged
+
+
 def assign_split(match_date: Any) -> str:
     """Assign the prespecified development, validation, or locked-test period."""
 
@@ -126,11 +163,13 @@ def validate_feature_allowlist(
 def build_model_table(
     innings_rows: Iterable[dict[str, Any]],
     strength_rows: Iterable[dict[str, Any]],
+    venue_rows: Iterable[dict[str, Any]],
     *,
     pitch_rows: Iterable[dict[str, Any]] | None = None,
 ) -> list[dict[str, Any]]:
-    """Build the full team-innings table; pitch codes remain optional until collected."""
+    """Build the full team-innings table; verified pitch codes remain optional."""
 
     with_strength = merge_strength_into_innings(innings_rows, strength_rows)
-    with_pitch = merge_pitch_conditions(with_strength, pitch_rows or [])
+    with_venue = merge_venue_conditions_into_innings(with_strength, venue_rows)
+    with_pitch = merge_pitch_conditions(with_venue, pitch_rows or [])
     return add_chronological_splits(with_pitch)

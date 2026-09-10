@@ -2,10 +2,11 @@
 
 ## Current evidence boundary
 
-The implemented analysis is results-complete only for a pitch-free, full-cohort
-2024 temporal validation. It is not a final pitch-adjusted analysis, not locked-test
-performance, and not causal evidence. The 2025–2026 outcome lock must remain closed
-until pitch handling and final model choices are frozen.
+The implemented analysis is results-complete for a full-cohort 2024 temporal
+validation that includes a historical venue-scoring proxy but not source-coded
+match-day pitch conditions. It is not a final pitch-adjusted analysis, not
+locked-test performance, and not causal evidence. The 2025–2026 outcome lock must
+remain closed until pitch handling and final model choices are frozen.
 
 ## Match-data coverage and selection
 
@@ -49,14 +50,30 @@ not be treated as stable league tables.
 - The strength features do not directly encode roster availability, injuries,
   rankings, travel, or home advantage beyond other context fields.
 
+## Historical venue-condition proxy
+
+- Venue histories use only the most recent 20 matches at the exact Cricsheet venue
+  name on strictly earlier dates. Same-day matches are batched.
+- Coverage is 997 of 1,094 primary matches; 97 venue cold starts rely on
+  development-fitted missing-value handling.
+- Ground-name changes, spelling variants, and multiple playing areas within one
+  venue can fragment or pool histories imperfectly.
+- Earlier powerplay scoring reflects teams, opponents, eras, weather, and match
+  conditions as well as the ground. It is a predictive context proxy, not a
+  measurement of the prepared surface for the target match.
+- The venue-history sensitivity model did not improve 2024 AUC, log loss, or Brier
+  score over M1 by point estimate. Wide overlapping intervals preclude a strong
+  negative conclusion.
+
 ## Pitch conditions and ESPNcricinfo
 
 Current reproducible pitch coverage is **0 of 1,094 primary matches**. Therefore:
 
-- no pitch variables entered the fitted models;
-- no runs × pitch or wickets × pitch interaction was estimated;
+- no source-coded pitch variables entered the fitted models;
+- no runs × source-coded pitch or wickets × source-coded pitch interaction was
+  estimated;
 - no model can currently be called pitch-adjusted;
-- no pitch-related conclusion should appear in an abstract or paper result.
+- no match-day pitch conclusion should appear in an abstract or paper result.
 
 ESPNcricinfo's reviewed terms prohibit the automated extraction approach originally
 contemplated for data mining. The project therefore does not bulk scrape ESPN text.

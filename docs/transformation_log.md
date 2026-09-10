@@ -9,20 +9,21 @@ This file defines the required transformation trail. Each completed run should p
 | 03 | regulation innings | restrict delivery events to over indexes 0–9; compute documented measures | `powerplay_innings` + metric audit + hand-audit worksheet | zero automated invariant issues; independently reconcile ≥20 sampled innings |
 | 04 | match table | apply core exclusions; select 2015-forward men's ODIs; classify competition type without event exclusion | cohort audit table | every exclusion has reason; count flow; all event types retained |
 | 05 | prior decided matches | calculate date-batched Elo and prior-20 win rates | `team_strength_pre` | no focal/future match in history |
-| 06 | outcome-blind eligible match queue | manually locate and paraphrase eligible pre-match reports; code using frozen codebook | local `pitch_reports` working file | no automated ESPN extraction; source time precedes start; double-code ≥20% |
-| 07 | venue list + schedules | canonicalize venue names and verify local/UTC start time used for source eligibility | venue/start crosswalk | no ambiguous names; pitch source predates play |
-| 08 | innings + validated pitch rows | left-join verified pitch dimensions by exact match ID | `powerplay_pitch_model_table` | one pitch row per match; invalid/unverified reports excluded; unmatched coverage reported |
-| 09 | merged table | enforce leakage allowlist; create primary/secondary feature sets | `model_team_innings` | forbidden-column assertion; no generic weather fields |
-| 10 | model table | order by date; build grouped chronological development/test sets | split manifest | match IDs never cross partitions |
-| 11 | development folds | fit all preprocessing and tune models inside rolling folds | fitted candidates | test period untouched |
-| 12 | locked test | create probabilities once per frozen model | predictions | range [0,1]; one row/model/eligible row |
-| 13 | predictions | calculate metrics and match-cluster bootstrap CIs | metrics tables | fixed seed; failed bootstrap count |
-| 14 | fitted models + test data | calibration, marginal predictions, importance, SHAP | figures/tables | labels/units; no causal language |
+| 06 | prior matches at each venue | calculate date-batched prior-20 powerplay scoring summaries | `venue_conditions_pre_match` | exact match/date/venue join; no same-day or future performance in history |
+| 07 | outcome-blind eligible match queue | manually locate and paraphrase eligible pre-match reports; code using frozen codebook | local `pitch_reports` working file | no automated ESPN extraction; source time precedes start; double-code ≥20% |
+| 08 | venue list + schedules | canonicalize venue names and verify local/UTC start time used for source eligibility | venue/start crosswalk | no ambiguous names; pitch source predates play |
+| 09 | innings + strength + venue history + validated pitch rows | join approved fields by exact match ID | `model_team_innings` | one row per input innings; invalid/unverified reports excluded; unmatched coverage reported |
+| 10 | merged table | enforce leakage allowlist; create primary/secondary feature sets | model feature table | forbidden-column assertion; no generic weather fields |
+| 11 | model table | order by date; build grouped chronological development/test sets | split manifest | match IDs never cross partitions |
+| 12 | development folds | fit all preprocessing and fixed models inside rolling folds | fitted candidates | test period untouched |
+| 13 | locked test | create probabilities once per frozen model | predictions | range [0,1]; one row/model/eligible row |
+| 14 | predictions | calculate metrics and match-cluster bootstrap CIs | metrics tables | fixed seed; failed bootstrap count |
+| 15 | fitted models + evaluation data | calibration and prespecified figures | figures/tables | labels/units; no causal language |
 
 ## Current preliminary model run
 
-The September 2026 reproducible run fits six fixed logistic specifications plus
-constrained Random Forest and shallow XGBoost challengers on 2015–2023 development
+The September 2026 reproducible run fits one intercept baseline, six fixed logistic
+specifications, constrained Random Forest, and shallow XGBoost on 2015–2023 development
 rows and evaluates only the 2024 validation rows. Expanding rolling-origin folds
 validate on 2021, 2022, and 2023 with preprocessing refit inside each fold. The
 pipeline saves model binaries and hashes, one validation prediction per

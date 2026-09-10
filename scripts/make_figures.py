@@ -7,6 +7,7 @@ import argparse
 import csv
 import hashlib
 import json
+import math
 from collections import defaultdict
 from pathlib import Path
 
@@ -17,6 +18,7 @@ DISPLAY_NAMES = {
     "m0_pre_match": "M0 pre-match",
     "powerplay_benchmark": "Runs + wickets",
     "m1_context_powerplay": "M1 context + PP",
+    "venue_history_powerplay_sensitivity": "Venue history + PP",
     "m2_prespecified_interactions": "M2 interactions",
     "scoring_process_sensitivity": "Scoring process",
     "random_forest_challenger": "Random forest",
@@ -103,8 +105,17 @@ def main() -> int:
     figure.savefig(comparison_path, dpi=180)
     plt.close(figure)
 
-    figure, axes = plt.subplots(2, 4, figsize=(12, 7), sharex=True, sharey=True)
-    for axis, model_name in zip(axes.flat, ordered_models):
+    calibration_columns = min(4, math.ceil(math.sqrt(len(ordered_models))))
+    calibration_rows = math.ceil(len(ordered_models) / calibration_columns)
+    figure, axes = plt.subplots(
+        calibration_rows,
+        calibration_columns,
+        figsize=(3 * calibration_columns, 3 * calibration_rows),
+        sharex=True,
+        sharey=True,
+        squeeze=False,
+    )
+    for axis, model_name in zip(axes.flat, ordered_models, strict=False):
         rows = [row for row in calibration if row["model"] == model_name]
         if not rows:
             raise ValueError(f"Missing calibration rows for {model_name}")
@@ -129,6 +140,8 @@ def main() -> int:
         axis.set_xlim(0, 1)
         axis.set_ylim(0, 1)
         axis.grid(alpha=0.2)
+    for axis in list(axes.flat)[len(ordered_models) :]:
+        axis.set_visible(False)
     figure.supxlabel("Mean predicted win probability")
     figure.supylabel("Observed win rate")
     figure.suptitle("2024 temporal-validation calibration", fontsize=15)

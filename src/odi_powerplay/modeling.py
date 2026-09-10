@@ -47,6 +47,14 @@ def make_model_specs(
         "year",
     )
     context_categorical = ("toss_decision", "venue", "rule_era", "competition_type")
+    venue_history_numeric = (
+        "venue_history_available",
+        "venue_prior_matches",
+        "venue_prior_pp_runs_mean",
+        "venue_prior_pp_wickets_mean",
+        "venue_prior_boundary_pct",
+        "venue_prior_dot_ball_pct",
+    )
     interactions = [
         ("pp_runs", "batting_first"),
         ("pp_wickets", "batting_first"),
@@ -75,6 +83,11 @@ def make_model_specs(
         ModelSpec(
             "m1_context_powerplay",
             context_numeric + ("pp_runs", "pp_wickets"),
+            context_categorical,
+        ),
+        ModelSpec(
+            "venue_history_powerplay_sensitivity",
+            context_numeric + venue_history_numeric + ("pp_runs", "pp_wickets"),
             context_categorical,
         ),
         ModelSpec(

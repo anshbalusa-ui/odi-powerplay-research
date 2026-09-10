@@ -138,6 +138,15 @@ Primary measure: pre-match Elo rating.
 
 Sensitivity measure: rolling win rate over the prior 20 decided ODIs, again excluding the focal date and future matches. Do not use a ranking downloaded after the study period.
 
+### Historical venue sensitivity
+
+As a source-independent sensitivity analysis, summarize powerplay scoring over the
+most recent 20 matches at the exact venue name, using only strictly earlier dates.
+Retain prior-match count and a cold-start indicator. This block may test whether a
+stable historical scoring environment improves prediction, but it must never be
+described as the prepared pitch for the focal match or used to backfill missing
+human pitch codes.
+
 ## 10. Feature sets and incremental research design
 
 Fit nested feature blocks so the contribution of the powerplay is evaluated relative to a credible pre-match baseline:
@@ -145,6 +154,8 @@ Fit nested feature blocks so the contribution of the powerplay is evaluated rela
 1. **M0 pre-match baseline:** Elo difference, pitch features, toss, innings order, venue/grouping, year/rule era, and competition type.
 2. **M1 powerplay model:** M0 plus `pp_runs` and `pp_wickets`.
 3. **M2 interaction model:** M1 plus the small prespecified set of pitch and innings-order interactions.
+4. **Venue-history sensitivity:** M1 plus earlier-match venue powerplay runs,
+   wickets, boundary percentage, dot-ball percentage, and history availability.
 
 The main comparison is the change from M0 to M1/M2 in held-out discrimination, proper scoring rules, calibration, and estimated marginal win probabilities. This keeps team strength as a control while making first-10-over performance the substantive focus.
 

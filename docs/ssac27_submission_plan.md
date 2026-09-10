@@ -61,9 +61,11 @@ Deferral means sequencing, not abandonment.
 ## Current readiness gate
 
 As of the reproducible September 2026 run, the Cricsheet cohort, automated metric
-audit, pre-match team strength, chronological splits, six logistic specifications,
-two constrained nonlinear challengers, rolling-origin diagnostics, 2024 validation,
-clustered uncertainty, calibration, and preliminary figures are complete. The
+audit, pre-match team strength, prior-20 venue histories covering 997 of 1,094
+matches, chronological splits, six logistic specifications, two constrained
+nonlinear challengers, rolling-origin diagnostics, 2024 validation, clustered
+uncertainty, calibration, and preliminary figures are complete. The venue-history
+sensitivity did not improve M1's 2024 AUC or proper scores by point estimate. The
 current numeric narrative is in `docs/results.md`.
 
 The pitch requirement is **not met**: verified coverage is 0/1,094, scheduled-start
@@ -73,9 +75,10 @@ The 2025–2026 locked test remains correctly unscored.
 
 Go/no-go decision: do not submit the current analysis as a pitch-adjusted result.
 Either complete a source-audited pitch subset with timing and reliability evidence,
-or explicitly reframe the abstract around pitch-free powerplay prediction and revise
-the focused contribution. Never manufacture pitch labels from live/post-match
-commentary or unlock test outcomes to compensate for missing pitch data.
+or explicitly reframe the abstract around venue-aware but pitch-report-free powerplay
+prediction and revise the focused contribution. Never manufacture pitch labels
+from live/post-match commentary or unlock test outcomes to compensate for missing
+pitch data.
 
 ## September 5–October 1 sprint
 
