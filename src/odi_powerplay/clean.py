@@ -158,16 +158,18 @@ def classify_competition(event_name: Any) -> str:
 def select_primary_cohort(
     rows: Iterable[dict[str, Any]],
     *,
-    start_year: int = 2015,
+    start_year: int | None = None,
     end_year: int | None = None,
     gender: str = "male",
 ) -> list[dict[str, Any]]:
-    """Select all clean men's ODIs in the prespecified modern primary era."""
+    """Select clean men's ODIs across all available years unless date bounds are supplied."""
 
     selected: list[dict[str, Any]] = []
     for row in rows:
         year = int(row["year"])
-        if year < start_year or (end_year is not None and year > end_year):
+        if start_year is not None and year < start_year:
+            continue
+        if end_year is not None and year > end_year:
             continue
         if str(row["gender"]) != gender:
             continue
