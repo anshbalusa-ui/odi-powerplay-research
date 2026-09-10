@@ -78,7 +78,7 @@ class CleaningTests(unittest.TestCase):
         rows = [row(), row(batting_team="Beta", opponent="Alpha", innings_number=2)]
         self.assertIn("INCONSISTENT_OUTCOME_LABELS", exclusion_reasons(rows))
 
-    def test_primary_selector_uses_year_and_gender_but_keeps_all_events(self) -> None:
+    def test_primary_selector_uses_gender_but_keeps_all_available_odi_years_and_events(self) -> None:
         candidates = [
             row(),
             row(match_id="m2", year=2019, event_name="Pakistan in Australia ODI Series"),
@@ -87,8 +87,14 @@ class CleaningTests(unittest.TestCase):
             row(match_id="m5", event_name="ICC Cricket World Cup Qualifier"),
         ]
         selected = select_primary_cohort(candidates)
-        self.assertEqual([item["match_id"] for item in selected], ["m1", "m2", "m5"])
+        self.assertEqual([item["match_id"] for item in selected], ["m1", "m2", "m3", "m5"])
         self.assertTrue(all(item["analysis_eligible_primary"] == 1 for item in selected))
+        self.assertEqual(next(item for item in selected if item["match_id"] == "m3")["rule_era"], "historical_pre_2015")
+
+    def test_explicit_start_year_can_still_create_modern_sensitivity_cohort(self) -> None:
+        candidates = [row(match_id="old", year=2014), row(match_id="modern", year=2015)]
+        selected = select_primary_cohort(candidates, start_year=2015)
+        self.assertEqual([item["match_id"] for item in selected], ["modern"])
 
     def test_competition_labels_distinguish_world_cup_from_qualifier(self) -> None:
         self.assertEqual(classify_competition("ICC Cricket World Cup"), "world_cup")
