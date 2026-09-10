@@ -1,12 +1,13 @@
 study:
-  title: "ODI powerplay performance, pitch conditions, and match outcomes"
+  title: "ODI powerplay performance, pitch conditions, weather, and match outcomes"
   match_type: "ODI"
   gender: "male"
-  primary_start_year: 2015
+  primary_start: "all_available_in_fixed_cricsheet_snapshot"
   primary_end: "fixed_data_snapshot"
   competition_scope: "all_mens_odi_competition_types"
   world_cup_role: "subgroup_sensitivity_only"
-  random_seed: 20250905
+  claim_boundary: "retrospective_observational_association"
+  random_seed: 20260909
 
 chronological_split:
   development_end: "2023-12-31"
@@ -15,40 +16,42 @@ chronological_split:
   locked_test_start: "2025-01-01"
   locked_test_end: "fixed_data_snapshot"
 
-deliverables:
-  long_term:
-    name: "Expanded ODI research paper"
-    scope: "all modern men's ODIs with historical and competition-type sensitivity analyses"
-  ssac27:
-    role: "near-term milestone, not final project boundary"
-    track: "Other Sports"
-    abstract_due_et: "2026-10-01T23:59:00-04:00"
-    abstract_word_limit_including_title: 499
-    maximum_tables_and_figures_combined: 2
-    repository_must_be_open_source_at_submission: true
-    require_actual_results: true
-
 cohort:
   require_two_regulation_innings: true
-  require_complete_ten_overs: true
+  require_complete_ten_over_window: true
   exclude_super_overs: true
   exclude_ties: true
   exclude_no_results: true
   exclude_abandoned: true
   exclude_dls_or_revised_target_primary: true
   keep_excluded_rows_in_audit_file: true
+  keep_world_cup_as_subgroup_only: true
 
 powerplay:
   first_over_index: 0
   last_over_index_inclusive: 9
+  runs_definition: "sum_runs_total_for_delivery_events_in_overs_0_to_9"
   dot_denominator: "legal_balls"
   boundary_denominator: "legal_balls"
   count_boundary_when_non_boundary_flagged: false
+  preserve_umpire_miscounted_overs: true
   wicket_kinds_not_counted:
     - "retired hurt"
+  primary_features:
+    - "pp_runs"
+    - "pp_wickets"
+    - "pp_boundary_pct"
+    - "pp_dot_ball_pct"
+  descriptive_features:
+    - "pp_run_rate"
+    - "pp_legal_balls"
+    - "pp_delivery_events"
 
 pitch:
+  preferred_source: "ESPNcricinfo_pre_match_preview_or_conditions_report"
   source_timing: "published_before_match_start"
+  missing_source_policy: "remain_missing_never_backfill_from_post_match_report"
+  outcome_blind_collection: true
   primary_features:
     - "batting_ease"
     - "pace_seam_support"
@@ -57,19 +60,28 @@ pitch:
     - "two_paced_expected"
   secondary_match_condition:
     - "dew_expected_when_explicitly_reported"
-  excluded_generic_weather_features:
-    - "temperature"
-    - "humidity"
-    - "precipitation"
-    - "cloud_cover"
-    - "wind_speed"
-    - "dew_point"
+
+weather:
+  provider: "Open-Meteo Historical Weather API"
+  model: "era5"
+  source_role: "environmental_context_not_direct_pitch_measurement"
+  initial_window: "full_local_calendar_day"
+  raw_responses_retained_for_audit: true
+  features:
+    - "temperature_2m_mean_c"
+    - "relative_humidity_2m_mean_pct"
+    - "dew_point_2m_mean_c"
+    - "precipitation_sum_mm"
+    - "cloud_cover_mean_pct"
+    - "wind_speed_10m_mean_kmh"
+  missing_geocode_policy: "flag_and_review_never_guess"
 
 strength:
   primary_method: "elo"
   initial_rating: 1500.0
   k_factor: 20.0
   same_date_updates_are_batched: true
+  history_scope: "all_prior_decided_mens_odis_in_snapshot_even_if_powerplay_analysis_excluded"
   sensitivity_methods:
     - "rolling_20_match_win_rate"
 
@@ -86,9 +98,17 @@ modeling:
     - "random_forest"
     - "xgboost"
   nested_feature_blocks:
-    m0: "prematch_strength_pitch_toss_innings_venue_year_competition"
+    m0: "prematch_strength_pitch_weather_toss_innings_venue_year_competition"
     m1: "m0_plus_powerplay_runs_and_wickets"
-    m2: "m1_plus_prespecified_pitch_and_innings_interactions"
+    m2: "m1_plus_prespecified_pitch_weather_and_innings_interactions"
+  primary_interactions:
+    - "pp_runs_x_batting_ease"
+    - "pp_wickets_x_batting_ease"
+    - "pp_wickets_x_pace_seam_support"
+    - "pp_wickets_x_spin_support"
+    - "pp_runs_x_innings_order"
+    - "pp_wickets_x_innings_order"
+  weather_interactions_status: "exploratory_until_coverage_and_collinearity_are_audited"
   metrics:
     - "accuracy"
     - "roc_auc"
@@ -100,3 +120,9 @@ modeling:
     repetitions: 2000
     cluster: "match_id"
     confidence_level: 0.95
+
+reproducibility:
+  raw_cricsheet_manifest_required: true
+  context_source_status_required: true
+  generated_datasets_committed_to_git: false
+  generated_datasets_shared_as_actions_artifacts: true
