@@ -8,7 +8,12 @@ from urllib.parse import parse_qs, urlparse
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(PROJECT_ROOT / "src"))
 
-from odi_powerplay.geocode import build_geocoding_url, choose_candidate, geocode_query  # noqa: E402
+from odi_powerplay.geocode import (  # noqa: E402
+    build_geocoding_url,
+    choose_candidate,
+    geocode_query,
+    unique_geocode_queries,
+)
 
 
 class GeocodeTests(unittest.TestCase):
@@ -68,6 +73,17 @@ class GeocodeTests(unittest.TestCase):
         }
         self.assertEqual(choose_candidate(ambiguous, "Kingston")["geocode_auto_match"], 0)
         self.assertEqual(choose_candidate({}, "Nowhere")["geocode_status"], "no_result")
+
+    def test_duplicate_city_queries_are_requested_only_once(self) -> None:
+        venue_rows = [
+            {"venue": "Lord's", "city": "London"},
+            {"venue": "The Oval", "city": "London"},
+            {"venue": "Sydney Cricket Ground", "city": "Unknown"},
+        ]
+        self.assertEqual(
+            unique_geocode_queries(venue_rows),
+            ["London", "Sydney Cricket Ground"],
+        )
 
 
 if __name__ == "__main__":
