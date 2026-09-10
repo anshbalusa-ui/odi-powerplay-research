@@ -5,7 +5,11 @@ on:
     branches:
       - research/full-odi-pipeline
     paths:
-      - "src/odi_powerplay/**"
+      - "src/odi_powerplay/clean.py"
+      - "src/odi_powerplay/extract_cricsheet.py"
+      - "src/odi_powerplay/geocode.py"
+      - "src/odi_powerplay/weather.py"
+      - "src/odi_powerplay/pitch_queue.py"
       - "scripts/download_cricsheet.py"
       - "scripts/build_clean_dataset.py"
       - "scripts/build_pitch_queue.py"
@@ -13,6 +17,10 @@ on:
       - "scripts/build_weather_dataset.py"
       - ".github/workflows/build_dataset.yml"
   workflow_dispatch:
+
+concurrency:
+  group: odi-context-${{ github.ref }}
+  cancel-in-progress: true
 
 permissions:
   contents: read
