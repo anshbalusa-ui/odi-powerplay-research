@@ -16,6 +16,7 @@ data/processed/*
 # not cleared for redistribution. Publish only after a separate rights review.
 data/manual/pitch_reports.csv
 data/manual/pitch_collection_queue.xlsx
+data/manual/pitch_batch_*.csv
 data/manual/*.inspect.ndjson
 
 # Generated artifacts
