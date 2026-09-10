@@ -1,0 +1,53 @@
+name: Build ODI dataset
+
+on:
+  push:
+    branches:
+      - research/full-odi-pipeline
+    paths:
+      - "src/odi_powerplay/**"
+      - "scripts/download_cricsheet.py"
+      - "scripts/build_clean_dataset.py"
+      - ".github/workflows/build_dataset.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build-dataset:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Download official Cricsheet ODI JSON snapshot
+        run: python scripts/download_cricsheet.py --output-dir data/raw/cricsheet
+
+      - name: Build auditable ODI powerplay cohorts
+        run: python scripts/build_clean_dataset.py | tee dataset-build.log
+
+      - name: Show dataset summary
+        run: cat data/processed/dataset_summary.json
+
+      - name: Upload reproducible dataset artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: odi-powerplay-dataset
+          retention-days: 30
+          if-no-files-found: error
+          path: |
+            data/raw/cricsheet/source_manifest.json
+            data/interim/powerplay_innings_all.csv
+            data/processed/powerplay_innings_clean.csv
+            data/processed/powerplay_innings_primary.csv
+            data/processed/match_cohort_audit.csv
+            data/processed/match_exclusions.csv
+            data/processed/dataset_summary.json
+            dataset-build.log
