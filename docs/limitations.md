@@ -67,8 +67,8 @@ not be treated as stable league tables.
 
 ## Pitch conditions and ESPNcricinfo
 
-Current reproducible pitch coverage is **33 of 1,094 primary matches (3.01645%)**.
-All 33 are AI-assisted first-pass codes from non-ESPN, match-specific pre-match
+Current reproducible pitch coverage is **41 of 1,094 primary matches (3.74771%)**.
+All 41 are AI-assisted first-pass codes from non-ESPN, match-specific pre-match
 sources. They pass the automated source/timing/merge gates but have not passed the
 independent-human reliability gate. Therefore:
 
@@ -93,7 +93,7 @@ a human or through licensed access. A candidate must be reconciled against teams
 date, event, and venue before any report can pass source validation.
 
 The full tracked start-time template covers 1,094 matches with `pending` placeholders.
-The separate tracked verified release contains 33 cited scheduled starts, one for
+The separate tracked verified release contains 41 cited scheduled starts, one for
 each currently published pitch code. Collectors need to verify only rows with
 collected pitch reports, not the entire cohort. The audit validates cohort identity,
 provenance, IANA timezones, and exact local-to-UTC conversion. Downstream code
@@ -101,9 +101,9 @@ exposes only rows explicitly marked `verified`, so a blank, partial, or merely
 plausible timestamp cannot make a pitch source eligible.
 
 The outcome-blind queue contains 1,094 match-specific search tasks and no result or
-powerplay columns. The first four balanced batches and fifth newest-first batch
-reviewed 125 matches: 33 passed, while 92 are explicitly listed in
-`data/manual/pitch_set_aside.csv` for later work. This 26.4% yield among reviewed
+powerplay columns. The first four balanced batches and two newest-first batches
+reviewed 150 matches: 41 passed, while 109 are explicitly listed in
+`data/manual/pitch_set_aside.csv` for later work. This 27.3% yield among reviewed
 matches is not representative of the full cohort;
 source discoverability and publication practices vary by competition, era, and
 team. Completing broader coverage still requires:

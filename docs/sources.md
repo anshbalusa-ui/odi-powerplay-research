@@ -255,3 +255,33 @@ pages did not pass the match-specific pre-start evidence gate. All 25 working ro
 record the common collection instant `2026-09-11T23:39:43Z`; accepted rows separately
 retain the exact source-publication and scheduled-start instants. The reviewed match
 range is 2026-06-06 through 2026-08-13.
+
+## Sixth-batch source release
+
+The sixth 25-match outcome-blind batch was selected newest-first and reviewed
+individually on 2026-09-11. Eight non-ESPN reports met the source, timing, and
+surface-evidence requirements:
+
+- Dawn, Pakistan–Australia Lahore second-ODI preview:
+  https://www.dawn.com/news/2004513
+- Dawn, Pakistan–Australia Lahore third-ODI preview:
+  https://www.dawn.com/news/2004997
+- The Daily Star, Bangladesh–New Zealand Chattogram pitch assessment:
+  https://www.thedailystar.net/sports/cricket/news/beauty-pitch-puzzle-awaits-series-decider-4158331
+- Cricket Times, Sri Lanka–England Colombo first-ODI pitch report:
+  https://crickettimes.com/2026/01/sl-vs-eng-pitch-report-for-1st-odi-r-premadasa-stadium-stats-and-records/
+- Business Standard, India–New Zealand Indore pitch report:
+  https://www.business-standard.com/amp/cricket/news/india-vs-new-zealand-3rd-odi-indore-pitch-report-key-stadium-stats-126011700947_1.html
+- Business Standard, India–New Zealand Vadodara pitch report:
+  https://www.business-standard.com/cricket/news/india-vs-new-zealand-1st-odi-vadodara-pitch-report-key-stadium-stats-126011000363_1.html
+- The Indian Express, India–South Africa Visakhapatnam pitch report:
+  https://indianexpress.com/article/sports/cricket/india-vs-south-africa-visakhapatnam-aca-vdca-cricket-stadium-pitch-report-weather-forecast-match-update-10404167/
+- The Indian Express, India–South Africa Raipur pitch report:
+  https://indianexpress.com/article/sports/cricket/india-vs-south-africa-raipur-shaheed-veer-narayan-singh-international-stadium-pitch-report-weather-forecast-10398416/
+
+Seventeen sixth-batch matches were set aside. The rejected material was
+surface-free, generic, ESPN-restricted, published after the scheduled start, or
+fantasy/match-prediction content. All 25 working rows record the common collection
+instant `2026-09-11T23:53:16Z`; accepted rows separately retain the exact
+source-publication and scheduled-start instants. The reviewed match range is
+2025-12-03 through 2026-06-04.
