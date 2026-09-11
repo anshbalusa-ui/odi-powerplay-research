@@ -15,7 +15,18 @@ FORBIDDEN_PREDICTORS = {
     "match_status",
     "result_method",
     "exclusion_reasons",
+    "source_search_query",
     "source_url",
+    "source_title",
+    "published_at_utc",
+    "accessed_at_utc",
+    "scheduled_start_local",
+    "timezone_name",
+    "scheduled_start_utc",
+    "match_start_utc",
+    "start_time_status",
+    "verifier_id",
+    "verification_note",
     "short_paraphrased_note",
 }
 

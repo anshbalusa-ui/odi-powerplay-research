@@ -94,12 +94,21 @@ class ModelTableTests(unittest.TestCase):
         table = build_model_table(self.innings_rows(), self.strength_rows(), self.venue_rows())
         self.assertEqual({row["split"] for row in table}, {"validation"})
         self.assertEqual({row["pitch_available"] for row in table}, {0})
+        timing_fields = {
+            "scheduled_start_local",
+            "timezone_name",
+            "scheduled_start_utc",
+            "start_time_status",
+        }
+        self.assertTrue(timing_fields.isdisjoint(table[0]))
 
     def test_feature_allowlist_rejects_outcomes_and_missing_fields(self) -> None:
         table = build_model_table(self.innings_rows(), self.strength_rows(), self.venue_rows())
         validate_feature_allowlist(table, ["pp_runs", "elo_difference"])
         with self.assertRaisesRegex(ValueError, "Forbidden predictors"):
             validate_feature_allowlist(table, ["batting_team_won"])
+        with self.assertRaisesRegex(ValueError, "Forbidden predictors"):
+            validate_feature_allowlist(table, ["scheduled_start_utc"])
         with self.assertRaisesRegex(ValueError, "missing from model table"):
             validate_feature_allowlist(table, ["future_feature"])
 

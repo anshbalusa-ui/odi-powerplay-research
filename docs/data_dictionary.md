@@ -97,7 +97,8 @@ The validator requires full cohort coverage, exact match identity, a valid HTTP(
 source, an offset-aware access timestamp, a real IANA timezone, a local date equal
 to `match_date`, and exact timezone conversion to UTC. Only `verified` timestamps
 are exposed to pitch-source timing validation; partially filled or pending rows are
-never used.
+never used. No start-time, timezone, status, verifier, or source-provenance field is
+joined to the model table; all are also named in the prohibited-predictor guard.
 
 ## Pitch fields
 

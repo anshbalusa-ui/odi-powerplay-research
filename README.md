@@ -115,7 +115,9 @@ balanced batch, then copy completed rows into the ignored local
 sources, record an IANA timezone, convert to UTC, and run
 `python scripts/audit_match_start_times.py --input data/manual/match_start_times.csv`.
 Only rows with `start_time_status=verified` can establish that a pitch report
-predated play. Then run:
+predated play. Start-time and source-provenance fields are audit metadata only:
+they are never joined into the model table and are explicitly prohibited as
+predictors. Then run:
 
 ```bash
 python scripts/audit_pitch_collection.py \
