@@ -168,3 +168,33 @@ The tracked `pitch_reports_verified.csv` contains only source URLs, publication 
 access timestamps, derived categorical codes, and short original paraphrases.
 These AI-assisted primary codes remain provisional until the independent human
 reliability gate is satisfied.
+
+## Third-batch source release
+
+The third 25-match outcome-blind batch was reviewed individually on 2026-09-11.
+Nine non-ESPN reports met the match-specific, pre-start, surface-evidence, and
+provenance requirements:
+
+- MyKhel, India–New Zealand Champions Trophy final toss and pitch report:
+  https://www.mykhel.com/cricket/india-vs-new-zealand-toss-playing-11-update-for-champions-trophy-2025-final-rohit-sharma-loses-tos-346037.html
+- ICC, England–Pakistan Champions Trophy semi-final preview:
+  https://www.icc-cricket.com/news/advantage-england-but-that-counts-for-little
+- CricTracker, Ireland–South Africa first ODI match preview:
+  https://www.crictracker.com/cricket-previews/ireland-vs-south-africa-match-preview-1st-odi/
+- Business Standard, India–New Zealand Rajkot pitch report:
+  https://www.business-standard.com/cricket/news/india-vs-new-zealand-2nd-odi-rajkot-pitch-report-key-stadium-stats-126011300726_1.html
+- ICC, New Zealand–South Africa Hamilton preview:
+  https://www.icc-cricket.com/news/new-zealand-v-south-africa-4th-odi-hamilton-preview
+- Cricket Australia, Australia–South Africa St Kitts preview:
+  https://www.cricket.com.au/news/3272889/history-points-to-runs-fest-in-st-kitts
+- ICC, New Zealand–Sri Lanka World Cup preview:
+  https://www.icc-cricket.com/tournaments/cricketworldcup/news/confident-new-zealand-ready-to-kick-off-their-world-cup-campaign
+- Cricket Australia, New Zealand–Australia Eden Park preview:
+  https://www.cricket.com.au/news/3287986
+- Daily Times, Pakistan–Australia Sharjah preview:
+  https://dailytimes.com.pk/368951/pakistan-take-on-australia-in-second-odi-today/
+
+Sixteen third-batch matches were set aside. One located pitch article was
+published after the scheduled start, one indexed non-ESPN preview could not be
+opened for direct review, and the remaining searches produced only ESPN-restricted,
+generic, post-match, fantasy/betting, or surface-free pre-match material.

@@ -3,11 +3,11 @@
 ## Scope and lock state
 
 This is a full-cohort preliminary analysis with a leakage-safe historical venue
-proxy, but **without source-coded match-day pitch reports**. Prior-20 venue history
-is available for 997 of 1,094 primary matches. Verified pitch-report coverage
-remains 0 of 1,094, so no pitch coefficient or pitch interaction is estimated. The
-validated pitch merge will enable a separate complete-case model set after eligible
-pre-match reports are manually collected and double-coded.
+proxy, but **without source-coded match-day pitch reports in the fitted models**.
+Prior-20 venue history is available for 997 of 1,094 primary matches. A separate
+audited merge now recognizes 18 provisional pitch-report matches, but that subset
+remains too small and has not passed independent double-coding. No pitch coefficient
+or pitch interaction is therefore estimated in the published preliminary models.
 
 The fixed Cricsheet snapshot contributes 1,094 primary matches and 2,188 team-innings:
 
