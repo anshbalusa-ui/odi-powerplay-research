@@ -17,6 +17,7 @@ data/processed/*
 # not cleared for redistribution. Publish only after a separate rights review.
 data/manual/pitch_reports.csv
 data/manual/pitch_reports_double_coded.csv
+data/manual/match_start_times.csv
 data/manual/pitch_collection_queue.xlsx
 data/manual/pitch_batch_working*.csv
 data/manual/*.inspect.ndjson

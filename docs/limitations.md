@@ -88,6 +88,13 @@ candidates with zero human-verified mappings, not collected ESPN data. A candida
 must be reconciled against teams, date, event, and venue before any report can pass
 source validation.
 
+The tracked start-time queue covers all 1,094 matches but contains **zero
+human-verified starts**; every row is explicitly `pending`. This is not inferred
+coverage. The zero-network audit validates cohort identity, provenance requirements,
+IANA timezones, and exact local-to-UTC conversion once human/licensed values are
+entered. Downstream code exposes only rows explicitly marked `verified`, so a blank,
+partial, or merely plausible timestamp cannot make a pitch source eligible.
+
 The outcome-blind queue contains 1,094 match-specific search tasks and no result or
 powerplay columns. Completing it requires all of the following external inputs:
 

@@ -51,6 +51,8 @@ One row represents one batting-team innings in one match. The outcome is `battin
   and a leakage-safe pitch/model-table merge.
 - Rights-safe ESPN linkage candidates for all 1,094 queued matches, with explicit
   human-verification fields and a zero-network structural audit.
+- A 1,094-match outcome-blind scheduled-start template with IANA-timezone,
+  cohort-identity, provenance, and UTC-conversion validation.
 - Human-audited pitch and source-timing templates, research design, data dictionary,
   pitch codebook, transformation log, paper outline, and execution roadmap.
 
@@ -90,6 +92,8 @@ python scripts/build_model_table.py
 python scripts/audit_powerplay_metrics.py
 python scripts/build_hand_audit_sample.py
 python scripts/build_pitch_collection_queue.py
+python scripts/build_match_start_queue.py
+python scripts/audit_match_start_times.py
 python scripts/audit_espn_linkage.py
 python scripts/select_pitch_batch.py --output data/manual/pitch_batch_working.csv
 .venv/bin/python scripts/train_models.py --fit-without-locked-test
@@ -105,8 +109,13 @@ no source prose and no secret data.
 Complete the hand audit independently from the source JSON/scorecard. For pitch
 coding, start with the tracked 25-match contributor template or select another
 balanced batch, then copy completed rows into the ignored local
-`data/manual/pitch_reports.csv`. Use only eligible, cited pre-match reports plus
-verified match-start timestamps. Then run:
+`data/manual/pitch_reports.csv`. Separately copy
+`data/manual/match_start_times_template.csv` to the ignored
+`data/manual/match_start_times.csv`; verify scheduled local starts from cited
+sources, record an IANA timezone, convert to UTC, and run
+`python scripts/audit_match_start_times.py --input data/manual/match_start_times.csv`.
+Only rows with `start_time_status=verified` can establish that a pitch report
+predated play. Then run:
 
 ```bash
 python scripts/audit_pitch_collection.py \

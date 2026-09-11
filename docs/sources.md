@@ -82,6 +82,23 @@ permission to republish source text when provenance or underlying rights are
 unresolved, and post-start commentary remains temporally ineligible regardless of
 licence.
 
+## Scheduled-start sources
+
+Scheduled starts are collected separately from pitch descriptions so a timestamp
+cannot smuggle score, commentary, or result fields into pitch coding. Prefer an
+official tournament, ICC, or national-board schedule; a rights-permitted match page
+may be used when it identifies the same teams, local date, event, and venue. ESPN
+candidate IDs remain unfetched unless a human or licensed route performs that
+verification. The repository stores only source provenance and the scheduled local
+and UTC timestamps, not page text.
+
+The verifier records an IANA timezone name so historical daylight-saving rules are
+applied rather than guessing a fixed offset. `audit_match_start_times.py` checks the
+local-to-UTC conversion and full cohort identity without making network requests.
+A post-match page may corroborate the historical scheduled-start fact, but no score,
+commentary, toss, lineup, or result may be transferred from it, and start-time
+verification must remain separate from outcome-blind pitch coding.
+
 ## Pitch-source search protocol
 
 Pitch reports are collected in outcome-blind batches. Match IDs are selected before any report, scorecard, powerplay value, or result is inspected. For each selected match, search in this order:

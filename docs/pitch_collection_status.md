@@ -1,6 +1,6 @@
 # Pitch Collection Status
 
-Last updated: 2026-09-10
+Last updated: 2026-09-11
 
 The current primary cohort contains 1,094 men's ODIs (2,188 team-innings) from
 2015 through the checksummed Cricsheet snapshot. `build_pitch_collection_queue.py`
@@ -13,6 +13,8 @@ no result or powerplay fields.
 | Status | Matches |
 |---|---:|
 | Eligible matches queued | 1,094 |
+| Scheduled-start rows queued | 1,094 |
+| Human-verified scheduled starts | 0 |
 | Source rows present in this clone | 0 |
 | Timing-verified pitch codes | 0 |
 | Current reproducible coverage | 0% |
@@ -30,6 +32,36 @@ cannot be used as pitch predictors. A human or licensed workflow must collect on
 eligible match-specific pre-match reports, record publication and match-start times,
 retain short original paraphrases rather than article text, and mark unsupported
 matches explicitly.
+
+## Match-start verification gate
+
+`scripts/build_match_start_queue.py` generates
+`data/manual/match_start_times_template.csv` from primary-cohort metadata without
+reading result or powerplay fields. All 1,094 rows initially have
+`start_time_status=pending`; zero are represented as verified data.
+
+A human or licensed collector must copy the template to the Git-ignored
+`data/manual/match_start_times.csv`, reconcile the teams/date/event/venue against a
+cited schedule or match page, and record:
+
+1. the source URL, title, and UTC access timestamp;
+2. the scheduled local datetime without an offset;
+3. the venue's IANA timezone name, not a fixed guessed offset;
+4. the corresponding UTC datetime;
+5. `start_time_status=verified` and an anonymized `verifier_id`.
+
+Run the zero-network audit before pitch validation:
+
+```bash
+python scripts/audit_match_start_times.py \
+  --input data/manual/match_start_times.csv
+```
+
+The audit checks all 1,094 cohort identities, ISO timestamps, IANA timezone
+existence, local-date agreement, exact local-to-UTC conversion including historical
+daylight-saving rules, provenance fields, duplicate IDs, and explicit reasons for
+`unavailable` or `rejected` rows. Downstream pitch audits and model-table generation
+discard every timestamp not explicitly marked `verified`.
 
 ## Contributor batch workflow
 

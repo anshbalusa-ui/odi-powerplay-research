@@ -25,6 +25,17 @@ candidate fails. A candidate alone is never evidence and must not be bulk-opened
 automation. An ESPN row cannot be `pre_match_verified = 1` until match linkage is
 human- or license-verified.
 
+### Match-start verification
+
+Create `data/manual/match_start_times.csv` from the tracked start-time template.
+Verify teams, local date, event, and venue against a cited schedule or match page;
+record the scheduled local datetime, the venue's IANA timezone, the converted UTC
+datetime, source provenance, and verifier. Set `start_time_status=verified` only
+after `audit_match_start_times.py` accepts the identity and conversion. Pending,
+unavailable, rejected, or structurally invalid timestamps are never passed to pitch
+validation. Keep this metadata-only task separate from pitch coding so scorecard or
+result information cannot influence the category.
+
 ## Primary category
 
 Choose one category based on the strongest explicit expectation. If two are equally supported, use `balanced` and capture both in the dimensions.

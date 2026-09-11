@@ -17,6 +17,11 @@ from odi_powerplay.pitch import (  # noqa: E402
     pitch_intercoder_reliability,
     validate_pitch_rows,
 )
+from odi_powerplay.start_times import (  # noqa: E402
+    build_match_start_queue,
+    validate_match_start_rows,
+    verified_match_start_map,
+)
 
 
 def read_csv(path: Path) -> list[dict[str, str]]:
@@ -49,13 +54,18 @@ def main() -> int:
 
     reference_rows = read_csv(args.reference_input)
     recoded_rows = read_csv(args.recoded_input)
-    eligible_ids = {row["match_id"] for row in read_csv(args.innings_input)}
-    match_starts = {
-        row["cricsheet_match_id"]: row.get("scheduled_start_utc", "")
-        for row in read_csv(args.match_start_input)
-    }
+    innings_rows = read_csv(args.innings_input)
+    eligible_ids = {row["match_id"] for row in innings_rows}
+    start_time_rows = read_csv(args.match_start_input)
+    start_time_issues = validate_match_start_rows(
+        start_time_rows,
+        eligible_rows=build_match_start_queue(innings_rows),
+    )
+    match_starts = verified_match_start_map(start_time_rows) if not start_time_issues else {}
 
-    issues: list[dict[str, str]] = []
+    issues: list[dict[str, str]] = [
+        {"coding_set": "match_start", **issue} for issue in start_time_issues
+    ]
     for coding_set, rows in (
         ("reference", reference_rows),
         ("recoded", recoded_rows),

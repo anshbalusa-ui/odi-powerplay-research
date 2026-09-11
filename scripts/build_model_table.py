@@ -16,6 +16,11 @@ sys.path.insert(0, str(ROOT / "src"))
 
 from odi_powerplay.model_table import build_model_table, validate_feature_allowlist  # noqa: E402
 from odi_powerplay.pitch import validate_pitch_rows  # noqa: E402
+from odi_powerplay.start_times import (  # noqa: E402
+    build_match_start_queue,
+    validate_match_start_rows,
+    verified_match_start_map,
+)
 
 
 def read_csv(path: Path) -> list[dict[str, str]]:
@@ -67,14 +72,21 @@ def main() -> int:
         if not args.match_start_input:
             raise ValueError("--match-start-input is required with --pitch-input")
         pitch_rows = read_csv(args.pitch_input)
-        match_starts = {
-            row["cricsheet_match_id"]: row.get("scheduled_start_utc", "")
-            for row in read_csv(args.match_start_input)
-        }
+        start_time_rows = read_csv(args.match_start_input)
+        start_time_issues = validate_match_start_rows(
+            start_time_rows,
+            eligible_rows=build_match_start_queue(innings_rows),
+        )
+        if start_time_issues:
+            fields = sorted({issue["field"] for issue in start_time_issues})
+            raise ValueError(
+                "Match-start data has "
+                f"{len(start_time_issues)} validation issues in fields: {', '.join(fields)}"
+            )
         issues = validate_pitch_rows(
             pitch_rows,
             eligible_match_ids={row["match_id"] for row in innings_rows},
-            match_start_by_id=match_starts,
+            match_start_by_id=verified_match_start_map(start_time_rows),
         )
         if issues:
             fields = sorted({issue["field"] for issue in issues})

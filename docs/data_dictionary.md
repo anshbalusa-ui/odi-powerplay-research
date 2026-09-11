@@ -66,6 +66,39 @@ These fields may be present in labeled data for training/evaluation but cannot b
 | `balls_per_over` | integer | Cricsheet expected balls per over |
 | `is_super_over` | binary | retained for audit; super-over innings are not emitted |
 
+## Match-start verification fields
+
+`data/manual/match_start_times_template.csv` is outcome-blind and contains one row
+per primary-cohort match. A working copy is valid only after
+`audit_match_start_times.py` reports zero issues.
+
+| Variable | Type | Definition |
+|---|---|---|
+| `cricsheet_match_id` | string | exact primary-cohort match key |
+| `match_date` | ISO date | local scheduled match date copied from the cohort |
+| `event_name` | string | event or series identity used for manual reconciliation |
+| `competition_type` | category | outcome-blind cohort competition stratum |
+| `venue` | string | cohort venue used for identity reconciliation |
+| `city` | string | cohort city where available |
+| `team_1`, `team_2` | string | teams in innings order; used only to verify identity |
+| `source_search_query` | string | unfetched outcome-blind navigation query |
+| `source_url` | URL | cited schedule or match page supporting the start time |
+| `source_title` | string | title of the cited source |
+| `accessed_at_utc` | timestamp | offset-aware ISO-8601 collection timestamp |
+| `scheduled_start_local` | local datetime | scheduled local start without a UTC offset |
+| `timezone_name` | IANA timezone | location timezone, including historical daylight-saving rules |
+| `scheduled_start_utc` | UTC timestamp | local start converted to `Z` or `+00:00` |
+| `start_time_status` | category | `pending`, `verified`, `unavailable`, or `rejected` |
+| `verifier_id` | string | anonymized human/licensed verifier label |
+| `verification_note` | string/nullable | concise reconciliation note |
+| `exclusion_reason` | string/nullable | required when unavailable or rejected |
+
+The validator requires full cohort coverage, exact match identity, a valid HTTP(S)
+source, an offset-aware access timestamp, a real IANA timezone, a local date equal
+to `match_date`, and exact timezone conversion to UTC. Only `verified` timestamps
+are exposed to pitch-source timing validation; partially filled or pending rows are
+never used.
+
 ## Pitch fields
 
 | Variable | Type | Definition |
