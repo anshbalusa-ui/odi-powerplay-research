@@ -82,6 +82,12 @@ contain information observed after the pre-match prediction timestamp. Eligible 
 material is limited to individually cited pre-match previews or pitch reports that
 can be collected manually or through licensed access.
 
+Cricsheet documents its numeric IDs as generally, but not invariably, matching
+Cricinfo IDs. The 1,094 generated ESPN links are therefore unfetched navigation
+candidates with zero human-verified mappings, not collected ESPN data. A candidate
+must be reconciled against teams, date, event, and venue before any report can pass
+source validation.
+
 The outcome-blind queue contains 1,094 match-specific search tasks and no result or
 powerplay columns. Completing it requires all of the following external inputs:
 

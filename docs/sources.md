@@ -6,6 +6,7 @@
 - Official JSON format: https://cricsheet.org/format/json/
 - Match data overview: https://cricsheet.org/matches/
 - Register/licence information: https://cricsheet.org/register/
+- Cricsheet match-ID provenance: https://cricsheet.org/format/csv_ashwin/
 - Timestamp limitation: https://cricsheet.org/contact/
 
 Use the official JSON format, record the snapshot date/checksum, and attribute Cricsheet in the paper. Cricsheet's site notes that some matches may be withheld, so the cohort description must report actual available counts rather than assuming complete coverage.
@@ -32,6 +33,28 @@ or a suitable licensed route is obtained. Any proposed human coding workflow mus
 also receive a rights review before publication. Do not reproduce report text;
 retain only permitted provenance metadata and short original research codes or
 paraphrases.
+
+### Rights-safe ESPN identifier handoff
+
+Cricsheet's official Ashwin-format documentation says its file `<id>` is the
+Cricinfo match ID and separately warns that the Cricsheet `match_id` is generally,
+but not guaranteed to be, the Cricinfo ID. The pipeline therefore treats each
+numeric primary-cohort ID as an **unverified candidate**, never as a confirmed ESPN
+mapping.
+
+For all 1,094 primary matches, the outcome-blind queue now includes the numeric
+candidate, an unfetched legacy ESPN match-URL candidate, blank verified-ID and
+verified-URL fields, and an explicit linkage status. Candidate generation performs
+zero network requests and imports no ESPN text, score, commentary, or page metadata.
+The legacy URL is navigation assistance only; it can be stale, redirect, or identify
+the wrong match.
+
+A human or licensed collector must compare teams, date, event, and venue before
+setting `espn_linkage_status=verified_match`, then record the actual numeric ESPN ID
+and current ESPN match URL. `audit_espn_linkage.py` rejects malformed candidates,
+unsupported statuses, duplicate Cricsheet IDs, and a claimed verified mapping
+without a valid ESPNcricinfo URL. `validate_pitch_rows` additionally refuses a
+verified ESPN source row unless this independent match-linkage gate has passed.
 
 
 ### Third-party commentary dataset review

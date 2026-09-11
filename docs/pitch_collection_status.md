@@ -39,6 +39,24 @@ tracks the human/licensed collection work. The tracked
 matches. It covers every cohort year from 2015 through 2026 and all seven
 competition types while containing no result, winner, or powerplay columns.
 
+Every queue row includes a probable ESPN ID and unfetched legacy match-URL
+candidate because Cricsheet documents its IDs as generally—but not always—the
+Cricinfo match IDs. All 1,094 candidates remain `unverified_candidate`; generation
+performed zero ESPN network requests. Before citing any ESPN source, a human or
+licensed collector must compare the actual page's teams, date, event, and venue,
+then fill `espn_match_id_verified`, `espn_match_url_verified`, and set
+`espn_linkage_status=verified_match`.
+
+Audit the working linkage state without contacting ESPN:
+
+```bash
+python scripts/audit_espn_linkage.py \
+  --input data/manual/pitch_collection_queue_template.csv
+```
+
+Do not bulk-open the candidate URLs. They are navigation aids, may be stale or
+wrong, and do not establish permission to extract ESPN text.
+
 To select a new batch while skipping attempts already marked `0` or `1` in the
 ignored `pitch_reports.csv` working file:
 

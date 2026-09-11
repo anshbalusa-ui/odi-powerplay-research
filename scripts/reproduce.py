@@ -54,6 +54,7 @@ def main() -> int:
             [sys.executable, "scripts/audit_powerplay_metrics.py"],
             [sys.executable, "scripts/build_hand_audit_sample.py"],
             [sys.executable, "scripts/build_pitch_collection_queue.py"],
+            [sys.executable, "scripts/audit_espn_linkage.py"],
             [
                 sys.executable,
                 "scripts/select_pitch_batch.py",
@@ -82,6 +83,7 @@ def main() -> int:
         ROOT / "artifacts/tables/venue_conditions_audit.json",
         ROOT / "data/processed/model_table_manifest.json",
         ROOT / "artifacts/tables/powerplay_metric_audit.json",
+        ROOT / "artifacts/tables/espn_linkage_audit.json",
         ROOT / "data/manual/pitch_batch_001_template.csv",
         ROOT / "artifacts/models/validation_frozen/manifest.json",
         ROOT / "artifacts/tables/rolling_origin_metrics.json",
@@ -97,6 +99,7 @@ def main() -> int:
         "python_version": sys.version,
         "locked_test_scored": False,
         "pitch_models_run": False,
+        "espn_linkage_network_requests_performed": False,
         "venue_history_model_run": True,
         "commands": [command[1:] for command in completed],
         "artifacts": {str(path.relative_to(ROOT)): sha256(path) for path in expected},

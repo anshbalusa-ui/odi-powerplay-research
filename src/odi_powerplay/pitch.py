@@ -37,6 +37,13 @@ ALLOWED_VALUES = {
     "dew_expected": {"", "0", "1"},
     "coder_confidence": {"high", "medium", "low"},
 }
+ESPN_LINKAGE_VALUES = {
+    "unverified_candidate",
+    "verified_match",
+    "not_espn_id",
+    "wrong_match",
+    "not_available",
+}
 PITCH_QUEUE_FIELDS = (
     "cricsheet_match_id",
     "match_date",
@@ -46,6 +53,11 @@ PITCH_QUEUE_FIELDS = (
     "city",
     "team_1",
     "team_2",
+    "espn_match_id_candidate",
+    "espn_legacy_match_url_candidate",
+    "espn_match_id_verified",
+    "espn_match_url_verified",
+    "espn_linkage_status",
     "source_search_query",
     "source_url",
     "source_title",
@@ -58,6 +70,138 @@ PITCH_QUEUE_FIELDS = (
     "short_paraphrased_note",
     "exclusion_reason",
 )
+
+
+def espn_link_candidate(match_id: Any) -> dict[str, str]:
+    """Return an unfetched ESPN linkage candidate for a probable numeric Cricinfo ID."""
+
+    identifier = str(match_id or "").strip()
+    if not identifier.isascii() or not identifier.isdigit():
+        return {
+            "espn_match_id_candidate": "",
+            "espn_legacy_match_url_candidate": "",
+            "espn_match_id_verified": "",
+            "espn_match_url_verified": "",
+            "espn_linkage_status": "not_available",
+        }
+    return {
+        "espn_match_id_candidate": identifier,
+        "espn_legacy_match_url_candidate": (
+            f"https://www.espncricinfo.com/ci/engine/match/{identifier}.html"
+        ),
+        "espn_match_id_verified": "",
+        "espn_match_url_verified": "",
+        "espn_linkage_status": "unverified_candidate",
+    }
+
+
+def _is_espncricinfo_url(value: Any) -> bool:
+    parsed = urlparse(str(value or "").strip())
+    host = (parsed.hostname or "").casefold()
+    return (
+        parsed.scheme in {"http", "https"}
+        and bool(host)
+        and (host == "espncricinfo.com" or host.endswith(".espncricinfo.com"))
+    )
+
+
+def validate_espn_linkage_rows(
+    rows: Iterable[dict[str, Any]],
+) -> list[dict[str, str]]:
+    """Validate unfetched candidates and human-verified ESPN match mappings."""
+
+    issues: list[dict[str, str]] = []
+    seen: set[str] = set()
+
+    def issue(match_id: str, field: str, message: str) -> None:
+        issues.append({"cricsheet_match_id": match_id, "field": field, "message": message})
+
+    for row in rows:
+        match_id = str(row.get("cricsheet_match_id", "")).strip()
+        if not match_id:
+            issue("", "cricsheet_match_id", "missing match ID")
+            continue
+        if match_id in seen:
+            issue(match_id, "cricsheet_match_id", "duplicate match ID")
+        seen.add(match_id)
+
+        status = str(row.get("espn_linkage_status", "")).strip()
+        if status not in ESPN_LINKAGE_VALUES:
+            issue(match_id, "espn_linkage_status", f"unsupported value: {status}")
+            continue
+        candidate_id = str(row.get("espn_match_id_candidate", "")).strip()
+        candidate_url = str(row.get("espn_legacy_match_url_candidate", "")).strip()
+        verified_id = str(row.get("espn_match_id_verified", "")).strip()
+        verified_url = str(row.get("espn_match_url_verified", "")).strip()
+
+        if status == "unverified_candidate":
+            expected = espn_link_candidate(match_id)
+            if expected["espn_linkage_status"] != "unverified_candidate":
+                issue(
+                    match_id,
+                    "espn_linkage_status",
+                    "nonnumeric Cricsheet ID cannot be an ESPN ID candidate",
+                )
+            if candidate_id != expected["espn_match_id_candidate"]:
+                issue(
+                    match_id,
+                    "espn_match_id_candidate",
+                    "candidate must equal the numeric Cricsheet ID",
+                )
+            if candidate_url != expected["espn_legacy_match_url_candidate"]:
+                issue(
+                    match_id,
+                    "espn_legacy_match_url_candidate",
+                    "candidate URL does not match the unfetched legacy URL template",
+                )
+        elif status == "not_available" and (candidate_id or candidate_url):
+            issue(
+                match_id,
+                "espn_linkage_status",
+                "not_available rows cannot contain candidate linkage",
+            )
+
+        if status == "verified_match":
+            if not verified_id.isascii() or not verified_id.isdigit():
+                issue(
+                    match_id,
+                    "espn_match_id_verified",
+                    "verified ESPN linkage requires a numeric match ID",
+                )
+            if not _is_espncricinfo_url(verified_url):
+                issue(
+                    match_id,
+                    "espn_match_url_verified",
+                    "verified ESPN linkage requires an ESPNcricinfo match URL",
+                )
+        elif verified_id or verified_url:
+            issue(
+                match_id,
+                "espn_linkage_status",
+                "verified ESPN ID or URL requires verified_match status",
+            )
+
+    return issues
+
+
+def espn_linkage_summary(rows: Iterable[dict[str, Any]]) -> dict[str, Any]:
+    """Summarize linkage state without fetching ESPN or reading outcomes."""
+
+    materialized = list(rows)
+    statuses = Counter(str(row.get("espn_linkage_status", "")).strip() for row in materialized)
+    verified = statuses["verified_match"]
+    return {
+        "rows": len(materialized),
+        "candidate_rows": sum(
+            bool(str(row.get("espn_match_id_candidate", "")).strip()) for row in materialized
+        ),
+        "human_verified_rows": verified,
+        "human_verified_pct": (
+            round(100 * verified / len(materialized), 6) if materialized else 0.0
+        ),
+        "status_counts": dict(sorted(statuses.items())),
+        "network_requests_performed": 0,
+    }
 
 
 def build_pitch_collection_queue(rows: Iterable[dict[str, Any]]) -> list[dict[str, Any]]:
@@ -79,6 +223,7 @@ def build_pitch_collection_queue(rows: Iterable[dict[str, Any]]) -> list[dict[st
             f'site:espncricinfo.com "{team_1}" "{team_2}" '
             f'"{first["match_date"]}" preview pitch conditions'
         )
+        espn_candidate = espn_link_candidate(match_id)
         queue.append(
             {
                 "cricsheet_match_id": match_id,
@@ -89,6 +234,7 @@ def build_pitch_collection_queue(rows: Iterable[dict[str, Any]]) -> list[dict[st
                 "city": first["city"],
                 "team_1": team_1,
                 "team_2": team_2,
+                **espn_candidate,
                 "source_search_query": search_query,
                 "source_url": "",
                 "source_title": "",
@@ -247,6 +393,37 @@ def validate_pitch_rows(
         for field in ("source_title", "coder_id", "coder_confidence", "pitch_primary_category"):
             if not str(row.get(field, "")).strip():
                 issue(match_id, field, "required for verified rows")
+
+        espn_status = str(row.get("espn_linkage_status", "")).strip()
+        if espn_status and espn_status not in ESPN_LINKAGE_VALUES:
+            issue(match_id, "espn_linkage_status", f"unsupported value: {espn_status}")
+        if _is_espncricinfo_url(source_url) and espn_status != "verified_match":
+            issue(
+                match_id,
+                "espn_linkage_status",
+                "ESPN source rows require independently verified match linkage",
+            )
+        verified_espn_id = str(row.get("espn_match_id_verified", "")).strip()
+        verified_espn_url = str(row.get("espn_match_url_verified", "")).strip()
+        if espn_status == "verified_match":
+            if not verified_espn_id.isascii() or not verified_espn_id.isdigit():
+                issue(
+                    match_id,
+                    "espn_match_id_verified",
+                    "verified ESPN linkage requires a numeric match ID",
+                )
+            if not _is_espncricinfo_url(verified_espn_url):
+                issue(
+                    match_id,
+                    "espn_match_url_verified",
+                    "verified ESPN linkage requires an ESPNcricinfo match URL",
+                )
+        elif verified_espn_id or verified_espn_url:
+            issue(
+                match_id,
+                "espn_linkage_status",
+                "verified ESPN ID or URL requires verified_match status",
+            )
 
         published_at = _parse_timestamp(row.get("published_at_utc"))
         accessed_at = _parse_timestamp(row.get("accessed_at_utc"))

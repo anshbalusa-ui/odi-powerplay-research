@@ -49,6 +49,8 @@ One row represents one batting-team innings in one match. The outcome is `battin
 - A deterministic 24-innings hand-audit worksheet spanning every year from 2015–2026.
 - An outcome-blind 1,094-match pitch-source queue plus validators, coverage reporting,
   and a leakage-safe pitch/model-table merge.
+- Rights-safe ESPN linkage candidates for all 1,094 queued matches, with explicit
+  human-verification fields and a zero-network structural audit.
 - Human-audited pitch and source-timing templates, research design, data dictionary,
   pitch codebook, transformation log, paper outline, and execution roadmap.
 
@@ -88,6 +90,7 @@ python scripts/build_model_table.py
 python scripts/audit_powerplay_metrics.py
 python scripts/build_hand_audit_sample.py
 python scripts/build_pitch_collection_queue.py
+python scripts/audit_espn_linkage.py
 python scripts/select_pitch_batch.py --output data/manual/pitch_batch_working.csv
 .venv/bin/python scripts/train_models.py --fit-without-locked-test
 .venv/bin/python scripts/evaluate_models.py

@@ -15,6 +15,16 @@ A source is eligible when:
 
 If these conditions fail, set `pre_match_verified = 0` and record `exclusion_reason`. Store a short paraphrase, not a large copied passage.
 
+### ESPN match identity
+
+The queue's numeric Cricsheet ID and legacy ESPN URL are unverified navigation
+candidates. Before coding an ESPN source, compare teams, date, event, and venue;
+record the actual `espn_match_id_verified` and `espn_match_url_verified`; then set
+`espn_linkage_status = verified_match`. Use `wrong_match` or `not_espn_id` when the
+candidate fails. A candidate alone is never evidence and must not be bulk-opened by
+automation. An ESPN row cannot be `pre_match_verified = 1` until match linkage is
+human- or license-verified.
+
 ## Primary category
 
 Choose one category based on the strongest explicit expectation. If two are equally supported, use `balanced` and capture both in the dimensions.

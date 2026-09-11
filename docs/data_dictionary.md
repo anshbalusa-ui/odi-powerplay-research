@@ -70,6 +70,12 @@ These fields may be present in labeled data for training/evaluation but cannot b
 
 | Variable | Type | Definition |
 |---|---|---|
+| `espn_match_id_candidate` | string/nullable | numeric Cricsheet ID copied as an unverified candidate; never assumed correct |
+| `espn_legacy_match_url_candidate` | URL/nullable | unfetched legacy ESPN navigation candidate generated from the probable ID |
+| `espn_match_id_verified` | string/nullable | actual numeric ESPN ID after human or licensed match-identity verification |
+| `espn_match_url_verified` | URL/nullable | current ESPNcricinfo match page confirmed against teams, date, event, and venue |
+| `espn_linkage_status` | category | `unverified_candidate`, `verified_match`, `not_espn_id`, `wrong_match`, or `not_available` |
+| `source_search_query` | string | outcome-blind pre-match pitch-report search query; not fetched by the pipeline |
 | `source_url` | string | direct eligible pre-match report URL |
 | `source_title` | string | source article title |
 | `published_at_utc` | timestamp/date | source publication time in UTC when shown; ISO date only when the publisher omits time and the date still proves the article preceded play |
