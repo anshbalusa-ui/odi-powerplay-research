@@ -110,6 +110,10 @@ Pitch reports are collected in outcome-blind batches. Match IDs are selected bef
 
 Fantasy-prediction, betting, unattributed aggregator, social-media, live-blog, and post-match pages do not establish the primary pitch code. When higher-quality sources lack pitch evidence or lower-quality sources conflict, leave pitch dimensions missing and record the reason. One missing-source row is preferable to an unsupported classification.
 
+`validate_pitch_rows` enforces the obvious URL/title markers for fantasy,
+Dream11, betting, and match-prediction pages. Ambiguous source quality,
+attribution, and match linkage still require manual review.
+
 ESPNcricinfo ball-by-ball commentary and match-day live coverage are never pitch
 inputs: they are post-start sources, can reveal powerplay performance and outcome
 information, and are outside the permitted automated-use policy. Only a separately
@@ -137,6 +141,28 @@ Four ESPN preview candidates were found for Cricsheet match IDs `1388412`,
 the current collection was AI-assisted rather than human/licensed. They remain in
 `data/manual/pitch_set_aside.csv` for permitted follow-up. The repository publishes
 no ESPN article passage.
+
+## Second-batch source release
+
+The second 25-match outcome-blind batch was reviewed individually on 2026-09-11.
+Five non-ESPN reports met the same requirements:
+
+- MyKhel, England–Netherlands Pune pitch/weather report:
+  https://www.mykhel.com/cricket/mca-stadium-pune-pitch-report-weather-forecast-for-eng-vs-ned-icc-odi-world-cup-2023-match-40-244161.html
+- MyKhel, Pakistan–South Africa Karachi pitch/weather report:
+  https://www.mykhel.com/cricket/pakistan-vs-south-africa-3rd-odi-pak-vs-sa-pitch-weather-forecast-karachi-national-stadium-report-340299.html
+- MyKhel, New Zealand–Pakistan Karachi final preview and pitch report:
+  https://www.mykhel.com/cricket/nz-vs-pak-playing-11-odi-tri-series-final-new-zealand-vs-pakistan-probable-playing-xi-preview-weather-and-pitch-report-340972.html
+- CricTracker, Ireland–South Africa second ODI match preview:
+  https://www.crictracker.com/cricket-previews/ireland-vs-south-africa-match-preview-2nd-odi-2409-4246/
+- Cricket Addictor, West Indies–Bangladesh Guyana match preview:
+  https://cricketaddictor.com/cricket/windies-vs-bangladesh-2018-1st-odi-guyana-match-preview/
+
+Twenty second-batch matches were set aside. Seven indexed surface descriptions
+were deliberately rejected because they were fantasy/match-prediction pages, as
+prohibited by the source protocol; one additional preview contained inconsistent
+venue attribution. The remaining set-aside reasons identify inaccessible,
+ESPN-only, or absent match-specific evidence.
 
 The tracked `pitch_reports_verified.csv` contains only source URLs, publication and
 access timestamps, derived categorical codes, and short original paraphrases.

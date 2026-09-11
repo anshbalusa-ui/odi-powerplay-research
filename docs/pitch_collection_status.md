@@ -4,28 +4,28 @@ Last updated: 2026-09-11
 
 The current primary cohort contains 1,094 men's ODIs (2,188 team-innings) from
 2015 through the checksummed Cricsheet snapshot. `build_pitch_collection_queue.py`
-creates one deterministic, outcome-blind source row per match. The first balanced
-25-match batch has now been reviewed: four non-ESPN reports passed source, timing,
-and coding validation, while 21 matches were set aside with explicit reasons.
+creates one deterministic, outcome-blind source row per match. The first two
+balanced 25-match batches have now been reviewed: nine non-ESPN reports passed
+source, timing, and coding validation, while 41 matches were set aside with
+explicit reasons.
 
 ## Current reproducible coverage
 
 | Status | Matches |
 |---|---:|
 | Eligible matches queued | 1,094 |
-| First-batch matches reviewed | 25 |
-| Timing-verified, source-coded matches | 4 |
-| Matches set aside for later review | 21 |
-| ESPN preview candidates deferred for human/licensed review | 4 |
-| Leakage-safe model-table merge dry run | 4 |
-| Current cohort coverage | 0.36563% |
+| Matches reviewed in two balanced batches | 50 |
+| Timing-verified, source-coded matches | 9 |
+| Matches set aside for later review | 41 |
+| Leakage-safe model-table merge dry run | 9 |
+| Current cohort coverage | 0.82267% |
 
 The tracked `data/manual/pitch_reports_verified.csv` and
-`data/manual/match_start_times_verified.csv` files contain the four verified rows.
+`data/manual/match_start_times_verified.csv` files contain the nine verified rows.
 They contain source provenance, derived codes, and short original paraphrases—not
-copied article text. `data/manual/pitch_set_aside.csv` is the outcome-blind follow-up
-list requested for matches without currently eligible analysis. The ignored working
-files remain available for continued collection.
+copied article text. `data/manual/pitch_set_aside.csv` is the outcome-blind
+follow-up list requested for 41 reviewed matches without currently eligible
+analysis. The ignored working files remain available for continued collection.
 
 ## Collection constraint
 

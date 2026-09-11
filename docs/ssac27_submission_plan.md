@@ -68,10 +68,10 @@ uncertainty, calibration, and preliminary figures are complete. The venue-histor
 sensitivity did not improve M1's 2024 AUC or proper scores by point estimate. The
 current numeric narrative is in `docs/results.md`.
 
-The pitch requirement is **not met**: four of 1,094 matches have timing-verified
-AI-assisted first-pass codes, 21 first-batch matches are set aside, and independent
-double coding has not occurred. The hand-audit worksheet is generated but still
-needs external scorecard reconciliation.
+The pitch requirement is **not met**: nine of 1,094 matches have timing-verified
+AI-assisted first-pass codes, 41 of 50 reviewed matches are set aside, and
+independent double coding has not occurred. The hand-audit worksheet is generated
+but still needs external scorecard reconciliation.
 The 2025–2026 locked test remains correctly unscored.
 
 Go/no-go decision: do not submit the current analysis as a pitch-adjusted result.

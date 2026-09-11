@@ -44,6 +44,14 @@ ESPN_LINKAGE_VALUES = {
     "wrong_match",
     "not_available",
 }
+DISALLOWED_PITCH_SOURCE_MARKERS = (
+    "/betting",
+    "/fantasy",
+    "dream11",
+    "fantasy cricket",
+    "match-prediction",
+    "match prediction",
+)
 PITCH_QUEUE_FIELDS = (
     "cricsheet_match_id",
     "match_date",
@@ -376,6 +384,12 @@ def _parse_timestamp(value: Any) -> datetime | None:
         return None
 
 
+def _is_disallowed_pitch_source(source_url: str, source_title: str) -> bool:
+    parsed_url = urlparse(source_url)
+    searchable = f"{parsed_url.path} {parsed_url.query} {source_title}".casefold()
+    return any(marker in searchable for marker in DISALLOWED_PITCH_SOURCE_MARKERS)
+
+
 def validate_pitch_rows(
     rows: Iterable[dict[str, Any]],
     *,
@@ -414,6 +428,15 @@ def validate_pitch_rows(
         parsed_url = urlparse(source_url)
         if parsed_url.scheme not in {"http", "https"} or not parsed_url.netloc:
             issue(match_id, "source_url", "verified rows require an HTTP(S) source URL")
+        elif _is_disallowed_pitch_source(
+            source_url,
+            str(row.get("source_title", "")).strip(),
+        ):
+            issue(
+                match_id,
+                "source_url",
+                "source protocol excludes fantasy, Dream11, betting, and match-prediction pages",
+            )
         for field in ("source_title", "coder_id", "coder_confidence", "pitch_primary_category"):
             if not str(row.get(field, "")).strip():
                 issue(match_id, field, "required for verified rows")

@@ -33,7 +33,11 @@ def main() -> int:
     rows = build_pitch_set_aside(read_csv(args.pitch_input))
     args.output.parent.mkdir(parents=True, exist_ok=True)
     with args.output.open("w", encoding="utf-8", newline="") as handle:
-        writer = csv.DictWriter(handle, fieldnames=PITCH_SET_ASIDE_FIELDS)
+        writer = csv.DictWriter(
+            handle,
+            fieldnames=PITCH_SET_ASIDE_FIELDS,
+            lineterminator="\n",
+        )
         writer.writeheader()
         writer.writerows(rows)
 

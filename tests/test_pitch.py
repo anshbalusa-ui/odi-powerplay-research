@@ -188,6 +188,22 @@ class PitchPipelineTests(unittest.TestCase):
             "source was not published before match start", {issue["message"] for issue in issues}
         )
 
+    def test_verified_rows_reject_prediction_and_fantasy_sources(self) -> None:
+        row = self.verified_pitch_row()
+        row["source_url"] = "https://example.com/fantasy-cricket-tips/match"
+        row["source_title"] = "Dream11 Match Prediction"
+
+        issues = validate_pitch_rows(
+            [row],
+            eligible_match_ids={"match-1"},
+            match_start_by_id={"match-1": "2026-01-02T10:00:00+00:00"},
+        )
+
+        self.assertIn(
+            "source protocol excludes fantasy, Dream11, betting, and match-prediction pages",
+            {issue["message"] for issue in issues},
+        )
+
     def test_espn_sources_require_human_verified_match_linkage(self) -> None:
         row = self.verified_pitch_row()
         row["source_url"] = "https://www.espn.com/cricket/series/1/preview/1234567/message"

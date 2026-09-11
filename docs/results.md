@@ -4,7 +4,7 @@
 
 These are reproducible **development and 2024 temporal-validation results**, not
 final paper results. The 2025–2026 test period remains locked and its outcomes have
-not been scored. Pitch-adjusted results remain unavailable: four of 1,094 matches
+not been scored. Pitch-adjusted results remain unavailable: nine of 1,094 matches
 now have timing-verified provisional pitch codes, but independent double-coding and
 adequate coverage have not been achieved.
 
