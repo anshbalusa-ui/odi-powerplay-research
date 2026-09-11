@@ -4,9 +4,9 @@ Last updated: 2026-09-11
 
 The current primary cohort contains 1,094 men's ODIs (2,188 team-innings) from
 2015 through the checksummed Cricsheet snapshot. `build_pitch_collection_queue.py`
-creates one deterministic, outcome-blind source row per match. The first three
-balanced 25-match batches have now been reviewed: 18 non-ESPN reports passed
-source, timing, and coding validation, while 57 matches were set aside with
+creates one deterministic, outcome-blind source row per match. The first four
+balanced 25-match batches have now been reviewed: 28 non-ESPN reports passed
+source, timing, and coding validation, while 72 matches were set aside with
 explicit reasons.
 
 ## Current reproducible coverage
@@ -14,18 +14,18 @@ explicit reasons.
 | Status | Matches |
 |---|---:|
 | Eligible matches queued | 1,094 |
-| Matches reviewed in three balanced batches | 75 |
-| Timing-verified, source-coded matches | 18 |
-| Matches set aside for later review | 57 |
-| Leakage-safe model-table merge dry run | 18 |
-| Current cohort coverage | 1.64534% |
+| Matches reviewed in four balanced batches | 100 |
+| Timing-verified, source-coded matches | 28 |
+| Matches set aside for later review | 72 |
+| Leakage-safe model-table merge dry run | 28 |
+| Current cohort coverage | 2.55941% |
 
 The tracked `data/manual/pitch_reports_verified.csv` and
-`data/manual/match_start_times_verified.csv` files contain the 18 verified rows.
-They contain source provenance, derived codes, and short original paraphrases—not
-copied article text. `data/manual/pitch_set_aside.csv` is the outcome-blind
-follow-up list requested for 57 reviewed matches without currently eligible
-analysis. The ignored working files remain available for continued collection.
+`data/manual/match_start_times_verified.csv` files contain the 28 verified rows.
+They contain source provenance, source-publication time, collection time
+(`accessed_at_utc`), derived codes, and short original paraphrases—not copied
+article text. `data/manual/pitch_set_aside.csv` is the outcome-blind follow-up list
+for 72 reviewed matches without currently eligible analysis.
 
 ## Collection constraint
 
@@ -36,12 +36,22 @@ eligible match-specific pre-match reports, record publication and match-start ti
 retain short original paraphrases rather than article text, and mark unsupported
 matches explicitly.
 
+## Prespecified collection target
+
+The usable pitch subset target is 200 matches (400 paired team-innings) from the
+modern 2015-forward ODI cohort. The statistical sampling unit remains the match:
+the two innings are paired observations, not 400 independent games. Reaching the
+target means 200 source- and timing-verified reports—not merely 200 searches. The
+target supports an exploratory, parsimonious pitch-adjusted analysis; category
+strata, missingness, selection bias, and independent coding reliability still
+govern whether a specific model is defensible.
+
 ## Match-start verification gate
 
 `scripts/build_match_start_queue.py` generates
 `data/manual/match_start_times_template.csv` from primary-cohort metadata without
 reading result or powerplay fields. The full template has 1,094 pending rows. The
-tracked `data/manual/match_start_times_verified.csv` release contains only the 18
+tracked `data/manual/match_start_times_verified.csv` release contains only the 28
 rows corresponding to currently verified non-ESPN pitch reports.
 
 A collector should copy only rows corresponding to collected pitch reports into

@@ -198,3 +198,36 @@ Sixteen third-batch matches were set aside. One located pitch article was
 published after the scheduled start, one indexed non-ESPN preview could not be
 opened for direct review, and the remaining searches produced only ESPN-restricted,
 generic, post-match, fantasy/betting, or surface-free pre-match material.
+
+## Fourth-batch source release
+
+The fourth 25-match outcome-blind batch was reviewed individually on 2026-09-11.
+Ten non-ESPN reports met the source, timing, and surface-evidence requirements:
+
+- Cricket Ireland, Ireland–West Indies second ODI preview:
+  https://cricketireland.ie/news/match-preview-ireland-v-west-indies-2nd-odi/
+- Cricket Australia, Australia–New Zealand SCG preview:
+  https://www.cricket.com.au/news/3279017/pace-on-the-menu-as-rivalry-resumes
+- Cricket Addictor, Sri Lanka–England second ODI preview:
+  https://cricketaddictor.com/cricket-news/sl-vs-eng-2nd-odi-preview-free-live-streaming-pitch-weather-report-head-to-head-stats-records-england-tour-of-sri-lanka-2026-380450/
+- MyKhel, Bangladesh–Sri Lanka Pallekele pitch/weather report:
+  https://www.mykhel.com/cricket/bangladesh-vs-sri-lanka-asia-cup-2023-kandy-stadium-pitch-report-weather-forecast-230193.html
+- ICC, Sri Lanka–South Africa Champions Trophy preview:
+  https://www.icc-cricket.com/news/preview-sri-lanka-v-south-africa
+- Telegraph India, Pakistan–Bangladesh Eden Gardens pitch report:
+  https://www.telegraphindia.com/sports/cricket/pakistan-vs-bangladesh-eden-gardens-pitch-likely-to-aid-quicks-with-extra-bounce/cid/1976525
+- The Daily Star, Sri Lanka–Bangladesh toss-time pitch assessment:
+  https://www.thedailystar.net/star-multimedia/sports-multimedia/asia-cup-2023/news/nasum-tigers-opt-bowl-against-sl-3414611
+- Business Standard, England–India Lord's pitch/weather report:
+  https://www.business-standard.com/article/sports/eng-vs-ind-2nd-odi-pitch-report-and-weather-update-of-lord-s-london-122071301195_1.html
+- Hindustan Times, India–New Zealand Dharamsala pitch report:
+  https://www.hindustantimes.com/cricket/india-vs-nz-cool-dharamsala-could-offer-slight-advantage-to-medium-pacers/story-Jv52G9MTn6UMOuN7qVy6AI.html
+- MyKhel, Pakistan–New Zealand Champions Trophy pitch/weather report:
+  https://www.mykhel.com/cricket/champions-trophy-2025-pakistan-vs-new-zealand-pak-vs-nz-pitch-and-weather-forecast-karachi-stadium-341833.html
+
+Fifteen fourth-batch matches were set aside. Reasons include publication after
+start, date-only publication metadata that could not pass the precise timing gate,
+inaccessible pages, surface-free official previews, fantasy/live/post-match
+material, and absent match-specific evidence. Every reviewed working row records
+the batch collection instant in `accessed_at_utc`; accepted rows separately retain
+the source publication instant and verified scheduled-start instant.
