@@ -169,6 +169,46 @@ class PitchPipelineTests(unittest.TestCase):
             )
         )
 
+    def test_newest_first_batch_is_recent_deterministic_and_outcome_blind(self) -> None:
+        class GuardedRow(dict):
+            def get(self, key, default=None):
+                if key in {"winner", "pp_runs", "batting_team_won"}:
+                    raise AssertionError(f"Outcome-bearing field was read: {key}")
+                return super().get(key, default)
+
+        queue = [
+            GuardedRow(
+                cricsheet_match_id=f"match-{index}",
+                match_date=match_date,
+                competition_type="bilateral_series",
+                winner="must-not-be-read",
+            )
+            for index, match_date in enumerate(
+                ["2024-01-01", "2026-02-01", "2025-06-01", "2026-01-01"]
+            )
+        ]
+        selected = select_next_pitch_batch(
+            queue,
+            completed_match_ids={"match-1"},
+            n=2,
+            newest_first=True,
+        )
+        repeated = select_next_pitch_batch(
+            queue,
+            completed_match_ids={"match-1"},
+            n=2,
+            seed=999,
+            newest_first=True,
+        )
+
+        self.assertEqual(
+            [row["cricsheet_match_id"] for row in selected],
+            ["match-3", "match-2"],
+        )
+        self.assertEqual([row["batch_sequence"] for row in selected], [1, 2])
+        self.assertEqual(selected, repeated)
+        self.assertTrue(all("winner" not in row for row in selected))
+
     def test_verified_source_must_precede_match_start(self) -> None:
         row = self.verified_pitch_row()
         valid = validate_pitch_rows(

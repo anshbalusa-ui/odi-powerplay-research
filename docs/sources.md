@@ -231,3 +231,27 @@ inaccessible pages, surface-free official previews, fantasy/live/post-match
 material, and absent match-specific evidence. Every reviewed working row records
 the batch collection instant in `accessed_at_utc`; accepted rows separately retain
 the source publication instant and verified scheduled-start instant.
+
+## Fifth-batch source release
+
+The fifth 25-match outcome-blind batch was selected newest-first from the unreviewed
+queue and reviewed individually on 2026-09-11. Five non-ESPN reports met the source,
+timing, and surface-evidence requirements:
+
+- MyKhel, England–India Lord's pitch and team-news preview:
+  https://www.mykhel.com/cricket/india-vs-england-3rd-odi-lords-weather-forecast-pitch-report-probable-xis-and-match-preview-447347.html
+- Business Standard, England–India Cardiff preview and pitch report:
+  https://www.business-standard.com/amp/cricket/news/england-vs-india-2nd-odi-playing-11-live-time-ist-cardiff-stadium-stats-126071600275_1.html
+- Business Standard, England–India Edgbaston toss-time surface assessment:
+  https://www.business-standard.com/cricket/news/eng-vs-ind-1st-odi-where-to-watch-live-streaming-of-today-s-cricket-match-126071300656_1.html
+- The Daily Star, Zimbabwe–Bangladesh Harare preview:
+  https://www.thedailystar.net/sports/cricket/news/tigers-bank-pacers-after-test-setback-4216626
+- The Daily Star, Bangladesh–Australia Mirpur preview:
+  https://www.thedailystar.net/sports/cricket/news/labuschagne-looking-salvage-pride-dead-rubber-4197761
+
+Twenty fifth-batch matches were set aside. Official series previews without surface
+analysis, generic venue history, post-start/live material, and fantasy-prediction
+pages did not pass the match-specific pre-start evidence gate. All 25 working rows
+record the common collection instant `2026-09-11T23:39:43Z`; accepted rows separately
+retain the exact source-publication and scheduled-start instants. The reviewed match
+range is 2026-06-06 through 2026-08-13.

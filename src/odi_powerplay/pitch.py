@@ -295,12 +295,13 @@ def select_next_pitch_batch(
     completed_match_ids: set[str] | None = None,
     n: int = 25,
     seed: int = 20250905,
+    newest_first: bool = False,
 ) -> list[dict[str, Any]]:
-    """Select a deterministic outcome-blind batch with year and competition coverage."""
-
+    """Select a deterministic outcome-blind balanced or newest-first batch."""
     if n < 1:
         raise ValueError("Batch size must be positive")
     completed = {str(value) for value in completed_match_ids or set()}
+    eligible: list[dict[str, Any]] = []
     grouped: dict[tuple[str, str], list[dict[str, Any]]] = defaultdict(list)
     seen: set[str] = set()
     for row in rows:
@@ -313,11 +314,24 @@ def select_next_pitch_batch(
         if match_id in completed:
             continue
         safe_row = {field: row.get(field, "") for field in PITCH_QUEUE_FIELDS}
-        stratum = (
-            str(safe_row["match_date"])[:4],
-            str(safe_row["competition_type"]),
-        )
-        grouped[stratum].append(safe_row)
+        eligible.append(safe_row)
+        if not newest_first:
+            stratum = (
+                str(safe_row["match_date"])[:4],
+                str(safe_row["competition_type"]),
+            )
+            grouped[stratum].append(safe_row)
+
+    if newest_first:
+        recent = sorted(
+            eligible,
+            key=lambda row: (
+                str(row["match_date"]),
+                str(row["cricsheet_match_id"]),
+            ),
+            reverse=True,
+        )[:n]
+        return [{**row, "batch_sequence": position} for position, row in enumerate(recent, start=1)]
 
     random_generator = random.Random(seed)
     for values in grouped.values():

@@ -53,8 +53,8 @@ One row represents one batting-team innings in one match. The outcome is `battin
   human-verification fields and a zero-network structural audit.
 - A 1,094-match outcome-blind scheduled-start template with IANA-timezone,
   cohort-identity, provenance, and UTC-conversion validation.
-- A tracked four-batch release with 28 timing-verified provisional pitch codes
-  and 72 outcome-blind set-aside rows for later review.
+- A tracked five-batch release with 33 timing-verified provisional pitch codes
+  and 92 outcome-blind set-aside rows for later review.
 - Pitch/source-timing templates, research design, data dictionary, pitch codebook,
   transformation log, paper outline, and execution roadmap.
 
@@ -108,10 +108,10 @@ Generated primary/cohort datasets are ignored by Git and reproduced from the
 checksummed raw snapshot. The tracked hand-audit and pitch-queue templates contain
 no source prose and no secret data.
 
-The first four balanced pitch batches now cover 100 reviewed matches: 28 non-ESPN
-pre-match reports passed source and timing validation, and 72 matches are listed in
-`data/manual/pitch_set_aside.csv` for later review. Current verified coverage is
-28/1,094 (2.55941%). The minimized tracked releases are
+The first four balanced pitch batches plus a fifth newest-first batch now cover 125
+reviewed matches: 33 non-ESPN pre-match reports passed source and timing validation,
+and 92 matches are listed in `data/manual/pitch_set_aside.csv` for later review.
+Current verified coverage is 33/1,094 (3.01645%). The minimized tracked releases are
 `data/manual/pitch_reports_verified.csv` and
 `data/manual/match_start_times_verified.csv`; they contain provenance, factual
 timestamps, derived codes, and short original paraphrases, not copied article text.

@@ -5,27 +5,27 @@ Last updated: 2026-09-11
 The current primary cohort contains 1,094 men's ODIs (2,188 team-innings) from
 2015 through the checksummed Cricsheet snapshot. `build_pitch_collection_queue.py`
 creates one deterministic, outcome-blind source row per match. The first four
-balanced 25-match batches have now been reviewed: 28 non-ESPN reports passed
-source, timing, and coding validation, while 72 matches were set aside with
-explicit reasons.
+balanced 25-match batches and a fifth 25-match batch selected newest-first have now
+been reviewed: 33 non-ESPN reports passed source, timing, and coding validation,
+while 92 matches were set aside with explicit reasons.
 
 ## Current reproducible coverage
 
 | Status | Matches |
 |---|---:|
 | Eligible matches queued | 1,094 |
-| Matches reviewed in four balanced batches | 100 |
-| Timing-verified, source-coded matches | 28 |
-| Matches set aside for later review | 72 |
-| Leakage-safe model-table merge dry run | 28 |
-| Current cohort coverage | 2.55941% |
+| Matches reviewed in five 25-match batches | 125 |
+| Timing-verified, source-coded matches | 33 |
+| Matches set aside for later review | 92 |
+| Leakage-safe model-table merge dry run | 33 |
+| Current cohort coverage | 3.01645% |
 
 The tracked `data/manual/pitch_reports_verified.csv` and
-`data/manual/match_start_times_verified.csv` files contain the 28 verified rows.
+`data/manual/match_start_times_verified.csv` files contain the 33 verified rows.
 They contain source provenance, source-publication time, collection time
 (`accessed_at_utc`), derived codes, and short original paraphrases—not copied
 article text. `data/manual/pitch_set_aside.csv` is the outcome-blind follow-up list
-for 72 reviewed matches without currently eligible analysis.
+for 92 reviewed matches without currently eligible analysis.
 
 ## Collection constraint
 
@@ -51,7 +51,7 @@ govern whether a specific model is defensible.
 `scripts/build_match_start_queue.py` generates
 `data/manual/match_start_times_template.csv` from primary-cohort metadata without
 reading result or powerplay fields. The full template has 1,094 pending rows. The
-tracked `data/manual/match_start_times_verified.csv` release contains only the 28
+tracked `data/manual/match_start_times_verified.csv` release contains only the 33
 rows corresponding to currently verified non-ESPN pitch reports.
 
 A collector should copy only rows corresponding to collected pitch reports into
@@ -111,15 +111,17 @@ ignored `pitch_reports.csv` working file:
 
 ```bash
 .venv/bin/python scripts/select_pitch_batch.py \
+  --newest-first \
   --n 25 \
-  --seed 20250905 \
   --output data/manual/pitch_batch_working.csv
 ```
 
-Selection first covers unrepresented years, then unrepresented competition types,
-then fills year × competition strata in deterministic rounds. Use a different
-documented seed or output filename for parallel contributors, and reserve match IDs
-in issue #3 before starting to avoid duplicate work.
+Balanced selection first covers unrepresented years, then unrepresented competition
+types, then fills year × competition strata in deterministic rounds. Use
+`--newest-first` to prioritize recent unreviewed matches while preserving the same
+outcome-blind queue. Use a documented seed or output filename for parallel
+contributors, and reserve match IDs in issue #3 before starting to avoid duplicate
+work.
 
 Copy completed batch rows into the ignored `data/manual/pitch_reports.csv` working
 file. Run `audit_pitch_collection.py` with verified UTC match starts before merging,

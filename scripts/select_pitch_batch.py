@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Select a balanced outcome-blind batch for manual pitch-source coding."""
+"""Select an outcome-blind batch for manual pitch-source coding."""
 
 from __future__ import annotations
 
@@ -51,6 +51,11 @@ def main() -> int:
     parser.add_argument("--n", type=int, default=25)
     parser.add_argument("--seed", type=int, default=20250905)
     parser.add_argument(
+        "--newest-first",
+        action="store_true",
+        help="Select the newest unreviewed matches instead of balancing year strata.",
+    )
+    parser.add_argument(
         "--output",
         type=Path,
         default=ROOT / "data/manual/pitch_batch_001_template.csv",
@@ -70,6 +75,7 @@ def main() -> int:
         completed_match_ids=completed_ids,
         n=args.n,
         seed=args.seed,
+        newest_first=args.newest_first,
     )
     if not batch:
         raise ValueError("No uncompleted pitch-source rows remain")
@@ -87,6 +93,10 @@ def main() -> int:
         "selected_matches": len(batch),
         "completed_matches_skipped": len(completed_ids),
         "seed": args.seed,
+        "selection_strategy": "newest_first" if args.newest_first else "balanced",
+        "match_date_range": [batch[-1]["match_date"], batch[0]["match_date"]]
+        if args.newest_first
+        else [min(row["match_date"] for row in batch), max(row["match_date"] for row in batch)],
         "years": dict(sorted(Counter(row["match_date"][:4] for row in batch).items())),
         "competition_types": dict(
             sorted(Counter(row["competition_type"] for row in batch).items())
