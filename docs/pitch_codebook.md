@@ -15,6 +15,11 @@ A source is eligible when:
 
 If these conditions fail, set `pre_match_verified = 0` and record `exclusion_reason`. Store a short paraphrase, not a large copied passage.
 
+AI-assisted coding may produce a provisional first pass for eligible non-ESPN
+sources when the `coder_id` discloses that status. It does not satisfy the
+independent-human reliability requirement. ESPN source collection and linkage
+remain restricted to a human or licensed route under the reviewed terms.
+
 ### ESPN match identity
 
 The queue's numeric Cricsheet ID and legacy ESPN URL are unverified navigation

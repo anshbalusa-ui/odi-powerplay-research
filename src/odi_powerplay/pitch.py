@@ -8,7 +8,7 @@ import random
 from collections import Counter, defaultdict
 from datetime import datetime
 from typing import Any, Iterable
-from urllib.parse import urlparse
+from urllib.parse import parse_qs, urlparse
 
 
 PITCH_FIELDS = (
@@ -70,6 +70,19 @@ PITCH_QUEUE_FIELDS = (
     "short_paraphrased_note",
     "exclusion_reason",
 )
+PITCH_SET_ASIDE_FIELDS = (
+    "cricsheet_match_id",
+    "match_date",
+    "event_name",
+    "competition_type",
+    "venue",
+    "city",
+    "team_1",
+    "team_2",
+    "source_search_query",
+    "review_status",
+    "exclusion_reason",
+)
 
 
 def espn_link_candidate(match_id: Any) -> dict[str, str]:
@@ -98,10 +111,21 @@ def espn_link_candidate(match_id: Any) -> dict[str, str]:
 def _is_espncricinfo_url(value: Any) -> bool:
     parsed = urlparse(str(value or "").strip())
     host = (parsed.hostname or "").casefold()
+    if parsed.scheme not in {"http", "https"} or not host:
+        return False
+    if host == "espncricinfo.com" or host.endswith(".espncricinfo.com"):
+        return True
+    espn_domains = ("espn.com", "espn.in", "espn.com.au", "espn.co.uk")
+    if not any(host == domain or host.endswith(f".{domain}") for domain in espn_domains):
+        return False
+    if parsed.path.startswith("/cricket/"):
+        return True
+    print_ids = parse_qs(parsed.query).get("id", [])
     return (
-        parsed.scheme in {"http", "https"}
-        and bool(host)
-        and (host == "espncricinfo.com" or host.endswith(".espncricinfo.com"))
+        parsed.path == "/espn/print"
+        and len(print_ids) == 1
+        and print_ids[0].isascii()
+        and print_ids[0].isdigit()
     )
 
 
@@ -459,20 +483,62 @@ def validate_pitch_rows(
     return issues
 
 
-def pitch_coverage_summary(rows: Iterable[dict[str, Any]]) -> dict[str, Any]:
+def pitch_coverage_summary(
+    rows: Iterable[dict[str, Any]],
+    *,
+    eligible_match_count: int | None = None,
+) -> dict[str, Any]:
     """Summarize verified coverage without using match outcomes."""
 
     materialized = list(rows)
     verified = [row for row in materialized if str(row.get("pre_match_verified", "")) == "1"]
+    denominator = len(materialized) if eligible_match_count is None else eligible_match_count
+    if denominator < len(verified):
+        raise ValueError("Eligible match count cannot be smaller than verified pitch count")
     by_year = Counter(str(row.get("match_date", ""))[:4] for row in verified)
     by_category = Counter(str(row.get("pitch_primary_category", "")) for row in verified)
     return {
-        "queued_matches": len(materialized),
+        "attempted_matches": len(materialized),
+        "eligible_cohort_matches": denominator,
         "verified_pitch_matches": len(verified),
-        "coverage_pct": round(100 * len(verified) / len(materialized), 6) if materialized else 0.0,
+        "coverage_pct": round(100 * len(verified) / denominator, 6) if denominator else 0.0,
         "verified_by_year": dict(sorted(by_year.items())),
         "verified_by_primary_category": dict(sorted(by_category.items())),
     }
+
+
+def build_pitch_set_aside(rows: Iterable[dict[str, Any]]) -> list[dict[str, str]]:
+    """Project excluded attempts into an outcome-blind follow-up queue."""
+
+    set_aside: list[dict[str, str]] = []
+    seen: set[str] = set()
+    for row in rows:
+        match_id = str(row.get("cricsheet_match_id", "")).strip()
+        if not match_id:
+            raise ValueError("Pitch row is missing cricsheet_match_id")
+        if match_id in seen:
+            raise ValueError(f"Duplicate pitch match ID: {match_id}")
+        seen.add(match_id)
+
+        verified = str(row.get("pre_match_verified", "")).strip()
+        if verified not in {"0", "1"}:
+            raise ValueError(f"Match {match_id}: pre_match_verified must be 0 or 1")
+        if verified == "1":
+            continue
+
+        exclusion_reason = str(row.get("exclusion_reason", "")).strip()
+        if not exclusion_reason:
+            raise ValueError(f"Match {match_id}: excluded row is missing exclusion_reason")
+        output = {
+            field: ("set_aside" if field == "review_status" else str(row.get(field, "")).strip())
+            for field in PITCH_SET_ASIDE_FIELDS
+        }
+        set_aside.append(output)
+
+    return sorted(
+        set_aside,
+        key=lambda row: (row["match_date"], row["cricsheet_match_id"]),
+    )
 
 
 def _verified_pitch_rows_by_match(

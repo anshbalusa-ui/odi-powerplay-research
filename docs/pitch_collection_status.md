@@ -4,25 +4,28 @@ Last updated: 2026-09-11
 
 The current primary cohort contains 1,094 men's ODIs (2,188 team-innings) from
 2015 through the checksummed Cricsheet snapshot. `build_pitch_collection_queue.py`
-now creates one deterministic, outcome-blind source row per match. The tracked queue
-contains identifiers, date, competition type, venue, teams, and a search query, but
-no result or powerplay fields.
+creates one deterministic, outcome-blind source row per match. The first balanced
+25-match batch has now been reviewed: four non-ESPN reports passed source, timing,
+and coding validation, while 21 matches were set aside with explicit reasons.
 
 ## Current reproducible coverage
 
 | Status | Matches |
 |---|---:|
 | Eligible matches queued | 1,094 |
-| Scheduled-start rows queued | 1,094 |
-| Human-verified scheduled starts | 0 |
-| Source rows present in this clone | 0 |
-| Timing-verified pitch codes | 0 |
-| Current reproducible coverage | 0% |
+| First-batch matches reviewed | 25 |
+| Timing-verified, source-coded matches | 4 |
+| Matches set aside for later review | 21 |
+| ESPN preview candidates deferred for human/licensed review | 4 |
+| Leakage-safe model-table merge dry run | 4 |
+| Current cohort coverage | 0.36563% |
 
-Earlier project notes reported 16 local working rows and 9 usable provisional codes.
-Those source-derived rows were intentionally Git-ignored pending a rights review and
-are not present in this clone, so they cannot be audited or counted as current data.
-Recover them from the original authorized working copy before collecting duplicates.
+The tracked `data/manual/pitch_reports_verified.csv` and
+`data/manual/match_start_times_verified.csv` files contain the four verified rows.
+They contain source provenance, derived codes, and short original paraphrases—not
+copied article text. `data/manual/pitch_set_aside.csv` is the outcome-blind follow-up
+list requested for matches without currently eligible analysis. The ignored working
+files remain available for continued collection.
 
 ## Collection constraint
 
@@ -37,12 +40,13 @@ matches explicitly.
 
 `scripts/build_match_start_queue.py` generates
 `data/manual/match_start_times_template.csv` from primary-cohort metadata without
-reading result or powerplay fields. All 1,094 rows initially have
-`start_time_status=pending`; zero are represented as verified data.
+reading result or powerplay fields. The full template has 1,094 pending rows. The
+tracked `data/manual/match_start_times_verified.csv` release contains only the four
+rows corresponding to currently verified non-ESPN pitch reports.
 
-A human or licensed collector must copy only the rows corresponding to collected
-pitch reports into the Git-ignored `data/manual/match_start_times.csv`, reconcile
-the teams/date/event/venue against a cited schedule or match page, and record:
+A collector should copy only rows corresponding to collected pitch reports into
+the Git-ignored `data/manual/match_start_times.csv`, reconcile the
+teams/date/event/venue against a cited schedule or match page, and record:
 
 1. the source URL, title, and UTC access timestamp;
 2. the scheduled local datetime without an offset;
@@ -53,8 +57,8 @@ the teams/date/event/venue against a cited schedule or match page, and record:
 Run the zero-network audit before pitch validation:
 
 ```bash
-python scripts/audit_match_start_times.py \
-  --input data/manual/match_start_times.csv
+.venv/bin/python scripts/audit_match_start_times.py \
+  --input data/manual/match_start_times_verified.csv
 ```
 
 The audit checks every provided row's cohort identity, ISO timestamps, IANA
@@ -75,10 +79,11 @@ competition types while containing no result, winner, or powerplay columns.
 
 Every queue row includes a probable ESPN ID and unfetched legacy match-URL
 candidate because Cricsheet documents its IDs as generally—but not always—the
-Cricinfo match IDs. All 1,094 candidates remain `unverified_candidate`; generation
-performed zero ESPN network requests. Before citing any ESPN source, a human or
-licensed collector must compare the actual page's teams, date, event, and venue,
-then fill `espn_match_id_verified`, `espn_match_url_verified`, and set
+Cricinfo match IDs. The first-batch search located four relevant ESPN preview
+candidates, but they remain set aside: ESPN's reviewed terms require human or
+licensed collection rather than automated dataset extraction. A permitted reviewer
+must compare the actual page's teams, date, event, and venue, then fill
+`espn_match_id_verified`, `espn_match_url_verified`, and set
 `espn_linkage_status=verified_match`.
 
 Audit the working linkage state without contacting ESPN:
@@ -107,9 +112,17 @@ documented seed or output filename for parallel contributors, and reserve match 
 in issue #3 before starting to avoid duplicate work.
 
 Copy completed batch rows into the ignored `data/manual/pitch_reports.csv` working
-file. Recover any authorized prior rows first. Run `audit_pitch_collection.py` with
-verified UTC match starts before merging. Independently double-code at least 20% of
-usable rows before fitting any pitch-adjusted model.
+file. Run `audit_pitch_collection.py` with verified UTC match starts before merging,
+then export unsupported attempts for later review:
+
+```bash
+.venv/bin/python scripts/export_pitch_set_aside.py \
+  --pitch-input data/manual/pitch_reports.csv
+```
+
+The public verified and set-aside files are minimized releases: no source passage,
+score, result, or powerplay metric is copied into either one. Independently
+double-code at least 20% of usable rows before fitting any pitch-adjusted model.
 
 ## Independent coding reliability gate
 

@@ -94,7 +94,7 @@ Use academic or authoritative sources. Do not pad this section with generic mach
 ### 4.1 Cohort and data quality
 
 - row counts, exclusions, missingness, and join coverage;
-- report current pitch coverage as 0/1,094 until verified rows exist;
+- report current pitch coverage as 4/1,094 (0.36563%), with 21 first-batch matches set aside;
 - report inter-coder reliability only after independent double coding.
 
 ### 4.2 Descriptive results

@@ -67,12 +67,15 @@ not be treated as stable league tables.
 
 ## Pitch conditions and ESPNcricinfo
 
-Current reproducible pitch coverage is **0 of 1,094 primary matches**. Therefore:
+Current reproducible pitch coverage is **4 of 1,094 primary matches (0.36563%)**.
+All four are AI-assisted first-pass codes from non-ESPN, match-specific pre-match
+sources. They pass the automated source/timing/merge gates but have not passed the
+independent-human reliability gate. Therefore:
 
 - no source-coded pitch variables entered the fitted models;
 - no runs × source-coded pitch or wickets × source-coded pitch interaction was
   estimated;
-- no model can currently be called pitch-adjusted;
+- no fitted model can currently be called pitch-adjusted;
 - no match-day pitch conclusion should appear in an abstract or paper result.
 
 ESPNcricinfo's reviewed terms prohibit the automated extraction approach originally
@@ -84,23 +87,25 @@ can be collected manually or through licensed access.
 
 Cricsheet documents its numeric IDs as generally, but not invariably, matching
 Cricinfo IDs. The 1,094 generated ESPN links are therefore unfetched navigation
-candidates with zero human-verified mappings, not collected ESPN data. A candidate
-must be reconciled against teams, date, event, and venue before any report can pass
-source validation.
+candidates, not collected ESPN data. Four first-batch ESPN preview candidates were
+located but deliberately set aside because the current review was not performed by
+a human or through licensed access. A candidate must be reconciled against teams,
+date, event, and venue before any report can pass source validation.
 
-The tracked start-time reference covers all 1,094 matches but contains **zero
-human-verified starts**; every row is explicitly `pending`. This is not inferred
-coverage. Collectors need to verify only the rows with collected pitch reports, not
-the entire cohort. The zero-network audit validates cohort identity, provenance
-requirements, IANA timezones, and exact local-to-UTC conversion once
-human/licensed values are entered. Downstream code exposes only rows explicitly
-marked `verified`, so a blank, partial, or merely plausible timestamp cannot make a
-pitch source eligible.
+The full tracked start-time template covers 1,094 matches with `pending` placeholders.
+The separate tracked verified release contains four cited scheduled starts, one for
+each currently published pitch code. Collectors need to verify only rows with
+collected pitch reports, not the entire cohort. The audit validates cohort identity,
+provenance, IANA timezones, and exact local-to-UTC conversion. Downstream code
+exposes only rows explicitly marked `verified`, so a blank, partial, or merely
+plausible timestamp cannot make a pitch source eligible.
 
 The outcome-blind queue contains 1,094 match-specific search tasks and no result or
-powerplay columns. Completing it requires all of the following external inputs:
+powerplay columns. The first batch reviewed 25: four passed, while 21 are explicitly
+listed in `data/manual/pitch_set_aside.csv` for later work. Completing broader
+coverage still requires:
 
-1. a human collector or licensed source-access route;
+1. human collection or a licensed source-access route for ESPN material;
 2. a direct eligible pre-match URL and publication timestamp for each coded match;
 3. a verified scheduled match-start UTC timestamp;
 4. short original paraphrases rather than copied report prose;

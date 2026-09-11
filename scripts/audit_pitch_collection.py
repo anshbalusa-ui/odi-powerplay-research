@@ -66,7 +66,7 @@ def main() -> int:
         match_start_by_id=match_starts,
     )
     issues.extend(start_time_issues)
-    summary = pitch_coverage_summary(pitch_rows)
+    summary = pitch_coverage_summary(pitch_rows, eligible_match_count=len(eligible_ids))
     summary["validation_issue_count"] = len(issues)
     summary["validation_issues_by_field"] = dict(
         sorted(Counter(issue["field"] for issue in issues).items())

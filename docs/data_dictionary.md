@@ -6,7 +6,8 @@
 |---|---|---|
 | `cricsheet_matches` | one match | stable match metadata and result |
 | `powerplay_innings` | one regulation team-innings | first-10-over statistics and context |
-| `pitch_reports` | one match/source | pre-match prose provenance and human codes |
+| `pitch_reports_verified` | one verified match/source | minimized pre-match provenance and derived pitch codes |
+| `pitch_set_aside` | one reviewed match | outcome-blind follow-up list for attempts without eligible analysis |
 | `team_strength_pre` | one match/team | ratings calculated before the match date |
 | `venue_conditions_pre_match` | one match | rolling prior-match venue scoring environment |
 | `model_team_innings` | one team-innings | audited merged analysis table |
@@ -69,8 +70,9 @@ These fields may be present in labeled data for training/evaluation but cannot b
 ## Match-start verification fields
 
 `data/manual/match_start_times_template.csv` is outcome-blind and contains one row
-per primary-cohort match. A working copy is valid only after
-`audit_match_start_times.py` reports zero issues.
+per primary-cohort match. `data/manual/match_start_times_verified.csv` is the
+tracked, minimized subset supporting published pitch codes. Any working or tracked
+copy is valid only after `audit_match_start_times.py` reports zero issues.
 
 | Variable | Type | Definition |
 |---|---|---|
@@ -89,7 +91,7 @@ per primary-cohort match. A working copy is valid only after
 | `timezone_name` | IANA timezone | location timezone, including historical daylight-saving rules |
 | `scheduled_start_utc` | UTC timestamp | local start converted to `Z` or `+00:00` |
 | `start_time_status` | category | `pending`, `verified`, `unavailable`, or `rejected` |
-| `verifier_id` | string | anonymized human/licensed verifier label |
+| `verifier_id` | string | anonymized verifier label; AI-assisted provisional work is disclosed by its label |
 | `verification_note` | string/nullable | concise reconciliation note |
 | `exclusion_reason` | string/nullable | required when unavailable or rejected |
 
@@ -102,7 +104,17 @@ pitch-source timing validation; partially filled or pending rows are never used.
 No start-time, timezone, status, verifier, or source-provenance field is joined to
 the model table; all are also named in the prohibited-predictor guard.
 
+
+The first tracked release contains four verified scheduled starts. No start-time,
+timezone, provenance, or verifier field is available to the fitted model.
+
 ## Pitch fields
+
+`data/manual/pitch_reports_verified.csv` contains only rows that passed source,
+publication-time, match-start, cohort-identity, and code-value validation.
+`data/manual/pitch_set_aside.csv` contains no pitch codes or outcomes; it records
+the search query and reason a reviewed match needs later follow-up.
+
 
 | Variable | Type | Definition |
 |---|---|---|
@@ -117,7 +129,7 @@ the model table; all are also named in the prohibited-predictor guard.
 | `published_at_utc` | timestamp/date | source publication time in UTC when shown; ISO date only when the publisher omits time and the date still proves the article preceded play |
 | `accessed_at_utc` | timestamp | collection time |
 | `pre_match_verified` | binary | publication verified before scheduled start |
-| `coder_id` | string | anonymized coder label |
+| `coder_id` | string | anonymized coder label; current AI-assisted provisional codes are explicitly labeled |
 | `coder_confidence` | ordered category | low, medium, high |
 | `pitch_primary_category` | category | `batting_friendly`, `balanced`, `pace_seam`, `spin`, `slow_two_paced`, or `unknown` |
 | `batting_ease` | ordinal 0–2 | difficult to easy/high-scoring |

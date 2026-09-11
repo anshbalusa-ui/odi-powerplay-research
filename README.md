@@ -53,8 +53,10 @@ One row represents one batting-team innings in one match. The outcome is `battin
   human-verification fields and a zero-network structural audit.
 - A 1,094-match outcome-blind scheduled-start template with IANA-timezone,
   cohort-identity, provenance, and UTC-conversion validation.
-- Human-audited pitch and source-timing templates, research design, data dictionary,
-  pitch codebook, transformation log, paper outline, and execution roadmap.
+- A tracked first-batch release with four timing-verified provisional pitch codes
+  and 21 outcome-blind set-aside rows for later review.
+- Pitch/source-timing templates, research design, data dictionary, pitch codebook,
+  transformation log, paper outline, and execution roadmap.
 
 For the Cricsheet snapshot retrieved on September 10, 2026, the pipeline found
 3,182 matches, retained 2,742 in the core clean dataset, and selected 1,094 matches
@@ -106,33 +108,39 @@ Generated primary/cohort datasets are ignored by Git and reproduced from the
 checksummed raw snapshot. The tracked hand-audit and pitch-queue templates contain
 no source prose and no secret data.
 
-Complete the hand audit independently from the source JSON/scorecard. For pitch
-coding, start with the tracked 25-match contributor template or select another
+The first balanced pitch batch now has 25 reviewed matches: four non-ESPN
+pre-match reports passed source and timing validation, and 21 matches are listed in
+`data/manual/pitch_set_aside.csv` for later review. The minimized tracked releases
+are `data/manual/pitch_reports_verified.csv` and
+`data/manual/match_start_times_verified.csv`; they contain provenance, factual
+timestamps, derived codes, and short original paraphrases, not copied article text.
+
+For continued coding, start with the tracked contributor template or select another
 balanced batch, then copy completed rows into the ignored local
-`data/manual/pitch_reports.csv`. Separately copy only the corresponding match rows
-from `data/manual/match_start_times_template.csv` into the ignored
-`data/manual/match_start_times.csv`; matches without pitch reports need no timing
-work. Verify scheduled local starts from cited sources, record an IANA timezone,
-convert to UTC, and audit the working subset before validating pitch rows.
+`data/manual/pitch_reports.csv`. Separately copy only corresponding match rows from
+`data/manual/match_start_times_template.csv` into the ignored
+`data/manual/match_start_times.csv`; matches without eligible pitch reports need no
+timing work. Verify scheduled local starts from cited sources, record an IANA
+timezone, convert to UTC, and audit the working subset before validating pitch rows.
 Only rows with `start_time_status=verified` can establish that a pitch report
 predated play. Start-time and source-provenance fields are audit metadata only:
 they are never joined into the model table and are explicitly prohibited as
-predictors. Then run:
+predictors. The tracked release can be reproduced with:
 
 ```bash
-python scripts/audit_match_start_times.py \
-  --input data/manual/match_start_times.csv
-python scripts/audit_pitch_collection.py \
-  --pitch-input data/manual/pitch_reports.csv \
-  --match-start-input data/manual/match_start_times.csv
-python scripts/audit_pitch_reliability.py \
-  --reference-input data/manual/pitch_reports.csv \
-  --recoded-input data/manual/pitch_reports_double_coded.csv \
-  --match-start-input data/manual/match_start_times.csv
-python scripts/build_model_table.py \
-  --pitch-input data/manual/pitch_reports.csv \
-  --match-start-input data/manual/match_start_times.csv
+.venv/bin/python scripts/audit_match_start_times.py \
+  --input data/manual/match_start_times_verified.csv
+.venv/bin/python scripts/audit_pitch_collection.py \
+  --pitch-input data/manual/pitch_reports_verified.csv \
+  --match-start-input data/manual/match_start_times_verified.csv
+.venv/bin/python scripts/build_model_table.py \
+  --pitch-input data/manual/pitch_reports_verified.csv \
+  --match-start-input data/manual/match_start_times_verified.csv
 ```
+
+The ignored working files remain inputs to `audit_pitch_reliability.py`. The
+pitch-adjusted model remains gated until a genuinely independent coder has recoded
+at least 20% of verified rows.
 
 Do not automate bulk collection from ESPNcricinfo under the terms reviewed for
 this project. ESPN live commentary and post-match reporting are ineligible because

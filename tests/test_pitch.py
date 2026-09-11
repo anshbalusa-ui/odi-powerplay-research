@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import csv
 import sys
 import unittest
 from pathlib import Path
@@ -8,6 +9,9 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "src"))
 
 from odi_powerplay.pitch import (
+    PITCH_QUEUE_FIELDS,
+    PITCH_SET_ASIDE_FIELDS,
+    build_pitch_set_aside,
     build_pitch_collection_queue,
     espn_link_candidate,
     espn_linkage_summary,
@@ -76,6 +80,11 @@ class PitchPipelineTests(unittest.TestCase):
         self.assertNotIn("pp_runs", queue[0])
         self.assertNotIn("winner", queue[0])
         self.assertIn("preview pitch conditions", queue[0]["source_search_query"])
+
+    def test_pitch_report_template_matches_current_queue_schema(self) -> None:
+        with (ROOT / "data/manual/pitch_reports_template.csv").open(newline="") as handle:
+            header = tuple(next(csv.reader(handle)))
+        self.assertEqual(header, PITCH_QUEUE_FIELDS)
 
     def test_espn_link_candidates_are_unfetched_and_explicitly_unverified(self) -> None:
         candidate = espn_link_candidate("1000887")
@@ -181,7 +190,7 @@ class PitchPipelineTests(unittest.TestCase):
 
     def test_espn_sources_require_human_verified_match_linkage(self) -> None:
         row = self.verified_pitch_row()
-        row["source_url"] = "https://www.espncricinfo.com/example-match-preview"
+        row["source_url"] = "https://www.espn.com/cricket/series/1/preview/1234567/message"
 
         unverified = validate_pitch_rows(
             [row],
@@ -198,8 +207,7 @@ class PitchPipelineTests(unittest.TestCase):
                 "espn_linkage_status": "verified_match",
                 "espn_match_id_verified": "1234567",
                 "espn_match_url_verified": (
-                    "https://www.espncricinfo.com/series/example-1/"
-                    "team-a-vs-team-b-1234567/full-scorecard"
+                    "https://www.espn.com/cricket/series/1/" "scorecard/1234567/message"
                 ),
             }
         )
@@ -210,6 +218,26 @@ class PitchPipelineTests(unittest.TestCase):
                 match_start_by_id={"match-1": "2026-01-02T10:00:00+00:00"},
             ),
             [],
+        )
+        row["source_url"] = "https://www.espn.com/espn/print?id=9876543"
+        self.assertEqual(
+            validate_pitch_rows(
+                [row],
+                eligible_match_ids={"match-1"},
+                match_start_by_id={"match-1": "2026-01-02T10:00:00+00:00"},
+            ),
+            [],
+        )
+
+        row["espn_match_url_verified"] = "https://www.espn.com/nfl/game/1234567"
+        issues = validate_pitch_rows(
+            [row],
+            eligible_match_ids={"match-1"},
+            match_start_by_id={"match-1": "2026-01-02T10:00:00+00:00"},
+        )
+        self.assertIn(
+            "verified ESPN linkage requires an ESPNcricinfo match URL",
+            {issue["message"] for issue in issues},
         )
 
     def test_only_verified_pitch_codes_enter_the_model_table(self) -> None:
@@ -223,12 +251,60 @@ class PitchPipelineTests(unittest.TestCase):
         missing = merge_pitch_conditions(self.innings_rows(), [verified])
         self.assertEqual({row["pitch_available"] for row in missing}, {0})
 
+    def test_set_aside_export_is_outcome_blind_and_excluded_only(self) -> None:
+        class GuardedRow(dict):
+            def get(self, key, default=None):
+                if key in {"winner", "pp_runs", "batting_team_won"}:
+                    raise AssertionError(f"Outcome field accessed: {key}")
+                return super().get(key, default)
+
+        excluded = GuardedRow(
+            {
+                "cricsheet_match_id": "match-2",
+                "match_date": "2025-01-01",
+                "event_name": "Example Series",
+                "competition_type": "bilateral_series",
+                "venue": "Example Ground",
+                "city": "Example City",
+                "team_1": "Team A",
+                "team_2": "Team B",
+                "source_search_query": "example search",
+                "pre_match_verified": "0",
+                "exclusion_reason": "No eligible analysis located.",
+                "winner": "Team A",
+                "pp_runs": "70",
+            }
+        )
+        verified = {
+            **excluded,
+            "cricsheet_match_id": "match-1",
+            "pre_match_verified": "1",
+            "exclusion_reason": "",
+        }
+
+        rows = build_pitch_set_aside([excluded, verified])
+
+        self.assertEqual(len(rows), 1)
+        self.assertEqual(tuple(rows[0]), PITCH_SET_ASIDE_FIELDS)
+        self.assertEqual(rows[0]["cricsheet_match_id"], "match-2")
+        self.assertEqual(rows[0]["review_status"], "set_aside")
+        self.assertNotIn("winner", rows[0])
+        self.assertNotIn("pp_runs", rows[0])
+
     def test_coverage_summary_uses_only_verified_rows(self) -> None:
         verified = self.verified_pitch_row()
         excluded = {**verified, "cricsheet_match_id": "match-2", "pre_match_verified": "0"}
         summary = pitch_coverage_summary([verified, excluded])
         self.assertEqual(summary["verified_pitch_matches"], 1)
         self.assertEqual(summary["coverage_pct"], 50.0)
+
+        cohort_summary = pitch_coverage_summary(
+            [verified, excluded],
+            eligible_match_count=1_094,
+        )
+        self.assertEqual(cohort_summary["attempted_matches"], 2)
+        self.assertEqual(cohort_summary["eligible_cohort_matches"], 1_094)
+        self.assertEqual(cohort_summary["coverage_pct"], 0.091408)
 
     def test_intercoder_reliability_reports_agreement_kappa_and_sample_target(
         self,

@@ -51,10 +51,11 @@ the wrong match.
 
 A human or licensed collector must compare teams, date, event, and venue before
 setting `espn_linkage_status=verified_match`, then record the actual numeric ESPN ID
-and current ESPN match URL. `audit_espn_linkage.py` rejects malformed candidates,
+and current match URL. `audit_espn_linkage.py` rejects malformed candidates,
 unsupported statuses, duplicate Cricsheet IDs, and a claimed verified mapping
-without a valid ESPNcricinfo URL. `validate_pitch_rows` additionally refuses a
-verified ESPN source row unless this independent match-linkage gate has passed.
+without an ESPNcricinfo URL or a canonical ESPN cricket URL. Outcome-free ESPN
+print views with a numeric article ID are accepted as preview-source URLs, but they
+still require the independent match-linkage gate.
 
 
 ### Third-party commentary dataset review
@@ -115,3 +116,29 @@ information, and are outside the permitted automated-use policy. Only a separate
 identified match preview or pre-match conditions report can qualify.
 
 The working file distinguishes `source_no_pitch_evidence` from `no_eligible_source`. This makes it possible to separate a coverage problem from a source that exists but says nothing usable about the playing surface.
+
+## First-batch source release
+
+The first 25 outcome-blind matches were reviewed individually on 2026-09-11.
+Four non-ESPN reports met the match-specific, pre-start, surface-evidence, and
+provenance requirements:
+
+- SportsJOE, South Africa–Ireland World Cup preview:
+  https://www.sportsjoe.ie/world-of-sport/ireland-south-africa-cricket-world-cup-preview-15358
+- Cricket Times, South Africa–England Champions Trophy pitch report:
+  https://crickettimes.com/2025/03/sa-vs-eng-champions-trophy-2025-national-stadium-pitch-report-karachi-weather-forecast-odi-stats-and-records-south-africa-vs-england/
+- Hindustan Times, New Zealand–India Auckland pitch report:
+  https://www.hindustantimes.com/cricket/india-vs-new-zealand-2nd-odi-auckland-weather-and-pitch-report-chances-of-rain-in-the-afternoon-at-eden-park-ind-vs-nz-2nd-odi/story-q4YCarQ32Yiym03hfdVmAK.html
+- ICC, Zimbabwe–Ireland World Cup Qualifier preview:
+  https://www.icc-cricket.com/tournaments/cricketworldcup/news/ireland-look-to-inflict-first-defeat-on-zimbabwe
+
+Four ESPN preview candidates were found for Cricsheet match IDs `1388412`,
+`1130738`, `1075506`, and `1243395`. They are not in the verified release because
+the current collection was AI-assisted rather than human/licensed. They remain in
+`data/manual/pitch_set_aside.csv` for permitted follow-up. The repository publishes
+no ESPN article passage.
+
+The tracked `pitch_reports_verified.csv` contains only source URLs, publication and
+access timestamps, derived categorical codes, and short original paraphrases.
+These AI-assisted primary codes remain provisional until the independent human
+reliability gate is satisfied.
