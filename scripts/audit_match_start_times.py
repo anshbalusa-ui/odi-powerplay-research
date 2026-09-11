@@ -39,6 +39,11 @@ def main() -> int:
         help="Primary cohort innings used to validate match identity and coverage.",
     )
     parser.add_argument(
+        "--require-full-cohort",
+        action="store_true",
+        help="Fail when any primary-cohort match is absent; intended for template audits.",
+    )
+    parser.add_argument(
         "--summary-output",
         type=Path,
         default=ROOT / "artifacts/tables/match_start_time_audit.json",
@@ -52,7 +57,11 @@ def main() -> int:
 
     rows = read_csv(args.input)
     reference_rows = build_match_start_queue(read_csv(args.innings_input))
-    issues = validate_match_start_rows(rows, eligible_rows=reference_rows)
+    issues = validate_match_start_rows(
+        rows,
+        eligible_rows=reference_rows,
+        require_full_coverage=args.require_full_cohort,
+    )
     summary = match_start_coverage_summary(rows)
     summary["validation_issue_count"] = len(issues)
     summary["validation_issues_by_field"] = dict(
@@ -60,6 +69,8 @@ def main() -> int:
     )
     summary["input"] = str(args.input)
     summary["innings_input"] = str(args.innings_input)
+    summary["eligible_cohort_rows"] = len(reference_rows)
+    summary["full_cohort_required"] = args.require_full_cohort
     summary["network_requests_performed"] = 0
 
     args.summary_output.parent.mkdir(parents=True, exist_ok=True)

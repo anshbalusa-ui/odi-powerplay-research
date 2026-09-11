@@ -55,7 +55,11 @@ def main() -> int:
             [sys.executable, "scripts/build_hand_audit_sample.py"],
             [sys.executable, "scripts/build_pitch_collection_queue.py"],
             [sys.executable, "scripts/build_match_start_queue.py"],
-            [sys.executable, "scripts/audit_match_start_times.py"],
+            [
+                sys.executable,
+                "scripts/audit_match_start_times.py",
+                "--require-full-cohort",
+            ],
             [sys.executable, "scripts/audit_espn_linkage.py"],
             [
                 sys.executable,

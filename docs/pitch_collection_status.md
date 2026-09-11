@@ -40,9 +40,9 @@ matches explicitly.
 reading result or powerplay fields. All 1,094 rows initially have
 `start_time_status=pending`; zero are represented as verified data.
 
-A human or licensed collector must copy the template to the Git-ignored
-`data/manual/match_start_times.csv`, reconcile the teams/date/event/venue against a
-cited schedule or match page, and record:
+A human or licensed collector must copy only the rows corresponding to collected
+pitch reports into the Git-ignored `data/manual/match_start_times.csv`, reconcile
+the teams/date/event/venue against a cited schedule or match page, and record:
 
 1. the source URL, title, and UTC access timestamp;
 2. the scheduled local datetime without an offset;
@@ -57,11 +57,13 @@ python scripts/audit_match_start_times.py \
   --input data/manual/match_start_times.csv
 ```
 
-The audit checks all 1,094 cohort identities, ISO timestamps, IANA timezone
-existence, local-date agreement, exact local-to-UTC conversion including historical
-daylight-saving rules, provenance fields, duplicate IDs, and explicit reasons for
-`unavailable` or `rejected` rows. Downstream pitch audits and model-table generation
-discard every timestamp not explicitly marked `verified`.
+The audit checks every provided row's cohort identity, ISO timestamps, IANA
+timezone existence, local-date agreement, exact local-to-UTC conversion including
+historical daylight-saving rules, provenance fields, duplicate IDs, and explicit
+reasons for `unavailable` or `rejected` rows. Use `--require-full-cohort` only to
+audit the generated template itself; collectors do not need start times for matches
+without pitch reports. Downstream pitch audits and model-table generation discard
+every timestamp not explicitly marked `verified`.
 
 ## Contributor batch workflow
 

@@ -93,12 +93,14 @@ per primary-cohort match. A working copy is valid only after
 | `verification_note` | string/nullable | concise reconciliation note |
 | `exclusion_reason` | string/nullable | required when unavailable or rejected |
 
-The validator requires full cohort coverage, exact match identity, a valid HTTP(S)
-source, an offset-aware access timestamp, a real IANA timezone, a local date equal
-to `match_date`, and exact timezone conversion to UTC. Only `verified` timestamps
-are exposed to pitch-source timing validation; partially filled or pending rows are
-never used. No start-time, timezone, status, verifier, or source-provenance field is
-joined to the model table; all are also named in the prohibited-predictor guard.
+The validator requires exact cohort identity, a valid HTTP(S) source, an
+offset-aware access timestamp, a real IANA timezone, a local date equal to
+`match_date`, and exact timezone conversion to UTC. Working files may contain only
+the matches with collected pitch reports; `--require-full-cohort` separately audits
+the generated 1,094-row template. Only `verified` timestamps are exposed to
+pitch-source timing validation; partially filled or pending rows are never used.
+No start-time, timezone, status, verifier, or source-provenance field is joined to
+the model table; all are also named in the prohibited-predictor guard.
 
 ## Pitch fields
 

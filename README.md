@@ -109,17 +109,19 @@ no source prose and no secret data.
 Complete the hand audit independently from the source JSON/scorecard. For pitch
 coding, start with the tracked 25-match contributor template or select another
 balanced batch, then copy completed rows into the ignored local
-`data/manual/pitch_reports.csv`. Separately copy
-`data/manual/match_start_times_template.csv` to the ignored
-`data/manual/match_start_times.csv`; verify scheduled local starts from cited
-sources, record an IANA timezone, convert to UTC, and run
-`python scripts/audit_match_start_times.py --input data/manual/match_start_times.csv`.
+`data/manual/pitch_reports.csv`. Separately copy only the corresponding match rows
+from `data/manual/match_start_times_template.csv` into the ignored
+`data/manual/match_start_times.csv`; matches without pitch reports need no timing
+work. Verify scheduled local starts from cited sources, record an IANA timezone,
+convert to UTC, and audit the working subset before validating pitch rows.
 Only rows with `start_time_status=verified` can establish that a pitch report
 predated play. Start-time and source-provenance fields are audit metadata only:
 they are never joined into the model table and are explicitly prohibited as
 predictors. Then run:
 
 ```bash
+python scripts/audit_match_start_times.py \
+  --input data/manual/match_start_times.csv
 python scripts/audit_pitch_collection.py \
   --pitch-input data/manual/pitch_reports.csv \
   --match-start-input data/manual/match_start_times.csv

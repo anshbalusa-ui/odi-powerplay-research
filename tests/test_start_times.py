@@ -113,9 +113,14 @@ class MatchStartTimeTests(unittest.TestCase):
             {"venue", "source_url", "source_title", "accessed_at_utc", "verifier_id"} <= fields
         )
 
-    def test_reference_requires_one_row_for_every_eligible_match(self) -> None:
+    def test_reference_allows_subset_unless_full_coverage_is_requested(self) -> None:
         reference = build_match_start_queue(self.innings_rows())
-        issues = validate_match_start_rows([], eligible_rows=reference)
+        self.assertEqual(validate_match_start_rows([], eligible_rows=reference), [])
+        issues = validate_match_start_rows(
+            [],
+            eligible_rows=reference,
+            require_full_coverage=True,
+        )
         self.assertEqual(len(issues), 1)
         self.assertEqual(issues[0]["message"], "eligible match is missing from start-time file")
 

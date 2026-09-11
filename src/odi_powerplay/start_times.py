@@ -126,6 +126,7 @@ def validate_match_start_rows(
     rows: Iterable[dict[str, Any]],
     *,
     eligible_rows: Iterable[dict[str, Any]] | None = None,
+    require_full_coverage: bool = False,
 ) -> list[dict[str, str]]:
     """Return structural, cohort-identity, and timezone validation issues."""
 
@@ -224,7 +225,7 @@ def validate_match_start_rows(
                     "does not equal the local start converted with timezone_name",
                 )
 
-    if reference is not None:
+    if reference is not None and require_full_coverage:
         for missing_id in sorted(reference.keys() - seen):
             issue(
                 missing_id, "cricsheet_match_id", "eligible match is missing from start-time file"
