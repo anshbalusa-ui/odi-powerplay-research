@@ -15,20 +15,20 @@ the study as pitch-adjusted or final.
 
 ## Title page and abstract (200–250 words)
 
-- One-sentence background.
-- Research question and observational design.
-- Data sources, sample period, and unit of analysis.
-- Main models and chronological test.
-- Two or three quantitative findings with confidence intervals.
+- Use the working title *What Makes a Successful ODI Powerplay? The Role of Aggression, Wicket Preservation, Opposition Strength, and Pitch Conditions*.
+- One-sentence background and unified research question.
+- Data sources, sample period, and match-clustered unit of analysis.
+- Finding 1: full-cohort powerplay profiles after contextual adjustment.
+- Finding 2: pitch effect modification in the source-verified subgroup, only after its gates pass.
 - Main limitation and conclusion without causal language.
 
 ## 1. Introduction
 
-1. Explain why the first 10 overs are strategically important in ODIs.
-2. Explain why the same score can have different meaning across pitch behavior and innings order.
-3. Identify the gap: early performance is often summarized without jointly addressing conditions, prior team strength, temporal validation, and calibration.
-4. State the primary question and hypotheses.
-5. Summarize contributions: reproducible extraction, audited pitch-behavior coding, chronological model comparison, uncertainty/calibration.
+1. Explain why aggression and wicket preservation jointly define an ODI powerplay.
+2. Explain why opposition strength, innings order, and pitch behavior can change the meaning of the same start.
+3. Identify the gap: early performance is often summarized without jointly addressing context, temporal validation, and calibration.
+4. State one research question with a full-cohort analysis and a prespecified verified-pitch effect-modification subgroup.
+5. Summarize contributions without presenting the subgroup as an unrelated second paper.
 
 ## 2. Background and related work
 
@@ -56,11 +56,11 @@ Use academic or authoritative sources. Do not pad this section with generic mach
 - exact first-10-over definitions;
 - audit and edge cases.
 
-### 3.3 Pitch reports
+### 3.3 Verified-pitch subgroup
 
-- source eligibility and timing;
-- codebook and categories;
-- double coding and reliability.
+- prespecified role as an effect-modification analysis;
+- source eligibility, timing, codebook, coverage, and cohort comparison;
+- independent double coding and reliability gate.
 
 ### 3.4 Limited non-pitch conditions
 
@@ -97,16 +97,18 @@ Use academic or authoritative sources. Do not pad this section with generic mach
 - report current pitch coverage as 55/1,094 (5.02742%), with 145 of 200 reviewed matches set aside;
 - report inter-coder reliability only after independent double coding.
 
-### 4.2 Descriptive results
+### 4.2 Finding 1: full-cohort powerplay profiles
 
-- distributions and correlations;
-- observed win rates by powerplay runs/wickets and conditions.
+- distributions and correlations for runs, wickets, boundary-ball percentage, and dot-ball percentage;
+- adjusted associations and marginal win probabilities for aggression and wicket preservation;
+- innings-order modification and chronological predictive performance.
 
-### 4.3 Logistic associations
+### 4.3 Finding 2: pitch effect modification
 
-- coefficients/odds ratios with uncertainty;
-- marginal predicted probabilities;
-- interaction plots and interpretation.
+- restrict to source- and timing-verified pitch matches;
+- report subgroup composition, selection differences, and reliability before estimates;
+- show prespecified runs × pitch and wickets × pitch marginal predictions;
+- interpret as refinement of Finding 1, not an independent headline claim.
 
 ### 4.4 Predictive performance
 
@@ -127,12 +129,12 @@ Use academic or authoritative sources. Do not pad this section with generic mach
 
 ## 5. Discussion
 
-1. Direct answer to the research question.
-2. Cricket interpretation of the largest associations/interactions.
-3. Why nonlinear models did or did not improve held-out prediction.
-4. Calibration and practical meaning.
-5. Comparison with prior work.
-6. Limitations: observational confounding, source coverage, subjective pitch coding, within-match pitch change, sample size, rule/era differences, paired innings dependence, and generalizability.
+1. Answer what makes a successful powerplay using the full-cohort result.
+2. Explain when that answer changes using the verified-pitch effect-modification result, if its gates pass.
+3. Keep both findings under the same aggression-versus-wicket-preservation question.
+4. Explain why nonlinear models did or did not improve held-out prediction.
+5. Discuss calibration and practical meaning.
+6. Limitations: observational confounding, pitch-subgroup selection and coverage, subjective coding, within-match pitch change, rule/era differences, paired innings dependence, and generalizability.
 7. Future work: more eras/events, actual on-field timestamps/sensors, hierarchical venue/team models, external replication.
 
 ## 6. Conclusion

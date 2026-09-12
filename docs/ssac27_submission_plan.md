@@ -25,9 +25,9 @@ Recheck the page immediately before submission in case instructions change.
 
 Avoid framing the study as only another match-winner classifier. The stronger applied question is:
 
-> How much does the value of an ODI powerplay start change after accounting for wickets, opposition strength, innings order, and pre-match pitch behavior?
+> What makes a successful ODI powerplay after accounting for opposition strength and match context, and—among matches with verified pre-match reports—when does pitch type change the best balance of aggression and wicket preservation?
 
-The practical output is a pitch-adjusted benchmark that estimates whether a start was stronger or weaker than its raw score suggests. This gives broadcasters, analysts, and teams a more useful interpretation than a universal rule such as “50/1 is a good powerplay.”
+The practical output is one coherent framework rather than two unrelated findings: a full-cohort description of successful powerplay profiles and a prespecified pitch-subgroup effect-modification analysis showing when the profile changes.
 
 ## Minimum viable SSAC analysis
 
@@ -74,12 +74,7 @@ independent double coding has not occurred. The hand-audit worksheet is generate
 but still needs external scorecard reconciliation.
 The 2025–2026 locked test remains correctly unscored.
 
-Go/no-go decision: do not submit the current analysis as a pitch-adjusted result.
-Either complete a source-audited pitch subset with timing and reliability evidence,
-or explicitly reframe the abstract around venue-aware but pitch-report-free powerplay
-prediction and revise the focused contribution. Never manufacture pitch labels
-from live/post-match commentary or unlock test outcomes to compensate for missing
-pitch data.
+Go/no-go decision: the full-cohort powerplay result and verified-pitch subgroup must remain visibly nested under one research question. Do not submit a pitch effect-modification estimate until source coverage and independent reliability gates pass. If those gates are not met, retain the full-cohort result as Finding 1 and label the pitch analysis incomplete rather than implying that most matches had pitch adjustment. Never manufacture pitch labels from live/post-match commentary or unlock test outcomes to compensate for missing pitch data.
 
 ## September 5–October 1 sprint
 
@@ -124,9 +119,7 @@ gate passes; never label validation estimates as final held-out performance.
 
 ### Conclusion
 
-State the pitch-adjusted cricket insight only if verified pitch results exist.
-Otherwise state the narrower powerplay-prediction result and make missing pitch
-coverage the main limitation.
+State the full-cohort powerplay finding first. Add the verified-pitch effect-modification finding only if coverage and reliability gates pass; otherwise identify it as the prespecified incomplete subgroup analysis rather than reframing the paper as pitch-adjusted.
 
 ## Submission-day checklist
 

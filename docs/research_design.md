@@ -2,9 +2,9 @@
 
 ## 1. Study identity
 
-**Working title:** *What Is a Good ODI Powerplay? Pitch-Adjusted Associations Between First-10-Over Performance and Match Outcomes*
+**Working title:** *What Makes a Successful ODI Powerplay? The Role of Aggression, Wicket Preservation, Opposition Strength, and Pitch Conditions*
 
-**Design:** retrospective observational prediction/association study using ball-by-ball match data and manually coded pre-match descriptions of expected pitch behavior.
+**Design:** retrospective observational prediction/association study with a full-cohort powerplay analysis and a prespecified effect-modification analysis restricted to matches with verified pre-match pitch reports.
 
 **Claim boundary:** the study estimates conditional associations and predictive performance. It does not prove that scoring more quickly causes a win, because team quality, strategy, opposition, and other unmeasured factors influence both powerplay performance and the result.
 
@@ -12,16 +12,16 @@
 
 ### Primary question
 
-Among men's One Day International cricket matches, how are runs scored and wickets lost during the first 10 overs associated with the batting team's probability of winning after accounting for pre-match team-strength difference, innings order, toss, venue, year, and competition type—and how do these associations vary with pre-match pitch conditions such as batting ease, pace/seam assistance, spin assistance, bounce, and two-paced behavior?
+Among men's One Day International cricket matches, how are powerplay aggression and wicket preservation associated with the batting team's probability of winning after accounting for pre-match team strength and match context—and, within the verified-pitch subgroup, how do those associations vary by pitch conditions?
 
 ### Prespecified hypotheses
 
 - **H1:** Conditional on wickets and context, more powerplay runs are associated with higher win probability.
 - **H2:** Conditional on runs and context, more powerplay wickets lost are associated with lower win probability.
-- **H3:** The runs-win and wickets-win relationships vary across pitch categories.
+- **H3:** Within matches with verified pre-match pitch reports, the runs-win and wickets-win relationships vary across pitch categories.
 - **H4:** Innings order modifies these relationships because the strategic meaning of a start differs when batting first versus chasing.
 
-Bounce and two-paced interactions are exploratory unless adequate source coverage is established before outcomes are modeled. Testing every possible interaction would create a multiple-comparisons problem.
+H1, H2, and the innings-order component of H4 are tested in the full cohort. H3 is a prespecified subgroup/effect-modification analysis, not a separate unrelated finding and not a reason to discard matches without pitch reports. Bounce and two-paced interactions remain exploratory unless adequate source coverage is established before outcomes are modeled. Testing every possible interaction would create a multiple-comparisons problem.
 
 ## 3. Cohort and scope
 
@@ -149,29 +149,26 @@ human pitch codes.
 
 ## 10. Feature sets and incremental research design
 
-Fit nested feature blocks so the contribution of the powerplay is evaluated relative to a credible pre-match baseline:
+Fit nested feature blocks so the powerplay contribution is first estimated in the full cohort and then refined in the verified-pitch subgroup:
 
-1. **M0 pre-match baseline:** Elo difference, pitch features, toss, innings order, venue/grouping, year/rule era, and competition type.
-2. **M1 powerplay model:** M0 plus `pp_runs` and `pp_wickets`.
-3. **M2 interaction model:** M1 plus the small prespecified set of pitch and innings-order interactions.
-4. **Venue-history sensitivity:** M1 plus earlier-match venue powerplay runs,
-   wickets, boundary percentage, dot-ball percentage, and history availability.
+1. **F0 full-cohort pre-match baseline:** Elo difference, prior experience and win rates, toss, innings order, venue, year/rule era, and competition type.
+2. **F1 full-cohort powerplay model:** F0 plus `pp_runs` and `pp_wickets`.
+3. **F2 full-cohort scoring-process sensitivity:** F0 plus `pp_wickets`, boundary-ball percentage, and dot-ball percentage instead of runs.
+4. **V1 venue-history sensitivity:** F1 plus source-independent prior venue-history features and availability.
+5. **P0 verified-pitch baseline:** F0 restricted to matches with verified reports, plus pitch main effects.
+6. **P1 verified-pitch powerplay model:** P0 plus `pp_runs` and `pp_wickets`.
+7. **P2 verified-pitch effect-modification model:** P1 plus the small prespecified pitch interactions.
 
-The main comparison is the change from M0 to M1/M2 in held-out discrimination, proper scoring rules, calibration, and estimated marginal win probabilities. This keeps team strength as a control while making first-10-over performance the substantive focus.
+The primary full-cohort comparison is F0 versus F1/F2. The pitch-subgroup comparison is P1 versus P2 and asks when the aggression–wicket-preservation relationship changes. Report subgroup coverage and compare the pitch subset with the full cohort before interpreting P2. Never backfill missing pitch labels with venue history.
 
-### Primary score-and-wickets model
+### Full-cohort score-and-wickets model
 
 - `pp_runs`
 - `pp_wickets`
-- `batting_ease`
-- `pace_seam_support`
-- `spin_support`
-- `bounce_profile`
-- `two_paced_expected`
 - `elo_difference`
 - batting first/chasing
 - toss winner and decision
-- venue or a defensible venue grouping
+- venue
 - year
 - competition type or prespecified competition grouping
 

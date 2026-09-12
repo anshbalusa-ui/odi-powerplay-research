@@ -1,8 +1,8 @@
-# ODI Powerplay, Pitch Conditions, and Match Outcomes
+# What Makes a Successful ODI Powerplay?
 
 [![Tests](https://github.com/anshbalusa-ui/odi-powerplay-research/actions/workflows/tests.yml/badge.svg)](https://github.com/anshbalusa-ui/odi-powerplay-research/actions/workflows/tests.yml)
 
-Reproducible Python research pipeline for an **associational** study of how first-10-over ODI batting performance relates to the batting team's probability of winning on different types of pitches.
+Reproducible Python research pipeline for an **associational** study of which first-10-over ODI batting profiles are linked to winning, how much they add beyond opposition strength and match context, and whether those relationships vary by verified pre-match pitch type.
 
 ## Research scope
 
@@ -15,11 +15,11 @@ World Cups are a labeled subgroup and sensitivity analysis, not the main dataset
 - **SSAC27 milestone:** finish a results-complete, reproducible analysis from the broad modern-ODI cohort for the abstract deadline on October 1, 2026 at 11:59 p.m. ET. The submission is a milestone, not the endpoint of the research.
 - **Full research paper:** continue expanding the cohort, pitch coding, robustness analyses, and paper after the SSAC abstract is submitted, regardless of the competition decision.
 
-The SSAC version will emphasize one applied contribution: a pitch-adjusted assessment of whether an ODI powerplay was genuinely strong given wickets, pre-match team-strength difference, pitch behavior, and innings order. See `docs/ssac27_submission_plan.md`.
+The SSAC version will emphasize one applied question: what makes a successful ODI powerplay, and when does the best balance of aggression and wicket preservation change? The full cohort estimates powerplay-outcome associations; the verified-pitch subset is a prespecified effect-modification analysis within that same question. See `docs/ssac27_submission_plan.md`.
 
 ## Primary research question
 
-> Among men's One Day International cricket matches, how are runs scored and wickets lost during the first 10 overs associated with the batting team's probability of winning after accounting for pre-match team-strength difference, innings order, toss, venue, year, and competition type—and how do these associations vary with pre-match pitch conditions such as batting ease, pace/seam assistance, spin assistance, bounce, and two-paced behavior?
+> Among men's One Day International cricket matches, how are powerplay aggression and wicket preservation associated with the batting team's probability of winning after accounting for pre-match team strength, innings order, toss, venue, year, and competition type—and, within the verified-pitch subgroup, how do those associations vary by pitch conditions?
 
 The wording is intentionally **associated with**, not **causes**. This is observational data.
 
