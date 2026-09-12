@@ -5,13 +5,13 @@ This outline is for the full paper. The SSAC27 abstract is a focused extract wit
 ## Current drafting status
 
 The cohort, powerplay extraction, pre-match team and venue histories,
-chronological model table, 2024 validation, uncertainty estimates, and preliminary
-figures are reproducible.
-`docs/results.md` contains the current quantitative narrative and
-`docs/limitations.md` fixes its interpretation boundary. Pitch-report collection,
-source-timing verification, inter-coder reliability, pitch-adjusted models, and the
-single locked-test evaluation remain incomplete. No current paragraph may present
-the study as pitch-adjusted or final.
+chronological model table, 2024 validation, uncertainty estimates, preliminary
+figures, and the 200-match source- and timing-verified pitch collection are
+reproducible. `docs/results.md` contains the current quantitative narrative and
+`docs/limitations.md` fixes its interpretation boundary. A provisional pitch-model
+smoke test runs end to end, but independent pitch double-coding and the single
+locked-test evaluation remain incomplete. No current paragraph may present a
+pitch-effect estimate as reliable or the study as final.
 
 ## Title page and abstract (200–250 words)
 
@@ -94,8 +94,8 @@ Use academic or authoritative sources. Do not pad this section with generic mach
 ### 4.1 Cohort and data quality
 
 - row counts, exclusions, missingness, and join coverage;
-- report current pitch coverage as 88/1,094 (8.04388%), with 212 of 300 reviewed matches set aside;
-- report inter-coder reliability only after independent double coding.
+- report pitch coverage as 200/1,094 (18.281536%), with 275 of 475 reviewed matches set aside and 619 unreviewed;
+- report the 29-provider source mix and inter-coder reliability only after independent double coding.
 
 ### 4.2 Finding 1: full-cohort powerplay profiles
 

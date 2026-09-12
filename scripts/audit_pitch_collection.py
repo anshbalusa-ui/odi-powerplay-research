@@ -13,7 +13,13 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "src"))
 
-from odi_powerplay.pitch import pitch_coverage_summary, validate_pitch_rows  # noqa: E402
+from odi_powerplay.pitch import (  # noqa: E402
+    PITCH_COLLECTION_STATUS_FIELDS,
+    build_pitch_collection_queue,
+    build_pitch_collection_status,
+    pitch_coverage_summary,
+    validate_pitch_rows,
+)
 from odi_powerplay.start_times import (  # noqa: E402
     build_match_start_queue,
     validate_match_start_rows,
@@ -36,6 +42,16 @@ def main() -> int:
     )
     parser.add_argument("--match-start-input", type=Path)
     parser.add_argument(
+        "--set-aside-input",
+        type=Path,
+        default=ROOT / "data/manual/pitch_set_aside.csv",
+    )
+    parser.add_argument(
+        "--status-output",
+        type=Path,
+        default=ROOT / "artifacts/tables/pitch_collection_status.csv",
+    )
+    parser.add_argument(
         "--summary-output",
         type=Path,
         default=ROOT / "artifacts/tables/pitch_coverage_audit.json",
@@ -50,6 +66,7 @@ def main() -> int:
     pitch_rows = read_csv(args.pitch_input)
     innings_rows = read_csv(args.innings_input)
     eligible_ids = {row["match_id"] for row in innings_rows}
+    set_aside_rows = read_csv(args.set_aside_input)
     match_starts = None
     start_time_issues: list[dict[str, str]] = []
     if args.match_start_input:
@@ -71,11 +88,24 @@ def main() -> int:
     summary["validation_issues_by_field"] = dict(
         sorted(Counter(issue["field"] for issue in issues).items())
     )
+    collection_status = build_pitch_collection_status(
+        build_pitch_collection_queue(innings_rows),
+        pitch_rows,
+        set_aside_rows,
+    )
+    summary["collection_status_counts"] = dict(
+        sorted(Counter(row["collection_status"] for row in collection_status).items())
+    )
 
     args.summary_output.parent.mkdir(parents=True, exist_ok=True)
     args.summary_output.write_text(
         json.dumps(summary, indent=2, sort_keys=True) + "\n", encoding="utf-8"
     )
+    args.status_output.parent.mkdir(parents=True, exist_ok=True)
+    with args.status_output.open("w", encoding="utf-8", newline="") as handle:
+        writer = csv.DictWriter(handle, fieldnames=PITCH_COLLECTION_STATUS_FIELDS)
+        writer.writeheader()
+        writer.writerows(collection_status)
     if issues:
         args.issues_output.parent.mkdir(parents=True, exist_ok=True)
         with args.issues_output.open("w", encoding="utf-8", newline="") as handle:

@@ -8,7 +8,7 @@ Convert pre-match prose into auditable variables without reading the outcome. Co
 
 A source is eligible when:
 
-- it is a match-specific ESPNcricinfo preview, pitch/conditions report, or another clearly identified reputable pre-match source when ESPN has no eligible report;
+- it is a match-specific ICC, national-board, established news, or established specialist-cricket pre-match report; ESPN is eligible only through the separately documented human/licensed route;
 - its publication time can be shown to precede match start;
 - it discusses the specific match venue/surface, not only generic venue history;
 - it does not reveal any match event or result.

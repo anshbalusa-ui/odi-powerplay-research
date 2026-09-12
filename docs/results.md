@@ -5,9 +5,9 @@
 These are reproducible **development and 2024 temporal-validation results**, not
 final paper results. The 2025–2026 test period remains locked and its outcomes have
 not been scored. The intended pitch result is a prespecified effect-modification
-analysis nested within the same powerplay question, not a separate finding. It
-remains unavailable: 88 of 1,094 matches have timing-verified provisional pitch
-codes, but independent double-coding and adequate coverage have not been achieved.
+analysis nested within the same powerplay question, not a separate finding. The
+200-match source- and timing-verified collection target is complete, but the pitch
+codes have not passed independent double-coding.
 
 ## Cohort construction
 
@@ -94,11 +94,28 @@ The M1 calibration intercept was -0.007 (95% CI -0.089 to 0.077) and slope was
 fixed probability bins with whole-match bootstrap uncertainty. The intercept-only
 calibration slope is unidentifiable because its probabilities are constant.
 
+## Provisional pitch-subset smoke test
+
+The verified pitch subset contains 200 matches and 400 paired innings: 139
+development matches, ten 2024 validation matches, and 51 locked-test matches. The
+locked outcomes remain unscored. A separate complete-case fit confirmed that the
+prespecified pitch main effects and interactions execute end to end.
+
+The ten-match 2024 sample is not adequate for substantive model comparison. Point
+estimates were ROC-AUC 0.67 and log loss 0.6490 for the powerplay runs-and-wickets
+benchmark, ROC-AUC 0.46 and log loss 0.9113 for M1 with context and pitch main
+effects, and ROC-AUC 0.48 and log loss 0.8484 for M2 with the prespecified pitch
+interactions. These unstable values are reported only as reproducibility evidence,
+not as Finding 2. Source selection, provider-specific framing, the tiny validation
+sample, and absent independent double-coding prevent a pitch-effect conclusion.
+
 ## Interpretation boundary
 
 The observable conclusion is limited: first-10-over runs and wickets contain useful
-held-out information about the batting team's match outcome in this 2024 sample.
-The study remains observational, so the estimates are associations rather than
-causal effects. No pitch-adjusted estimate is reported, no ESPN live or post-match
-commentary entered a predictor, and no claim uses the locked test period. Exact
-model definitions, hashes, and artifact paths are in `docs/modeling_status.md`.
+held-out information about the batting team's match outcome in the full 2024
+sample. The study remains observational, so the estimates are associations rather
+than causal effects. The pitch merge and interaction pipeline run on the verified
+subset, but no pitch-adjusted substantive claim is reported. No ESPN page text,
+live or post-match commentary entered a predictor, and no claim uses the locked
+test period. Exact model definitions, hashes, and artifact paths are in
+`docs/modeling_status.md`.

@@ -68,13 +68,14 @@ uncertainty, calibration, and preliminary figures are complete. The venue-histor
 sensitivity did not improve M1's 2024 AUC or proper scores by point estimate. The
 current numeric narrative is in `docs/results.md`.
 
-The pitch requirement is **not met**: 88 of 1,094 matches have timing-verified
-AI-assisted first-pass codes, 212 of 300 reviewed matches are set aside, and
-independent double coding has not occurred. The hand-audit worksheet is generated
-but still needs external scorecard reconciliation.
-The 2025–2026 locked test remains correctly unscored.
+The 200-match pitch source-coverage target is met: 200 of 1,094 matches have
+timing-verified AI-assisted first-pass codes, 275 of 475 reviewed matches are set
+aside, and 619 remain unreviewed. The pitch reliability requirement is **not met**
+because independent double coding has not occurred. The hand-audit worksheet is
+generated but still needs external scorecard reconciliation. The 2025–2026 locked
+test remains correctly unscored.
 
-Go/no-go decision: the full-cohort powerplay result and verified-pitch subgroup must remain visibly nested under one research question. Do not submit a pitch effect-modification estimate until source coverage and independent reliability gates pass. If those gates are not met, retain the full-cohort result as Finding 1 and label the pitch analysis incomplete rather than implying that most matches had pitch adjustment. Never manufacture pitch labels from live/post-match commentary or unlock test outcomes to compensate for missing pitch data.
+Go/no-go decision: the full-cohort powerplay result and verified-pitch subgroup must remain visibly nested under one research question. Do not submit a pitch effect-modification estimate until independent reliability passes and the ten-match 2024 pitch-validation sample is judged adequate or replaced by a prespecified alternative. Until then, retain the full-cohort result as Finding 1 and label the pitch fit provisional rather than implying that most matches had pitch adjustment. Never manufacture pitch labels from live/post-match commentary or unlock test outcomes to compensate for missing pitch data.
 
 ## September 5–October 1 sprint
 

@@ -3,11 +3,11 @@
 ## Scope and lock state
 
 This is a full-cohort preliminary analysis with a leakage-safe historical venue
-proxy, but **without source-coded match-day pitch reports in the fitted models**.
-Prior-20 venue history is available for 997 of 1,094 primary matches. A separate
-audited merge now recognizes 88 provisional pitch-report matches, but that subset
-remains too small and has not passed independent double-coding. No pitch coefficient
-or pitch interaction is therefore estimated in the published preliminary models.
+proxy. The main fitted models still exclude source-coded match-day pitch reports.
+The audited merge now recognizes the target 200 provisional pitch-report matches,
+but independent double-coding has not passed and only ten of those matches fall in
+the 2024 validation year. Pitch interactions are therefore a pipeline smoke test,
+not a published research result.
 
 The fixed Cricsheet snapshot contributes 1,094 primary matches and 2,188 team-innings:
 
@@ -17,8 +17,9 @@ The fixed Cricsheet snapshot contributes 1,094 primary matches and 2,188 team-in
 | validation | 2024-01-01–2024-12-31 | 71 | 142 | preliminary temporal evaluation |
 | locked test | 2025-01-01–snapshot cutoff | 152 | 304 | untouched; not scored |
 
-Both innings from each match remain in the same split. The frozen model-table SHA-256
-is `ba1e541232568036ac4262f1660f419d236736c51a6b5af12016a8f949da6685`.
+Both innings from each match remain in the same split. The current 200-pitch merged
+model-table SHA-256 is
+`3b50566ec10a96638cb5394c52d45afe5b4f9cd7ea49417c90a767dd52c8f03d`.
 
 ## Specifications
 
@@ -57,6 +58,31 @@ Expanding rolling-origin diagnostics train on all earlier years and validate
 separately on 2021, 2022, and 2023. Every fold refits imputation, scaling, and
 encoding using only its training years. No hyperparameter search was performed;
 the declared settings are prespecified rather than selected on 2024.
+
+## Provisional verified-pitch subset
+
+The target-complete pitch merge contains 400 paired team-innings from 200 matches:
+278 development rows from 139 matches, 20 validation rows from ten 2024 matches,
+and 102 unscored locked-test rows from 51 matches. A separate smoke-test fit used
+only this complete-case subset and activated the prespecified pitch main effects
+and powerplay × pitch interactions. Because there are no verified-pitch matches in
+2021, its explicitly requested rolling-origin diagnostics use 2022 and 2023 only;
+the missing year is not silently represented as a fold.
+
+On the ten-match 2024 subset, the runs-and-wickets benchmark had ROC-AUC 0.67,
+log loss 0.6490, and Brier score 0.2290. M1 with context, pitch main effects, and
+powerplay had ROC-AUC 0.46, log loss 0.9113, and Brier score 0.3401. M2 with the
+prespecified pitch interactions had ROC-AUC 0.48, log loss 0.8484, and Brier score
+0.3225. These values are too unstable for substantive interpretation: the
+validation set has only ten independent match clusters, source coverage is
+selected, and no independent double-coding exists. The locked 2025–2026 outcomes
+remain untouched.
+
+The development subset contains no observed `dew_expected` value, so scikit-learn
+correctly drops that all-missing numeric column during development-fitted
+imputation. No dew effect is estimable from this fit. Generated pitch-model
+artifacts use separate `pitch_` paths and do not replace the full-cohort validation
+artifacts.
 
 ## 2024 temporal-validation results
 
@@ -99,6 +125,23 @@ python3.11 -m venv .venv
 .venv/bin/python scripts/evaluate_models.py
 .venv/bin/python scripts/make_figures.py
 .venv/bin/python scripts/reproduce.py --skip-download
+```
+
+For the provisional pitch-subset smoke test:
+
+```bash
+.venv/bin/python scripts/train_models.py \
+  --fit-without-locked-test \
+  --input data/processed/model_team_innings_pitch.csv \
+  --model-dir artifacts/models/pitch_validation_frozen \
+  --predictions-output artifacts/tables/pitch_validation_predictions.csv \
+  --manifest-output artifacts/models/pitch_validation_frozen/manifest.json \
+  --rolling-origin-output artifacts/tables/pitch_rolling_origin_metrics.json \
+  --rolling-validation-years 2022 2023
+.venv/bin/python scripts/evaluate_models.py \
+  --input artifacts/tables/pitch_validation_predictions.csv \
+  --metrics-output artifacts/tables/pitch_validation_metrics.json \
+  --calibration-output artifacts/tables/pitch_validation_calibration.csv
 ```
 
 Generated model binaries, hashes, validation predictions, calibration bins, and

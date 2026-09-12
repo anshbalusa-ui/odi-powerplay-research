@@ -67,15 +67,14 @@ not be treated as stable league tables.
 
 ## Pitch conditions and ESPNcricinfo
 
-Current reproducible pitch coverage is **88 of 1,094 primary matches (8.04388%)**.
-All 88 are AI-assisted first-pass codes from non-ESPN, match-specific pre-match
-sources. They pass the automated source/timing/merge gates but have not passed the
-independent-human reliability gate. Therefore:
+Current reproducible pitch coverage is **200 of 1,094 primary matches
+(18.281536%)**. All 200 are AI-assisted first-pass codes from non-ESPN,
+match-specific pre-match sources. They pass the automated source, timing, and merge
+gates but have not passed the independent-human reliability gate. Therefore:
 
-- no source-coded pitch variables entered the fitted models;
-- no runs × source-coded pitch or wickets × source-coded pitch interaction was
-  estimated;
-- no fitted model can currently be called pitch-adjusted;
+- a provisional complete-case model fit is a pipeline smoke test only;
+- runs × pitch and wickets × pitch interactions cannot support a research claim;
+- no fitted model can yet be called reliably pitch-adjusted;
 - no match-day pitch conclusion should appear in an abstract or paper result.
 
 ESPNcricinfo's reviewed terms prohibit the automated extraction approach originally
@@ -93,7 +92,7 @@ a human or through licensed access. A candidate must be reconciled against teams
 date, event, and venue before any report can pass source validation.
 
 The full tracked start-time template covers 1,094 matches with `pending` placeholders.
-The separate tracked verified release contains 88 cited scheduled starts, one for
+The separate tracked verified release contains 200 cited scheduled starts, one for
 each currently published pitch code. Collectors need to verify only rows with
 collected pitch reports, not the entire cohort. The audit validates cohort identity,
 provenance, IANA timezones, and exact local-to-UTC conversion. Downstream code
@@ -101,26 +100,32 @@ exposes only rows explicitly marked `verified`, so a blank, partial, or merely
 plausible timestamp cannot make a pitch source eligible.
 
 The outcome-blind queue contains 1,094 match-specific search tasks and no result or
-powerplay columns. Twelve outcome-blind batches reviewed 300 matches: 88 passed,
-while 212 are explicitly listed in `data/manual/pitch_set_aside.csv` for later
-work. This 29.3% yield among reviewed
-matches is not representative of the full cohort;
-source discoverability and publication practices vary by competition, era, and
-team. Completing broader coverage still requires:
+powerplay columns. Nineteen outcome-blind batches reviewed 475 matches: 200 passed,
+275 are explicitly listed in `data/manual/pitch_set_aside.csv`, and 619 remain
+unreviewed. The verified subset covers 18.281536% of the cohort. Its 42.1% yield
+among reviewed matches is not representative of the full cohort; source
+discoverability and publication practices vary by competition, era, and team.
+Completing broader coverage still requires:
 
 1. human collection or a licensed source-access route for ESPN material;
 2. a direct eligible pre-match URL and publication timestamp for each coded match;
 3. a verified scheduled match-start UTC timestamp;
 4. short original paraphrases rather than copied report prose;
-5. a second independent coder for at least 20% of completed reports;
+5. a second independent coder for at least 40 of the 200 completed reports;
 6. reconciliation and reliability reporting before outcome modeling.
 
+The accepted reports span 29 normalized provider hostnames, but the source mix is
+not uniform: the largest provider contributes 26.5% and the top three contribute
+56.0%. The provider HHI is 1,313. Provider-level pitch-category and confidence
+counts are published in `artifacts/tables/pitch_source_providers.csv`; they expose,
+rather than resolve, outlet-specific framing and classification risk.
+
 Pitch-report availability is likely nonrandom across teams, venues, competitions,
-and years. Complete-case pitch models may therefore be selection-biased even after
-coverage reporting. Text-to-code judgments also introduce measurement error and
-coder subjectivity. Missing pitch dimensions must remain missing; they cannot be
-backfilled from live commentary, match outcomes, generic venue stereotypes, or
-post-match descriptions.
+years, and publishers. Complete-case pitch models may therefore be selection-biased
+even after coverage and provider reporting. Text-to-code judgments also introduce
+measurement error and coder subjectivity. Missing pitch dimensions must remain
+missing; they cannot be backfilled from live commentary, match outcomes, generic
+venue stereotypes, or post-match descriptions.
 
 ## Modeling limitations
 

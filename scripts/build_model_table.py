@@ -58,6 +58,11 @@ def main() -> int:
         default=ROOT / "data/processed/model_team_innings.csv",
     )
     parser.add_argument(
+        "--pitch-output",
+        type=Path,
+        default=ROOT / "data/processed/model_team_innings_pitch.csv",
+    )
+    parser.add_argument(
         "--manifest-output",
         type=Path,
         default=ROOT / "data/processed/model_table_manifest.json",
@@ -114,6 +119,15 @@ def main() -> int:
         writer = csv.DictWriter(handle, fieldnames=list(model_rows[0]))
         writer.writeheader()
         writer.writerows(model_rows)
+    if args.pitch_input:
+        pitch_model_rows = [
+            row for row in model_rows if str(row["pitch_available"]) == "1"
+        ]
+        args.pitch_output.parent.mkdir(parents=True, exist_ok=True)
+        with args.pitch_output.open("w", encoding="utf-8", newline="") as handle:
+            writer = csv.DictWriter(handle, fieldnames=list(model_rows[0]))
+            writer.writeheader()
+            writer.writerows(pitch_model_rows)
 
     match_ids_by_split: dict[str, set[str]] = defaultdict(set)
     for row in model_rows:
@@ -137,6 +151,10 @@ def main() -> int:
         "strength_table_sha256": hashlib.sha256(args.strength_input.read_bytes()).hexdigest(),
         "venue_table_sha256": hashlib.sha256(args.venue_input.read_bytes()).hexdigest(),
     }
+    if args.pitch_input:
+        manifest["pitch_model_table_sha256"] = hashlib.sha256(
+            args.pitch_output.read_bytes()
+        ).hexdigest()
     args.manifest_output.write_text(
         json.dumps(manifest, indent=2, sort_keys=True) + "\n",
         encoding="utf-8",

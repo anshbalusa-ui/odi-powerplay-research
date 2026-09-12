@@ -8,6 +8,8 @@
 | `powerplay_innings` | one regulation team-innings | first-10-over statistics and context |
 | `pitch_reports_verified` | one verified match/source | minimized pre-match provenance and derived pitch codes |
 | `pitch_set_aside` | one reviewed match | outcome-blind follow-up list for attempts without eligible analysis |
+| `pitch_collection_status` | one eligible match | verified, reviewed set-aside, or unreviewed collection state |
+| `pitch_source_providers` | one normalized provider hostname | source share, category mix, and confidence mix |
 | `team_strength_pre` | one match/team | ratings calculated before the match date |
 | `venue_conditions_pre_match` | one match | rolling prior-match venue scoring environment |
 | `model_team_innings` | one team-innings | audited merged analysis table |
@@ -105,7 +107,7 @@ No start-time, timezone, status, verifier, or source-provenance field is joined 
 the model table; all are also named in the prohibited-predictor guard.
 
 
-The first tracked release contains four verified scheduled starts. No start-time,
+The tracked release contains 200 verified scheduled starts. No start-time,
 timezone, provenance, or verifier field is available to the fitted model.
 
 ## Pitch fields
@@ -114,6 +116,10 @@ timezone, provenance, or verifier field is available to the fitted model.
 publication-time, match-start, cohort-identity, and code-value validation.
 `data/manual/pitch_set_aside.csv` contains no pitch codes or outcomes; it records
 the search query and reason a reviewed match needs later follow-up.
+`artifacts/tables/pitch_collection_status.csv` covers all 1,094 eligible matches
+with `verified`, `set_aside`, or `unreviewed` status.
+`artifacts/tables/pitch_source_providers.csv` groups verified rows by normalized
+source hostname and reports counts, shares, category counts, and confidence counts.
 
 
 | Variable | Type | Definition |

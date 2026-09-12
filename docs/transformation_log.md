@@ -10,7 +10,7 @@ This file defines the required transformation trail. Each completed run should p
 | 04 | match table | apply core exclusions; select 2015-forward men's ODIs; classify competition type without event exclusion | cohort audit table | every exclusion has reason; count flow; all event types retained |
 | 05 | prior decided matches | calculate date-batched Elo and prior-20 win rates | `team_strength_pre` | no focal/future match in history |
 | 06 | prior matches at each venue | calculate date-batched prior-20 powerplay scoring summaries | `venue_conditions_pre_match` | exact match/date/venue join; no same-day or future performance in history |
-| 07 | outcome-blind eligible match queue | generate unfetched probable ESPN-ID links; review match-specific pre-match reports; code eligible non-ESPN evidence; defer ESPN to human/licensed collection; export unsupported attempts | queue + ignored working file + tracked `pitch_reports_verified` + `pitch_set_aside` | no bulk ESPN extraction; candidate status explicit; source time precedes start; no result/powerplay fields in set-aside output; double-code ≥20% |
+| 07 | outcome-blind eligible match queue | generate unfetched probable ESPN-ID links; review match-specific pre-match reports; code eligible non-ESPN evidence; defer ESPN to human/licensed collection; classify every match as verified, set aside, or unreviewed; audit provider mix | queue + ignored working file + tracked `pitch_reports_verified` + `pitch_set_aside` + collection-status/provider audits | no bulk ESPN extraction; candidate status explicit; source time precedes start; no result/powerplay fields in collection outputs; provider concentration reported; double-code ≥20% |
 | 08 | primary-cohort metadata + cited schedules | generate an outcome-blind start-time reference; verify match identity, scheduled local time, and IANA timezone only for matches with accepted pitch reports; convert to UTC | tracked template + `match_start_times_verified` + audit | rows are in cohort; every verified pitch report has timing evidence; template covers full cohort; exact IANA local-to-UTC conversion; timing fields prohibited from models |
 | 09 | innings + strength + venue history + validated pitch rows | join approved fields by exact match ID | `model_team_innings` | one row per input innings; invalid/unverified reports excluded; unmatched coverage reported |
 | 10 | merged table | enforce leakage allowlist; create primary/secondary feature sets | model feature table | forbidden-column assertion; no generic weather fields |
@@ -30,9 +30,12 @@ pipeline saves model binaries and hashes, one validation prediction per
 model/team-innings, fixed-width calibration tables with whole-match uncertainty,
 calibration intercept/slope, and 2,000 whole-match cluster-bootstrap intervals
 using study seed `20250905`. It does not score or inspect outcomes from the
-2025–2026 locked-test partition. No hyperparameter search has been conducted; the
-current settings are prespecified. See `docs/modeling_status.md` for exact
-specifications and preliminary results.
+2025–2026 locked-test partition. A separate 200-match complete-case pitch smoke test
+uses 2022 and 2023 rolling-origin folds because 2021 has no verified-pitch match,
+then evaluates only ten 2024 match clusters; its values are not substantive results.
+No hyperparameter search has been conducted; the current settings are
+prespecified. See `docs/modeling_status.md` for exact specifications and
+preliminary results.
 
 ## Standard exclusion codes
 

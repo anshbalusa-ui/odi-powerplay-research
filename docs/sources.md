@@ -104,8 +104,8 @@ verification must remain separate from outcome-blind pitch coding.
 
 Pitch reports are collected in outcome-blind batches. Match IDs are selected before any report, scorecard, powerplay value, or result is inspected. For each selected match, search in this order:
 
-1. match-specific pre-match ESPNcricinfo or ICC report;
-2. the relevant national cricket board or an established local/international news outlet;
+1. ICC or the relevant national cricket board;
+2. an established local or international news outlet;
 3. an established specialist cricket outlet when the first two levels have no surface description.
 
 Fantasy-prediction, betting, unattributed aggregator, social-media, live-blog, and post-match pages do not establish the primary pitch code. When higher-quality sources lack pitch evidence or lower-quality sources conflict, leave pitch dimensions missing and record the reason. One missing-source row is preferable to an unsupported classification.
@@ -465,3 +465,39 @@ or appeared in fantasy or match-prediction content. All 25 working rows record t
 common collection instant `2026-09-12T08:05:57Z`; accepted rows separately retain
 exact source-publication and scheduled-start instants. The reviewed match range is
 2023-11-06 through 2024-08-07.
+
+## Completion batches and provider audit
+
+Batches 13–19 reviewed the final 175 matches needed for the prespecified collection
+target. They added 112 verified reports and 63 set-asides:
+
+| Batch | Selection scope | Verified | Set aside |
+|---|---|---:|---:|
+| 13 | 2023 World Cup | 25 | 0 |
+| 14 | 2023 World Cup | 21 | 4 |
+| 15 | 2019 World Cup | 18 | 7 |
+| 16 | 2019 and 2015 World Cups | 13 | 12 |
+| 17 | remaining World Cup, Champions Trophy, and Asia Cup | 13 | 12 |
+| 18 | Australia and West Indies tours of India | 9 | 16 |
+| 19 | India in South Africa, Sri Lanka in New Zealand, and Australia in England | 13 | 12 |
+| **Total** |  | **112** | **63** |
+
+The completion batches used the same source, timing, and surface-evidence gates as
+the first twelve batches. Date-only publication values were retained only when the
+publisher omitted a time and the local publication date itself preceded the local
+match date. Live, post-match, fantasy, betting, match-prediction, generic venue,
+surface-free, inaccessible, and syndicated ESPN-labelled pages were set aside
+rather than converted into pitch codes. The canonical row-level record—including
+every accepted URL, publication value, access timestamp, code, confidence, and
+short original paraphrase—is `data/manual/pitch_reports_verified.csv`; every
+reviewed rejection and reason is in `data/manual/pitch_set_aside.csv`.
+
+Across all nineteen batches, 200 of 475 reviewed matches passed and 275 were set
+aside. The remaining 619 cohort matches are explicitly `unreviewed` in
+`artifacts/tables/pitch_collection_status.csv`. The 200 accepted reports are all
+non-ESPN and span 29 normalized provider hostnames. MyKhel contributes 53 (26.5%),
+ICC 36 (18.0%), and Indian Express 23 (11.5%); the top three contribute 56.0%.
+The provider HHI is 1,313. `scripts/audit_pitch_sources.py` generates the complete
+provider/category/confidence table and concentration summary. These counts document
+source heterogeneity; they do not establish that editorial pitch descriptions are
+measurement-equivalent across publishers.

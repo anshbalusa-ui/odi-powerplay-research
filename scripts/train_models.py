@@ -58,6 +58,12 @@ def main() -> int:
         type=Path,
         default=ROOT / "artifacts/tables/rolling_origin_metrics.json",
     )
+    parser.add_argument(
+        "--rolling-validation-years",
+        type=int,
+        nargs="+",
+        default=[2021, 2022, 2023],
+    )
     args = parser.parse_args()
     if not args.fit_without_locked_test:
         raise ValueError(
@@ -84,7 +90,10 @@ def main() -> int:
     args.model_dir.mkdir(parents=True, exist_ok=True)
     args.predictions_output.parent.mkdir(parents=True, exist_ok=True)
     rolling_results: dict[str, list[dict[str, object]]] = {}
-    folds = rolling_origin_splits(development)
+    folds = rolling_origin_splits(
+        development,
+        validation_years=tuple(args.rolling_validation_years),
+    )
     for spec in specs:
         rolling_results[spec.name] = []
         for fold_training, fold_validation in folds:
@@ -107,7 +116,7 @@ def main() -> int:
         json.dumps(
             {
                 "locked_test_scored": False,
-                "validation_years": [2021, 2022, 2023],
+                "validation_years": args.rolling_validation_years,
                 "models": rolling_results,
             },
             indent=2,
@@ -131,7 +140,7 @@ def main() -> int:
                 "numeric_features": list(spec.numeric_features),
                 "categorical_features": list(spec.categorical_features),
                 "interaction_features": [list(pair) for pair in spec.interaction_features],
-                "artifact": str(model_path.relative_to(ROOT)),
+                "artifact": str(model_path.resolve().relative_to(ROOT)),
                 "artifact_sha256": hashlib.sha256(model_path.read_bytes()).hexdigest(),
             }
         )

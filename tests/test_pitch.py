@@ -11,13 +11,15 @@ sys.path.insert(0, str(ROOT / "src"))
 from odi_powerplay.pitch import (
     PITCH_QUEUE_FIELDS,
     PITCH_SET_ASIDE_FIELDS,
+    build_pitch_collection_status,
     build_pitch_set_aside,
     build_pitch_collection_queue,
     espn_link_candidate,
     espn_linkage_summary,
     merge_pitch_conditions,
-    pitch_intercoder_reliability,
     pitch_coverage_summary,
+    pitch_intercoder_reliability,
+    pitch_source_provider_summary,
     select_next_pitch_batch,
     validate_espn_linkage_rows,
     validate_pitch_rows,
@@ -228,6 +230,27 @@ class PitchPipelineTests(unittest.TestCase):
             "source was not published before match start", {issue["message"] for issue in issues}
         )
 
+    def test_date_only_source_must_precede_the_local_match_date(self) -> None:
+        row = self.verified_pitch_row()
+        row["published_at_utc"] = "2026-01-01"
+        row["accessed_at_utc"] = "2026-01-03T12:00:00+00:00"
+        valid = validate_pitch_rows(
+            [row],
+            eligible_match_ids={"match-1"},
+            match_start_by_id={"match-1": "2026-01-01T22:00:00+00:00"},
+        )
+        self.assertEqual(valid, [])
+
+        row["published_at_utc"] = "2026-01-02"
+        issues = validate_pitch_rows(
+            [row],
+            eligible_match_ids={"match-1"},
+            match_start_by_id={"match-1": "2026-01-01T22:00:00+00:00"},
+        )
+        self.assertIn(
+            "source was not published before match start", {issue["message"] for issue in issues}
+        )
+
     def test_verified_rows_reject_prediction_and_fantasy_sources(self) -> None:
         row = self.verified_pitch_row()
         row["source_url"] = "https://example.com/fantasy-cricket-tips/match"
@@ -347,6 +370,61 @@ class PitchPipelineTests(unittest.TestCase):
         self.assertNotIn("winner", rows[0])
         self.assertNotIn("pp_runs", rows[0])
 
+    def test_collection_status_records_every_eligible_match_without_outcomes(self) -> None:
+        eligible = [
+            {
+                "cricsheet_match_id": "match-1",
+                "match_date": "2025-01-01",
+                "event_name": "Example Series",
+                "competition_type": "bilateral_series",
+                "venue": "Example Ground",
+                "city": "Example City",
+                "team_1": "Team A",
+                "team_2": "Team B",
+                "source_search_query": "example search",
+                "winner": "must-not-be-exported",
+            },
+            {
+                "cricsheet_match_id": "match-2",
+                "match_date": "2025-01-02",
+                "event_name": "Example Series",
+                "competition_type": "bilateral_series",
+                "venue": "Example Ground",
+                "city": "Example City",
+                "team_1": "Team A",
+                "team_2": "Team B",
+                "source_search_query": "example search",
+            },
+            {
+                "cricsheet_match_id": "match-3",
+                "match_date": "2025-01-03",
+                "event_name": "Example Series",
+                "competition_type": "bilateral_series",
+                "venue": "Example Ground",
+                "city": "Example City",
+                "team_1": "Team A",
+                "team_2": "Team B",
+                "source_search_query": "example search",
+            },
+        ]
+        statuses = build_pitch_collection_status(
+            eligible,
+            [{"cricsheet_match_id": "match-1"}],
+            [
+                {
+                    "cricsheet_match_id": "match-2",
+                    "exclusion_reason": "No eligible source.",
+                }
+            ],
+        )
+
+        self.assertEqual(
+            [row["collection_status"] for row in statuses],
+            ["verified", "set_aside", "unreviewed"],
+        )
+        self.assertEqual(statuses[1]["exclusion_reason"], "No eligible source.")
+        self.assertNotIn("winner", statuses[0])
+
     def test_coverage_summary_uses_only_verified_rows(self) -> None:
         verified = self.verified_pitch_row()
         excluded = {**verified, "cricsheet_match_id": "match-2", "pre_match_verified": "0"}
@@ -361,6 +439,48 @@ class PitchPipelineTests(unittest.TestCase):
         self.assertEqual(cohort_summary["attempted_matches"], 2)
         self.assertEqual(cohort_summary["eligible_cohort_matches"], 1_094)
         self.assertEqual(cohort_summary["coverage_pct"], 0.091408)
+
+    def test_source_provider_summary_normalizes_hosts_and_reports_concentration(self) -> None:
+        first = self.verified_pitch_row()
+        second = {
+            **self.verified_pitch_row(),
+            "cricsheet_match_id": "match-2",
+            "source_url": "https://www.example.com/second-preview",
+            "pitch_primary_category": "spin",
+            "coder_confidence": "medium",
+        }
+        third = {
+            **self.verified_pitch_row(),
+            "cricsheet_match_id": "match-3",
+            "source_url": "https://m.news.co.uk/preview",
+            "pitch_primary_category": "balanced",
+        }
+
+        summary = pitch_source_provider_summary([first, second, third])
+
+        self.assertEqual(summary["verified_pitch_matches"], 3)
+        self.assertEqual(summary["source_provider_count"], 2)
+        self.assertEqual(summary["top_provider_hostname"], "example.com")
+        self.assertEqual(summary["top_provider_share_pct"], 66.666667)
+        self.assertEqual(summary["top_three_provider_share_pct"], 100.0)
+        self.assertEqual(summary["herfindahl_hirschman_index"], 5555.555556)
+        self.assertEqual(
+            summary["providers"][0],
+            {
+                "source_provider_hostname": "example.com",
+                "verified_matches": 2,
+                "share_pct": 66.666667,
+                "batting_friendly_matches": 0,
+                "balanced_matches": 0,
+                "pace_seam_matches": 1,
+                "spin_matches": 1,
+                "slow_two_paced_matches": 0,
+                "unknown_matches": 0,
+                "high_confidence_matches": 1,
+                "medium_confidence_matches": 1,
+                "low_confidence_matches": 0,
+            },
+        )
 
     def test_intercoder_reliability_reports_agreement_kappa_and_sample_target(
         self,
