@@ -5,7 +5,7 @@
 This is a full-cohort preliminary analysis with a leakage-safe historical venue
 proxy, but **without source-coded match-day pitch reports in the fitted models**.
 Prior-20 venue history is available for 997 of 1,094 primary matches. A separate
-audited merge now recognizes 49 provisional pitch-report matches, but that subset
+audited merge now recognizes 55 provisional pitch-report matches, but that subset
 remains too small and has not passed independent double-coding. No pitch coefficient
 or pitch interaction is therefore estimated in the published preliminary models.
 

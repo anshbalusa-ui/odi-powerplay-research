@@ -315,3 +315,29 @@ match-prediction content. All 25 working rows record the common collection insta
 `2026-09-12T00:04:35Z`; accepted rows separately retain the exact source-publication
 and scheduled-start instants. The reviewed match range is 2025-09-04 through
 2025-11-30.
+
+## Eighth-batch source release
+
+The eighth 25-match outcome-blind batch was selected newest-first and reviewed
+individually on 2026-09-12. Six non-ESPN reports met the source, timing, and
+surface-evidence requirements:
+
+- Cricket Times, England–South Africa Headingley first-ODI pitch report:
+  https://crickettimes.com/2025/09/eng-vs-sa-2025-pitch-report-for-the-1st-odi-headingley-stats-and-records/
+- Cricket Addictor, Zimbabwe–Sri Lanka Harare first-ODI pitch report:
+  https://cricketaddictor.com/cricket-news/zim-vs-sl-weather-report-pitch-report-of-harare-1st-odi-sri-lanka-tour-of-zimbabwe-2025-193054/
+- Cricket Addictor, Zimbabwe–Sri Lanka Harare second-ODI pitch report:
+  https://cricketaddictor.com/cricket-news/zim-vs-sl-weather-report-pitch-report-of-harare-2nd-odi-sri-lanka-tour-of-zimbabwe-2025-198625/
+- The Economic Times, Australia–South Africa Mackay second-ODI pitch report:
+  https://economictimes.indiatimes.com/news/sports/aus-vs-sa-2nd-odi-great-barrier-reef-arena-weather-updates-pitch-report-of-australia-vs-south-africa-cricket-match/articleshow/123433652.cms
+- The Economic Times, Australia–South Africa Mackay third-ODI pitch report:
+  https://economictimes.indiatimes.com/news/sports/aus-vs-sa-3rd-odi-great-barrier-reef-arena-weather-updates-pitch-report-of-australia-vs-south-africa-cricket-match/articleshow/123476506.cms
+- CricTracker, England–West Indies Edgbaston first-ODI preview:
+  https://www.crictracker.com/cricket-previews/eng-vs-wi-2025-england-vs-west-indies-1st-odi-match-preview/
+
+Nineteen eighth-batch matches were set aside. The rejected material was absent,
+surface-free, generic, ESPN-restricted, date-only, post-start, or embedded in
+fantasy, betting, or match-prediction content. All 25 working rows record the common
+collection instant `2026-09-12T00:13:48Z`; accepted rows separately retain exact
+source-publication and scheduled-start instants. The reviewed match range is
+2025-05-25 through 2025-09-04.
