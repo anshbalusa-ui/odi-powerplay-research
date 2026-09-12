@@ -94,7 +94,7 @@ Use academic or authoritative sources. Do not pad this section with generic mach
 ### 4.1 Cohort and data quality
 
 - row counts, exclusions, missingness, and join coverage;
-- report current pitch coverage as 41/1,094 (3.74771%), with 109 of 150 reviewed matches set aside;
+- report current pitch coverage as 49/1,094 (4.47898%), with 126 of 175 reviewed matches set aside;
 - report inter-coder reliability only after independent double coding.
 
 ### 4.2 Descriptive results

@@ -285,3 +285,33 @@ fantasy/match-prediction content. All 25 working rows record the common collecti
 instant `2026-09-11T23:53:16Z`; accepted rows separately retain the exact
 source-publication and scheduled-start instants. The reviewed match range is
 2025-12-03 through 2026-06-04.
+
+## Seventh-batch source release
+
+The seventh 25-match outcome-blind batch was selected newest-first and reviewed
+individually on 2026-09-12. Eight non-ESPN reports met the source, timing, and
+surface-evidence requirements:
+
+- The Indian Express, India–South Africa Ranchi pitch report:
+  https://indianexpress.com/article/sports/cricket/india-vs-south-africa-ranchi-jsca-international-stadium-pitch-report-weather-forecast-match-update-10393073/
+- Cricket Addictor, Pakistan–Sri Lanka Rawalpindi third-ODI pitch report:
+  https://cricketaddictor.com/cricket-news/pak-vs-sl-weather-report-pitch-report-of-rawalpindi-3rd-odi-sri-lanka-tour-of-pakistan-2025-291362/
+- Cricket Times, Pakistan–Sri Lanka Rawalpindi series-opening pitch report:
+  https://crickettimes.com/2025/11/pakistan-vs-sri-lanka-2025-rawalpindi-pitch-report-odi-stats-and-records/
+- Dawn, Pakistan–South Africa Faisalabad second-ODI preview:
+  https://www.dawn.com/news/1953418/pakistan-seek-odi-series-win-as-sa-eye-comeback
+- Cricket Addictor, New Zealand–West Indies Napier second-ODI pitch report:
+  https://cricketaddictor.com/cricket-news/nz-vs-wi-weather-report-pitch-report-of-mclean-park-napier-2nd-odi-west-indies-tour-of-new-zealand-2025-296615/
+- Cricket Times, New Zealand–England Bay Oval first-ODI pitch report:
+  https://crickettimes.com/2025/10/nz-vs-eng-pitch-report-for-1st-odi-bay-oval-stats-and-records/
+- The Indian Express, Australia–India Sydney third-ODI pitch report:
+  https://indianexpress.com/article/sports/cricket/india-vs-australia-3rd-odi-sydney-cricket-ground-pitch-report-weather-update-ind-vs-aus-10324904/
+- The Indian Express, Australia–India Adelaide second-ODI pitch report:
+  https://indianexpress.com/article/sports/cricket/india-vs-australia-2nd-odi-adelaide-oval-stadium-pitch-report-weather-update-ind-vs-aus-10320531/
+
+Seventeen seventh-batch matches were set aside. The rejected material was absent,
+surface-free, generic, ESPN-restricted, or embedded in fantasy, betting, live, or
+match-prediction content. All 25 working rows record the common collection instant
+`2026-09-12T00:04:35Z`; accepted rows separately retain the exact source-publication
+and scheduled-start instants. The reviewed match range is 2025-09-04 through
+2025-11-30.
