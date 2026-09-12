@@ -375,3 +375,37 @@ or match-prediction content. All 25 working rows record the common collection
 instant `2026-09-12T07:51:50Z`; accepted rows separately retain exact
 source-publication and scheduled-start instants. The reviewed match range is
 2025-02-16 through 2025-05-21.
+
+## Tenth-batch source release
+
+The tenth 25-match outcome-blind batch was selected newest-first and reviewed
+individually on 2026-09-12. Ten non-ESPN reports met the source, timing, and
+surface-evidence requirements:
+
+- MyKhel, Sri Lanka–Australia Colombo second-ODI preview:
+  https://www.mykhel.com/cricket/sl-vs-aus-playing-11-2nd-odi-sri-lanka-vs-australia-probable-playing-xi-preview-weather-and-pitch-report-340956.html
+- MyKhel, Sri Lanka–Australia Colombo first-ODI preview:
+  https://www.mykhel.com/cricket/sl-vs-aus-playing-11-1st-odi-sri-lanka-vs-australia-probable-playing-xi-preview-weather-pitch-340463.html
+- Business Standard, India–England Ahmedabad third-ODI pitch report:
+  https://www.business-standard.com/cricket/news/ind-vs-eng-3rd-odi-pitch-report-and-key-stats-of-narendra-modi-stadium-125021100722_1.html
+- MyKhel, New Zealand–South Africa Lahore tri-series pitch report:
+  https://www.mykhel.com/cricket/new-zealand-vs-south-africa-weather-and-pitch-report-2nd-odi-gaddafi-stadium-lahore-conditions-for-nz-vs-sa-tri-series-in-pakistan-339940.html
+- MyKhel, India–England Cuttack second-ODI pitch report:
+  https://www.mykhel.com/cricket/india-vs-england-2nd-odi-ind-vs-eng-pitch-and-weather-forecast-barabati-stadium-report-339857.html
+- The Economic Times, India–England Nagpur first-ODI pitch report:
+  https://economictimes.indiatimes.com/news/sports/ind-vs-eng-1st-odi-pitch-report-playing-conditions-in-nagpur-what-to-expect/articleshow/117971571.cms
+- Cricket Times, New Zealand–Sri Lanka Hamilton second-ODI pitch report:
+  https://crickettimes.com/2025/01/nz-vs-sl-hamilton-weather-forecast-for-the-2nd-odi-pitch-report-seddon-park-odi-stats-and-records-new-zealand-vs-sri-lanka-2024-25/
+- MyKhel, South Africa–Pakistan Paarl first-ODI pitch report:
+  https://www.mykhel.com/cricket/south-africa-vs-pakistan-weather-report-1st-odi-boland-park-pitch-report-and-weather-forecast-on-december-17-327396.html
+- InsideSport, West Indies–Bangladesh St Kitts second-ODI pitch report:
+  https://www.insidesport.in/cricket/bangladesh-vs-west-indies-warner-park-pitch-report-stats-ahead-of-ban-vs-wi-2nd-odi/
+- Cricket Addictor, Australia–Pakistan Perth third-ODI pitch report:
+  https://cricketaddictor.com/cricket-news/aus-vs-pak-weather-report-and-pitch-report-of-perth-stadium-3rd-odi-pakistan-tour-of-australia-2024/
+
+Fifteen tenth-batch matches were set aside. The rejected material was absent,
+surface-free, generic, ESPN-restricted, later-match, live, post-match, or embedded
+in fantasy or match-prediction content. All 25 working rows record the common
+collection instant `2026-09-12T07:56:44Z`; accepted rows separately retain exact
+source-publication and scheduled-start instants. The reviewed match range is
+2024-11-08 through 2025-02-14.
