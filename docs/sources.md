@@ -409,3 +409,20 @@ in fantasy or match-prediction content. All 25 working rows record the common
 collection instant `2026-09-12T07:56:44Z`; accepted rows separately retain exact
 source-publication and scheduled-start instants. The reviewed match range is
 2024-11-08 through 2025-02-14.
+
+## Eleventh-batch source release
+
+The eleventh 25-match outcome-blind batch was selected newest-first and reviewed
+individually on 2026-09-12. One non-ESPN report met the source, timing, and
+surface-evidence requirements:
+
+- MyKhel, West Indies–England Barbados third-ODI preview:
+  https://www.mykhel.com/cricket/wi-vs-eng-3rd-odi-preview-west-indies-and-england-weather-pitch-report-key-players-injury-updates-318378.html
+
+Twenty-four eleventh-batch matches were set aside. Twenty were qualification-pathway
+matches for which no timestamped match-specific surface analysis was located. The
+remaining material was surface-free, post-match, or embedded in fantasy, betting,
+or match-prediction content. All 25 working rows record the common collection
+instant `2026-09-12T08:00:55Z`; the accepted row separately retains exact
+source-publication and scheduled-start instants. The reviewed match range is
+2024-08-21 through 2024-11-07.

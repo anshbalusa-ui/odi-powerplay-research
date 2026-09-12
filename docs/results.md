@@ -6,7 +6,7 @@ These are reproducible **development and 2024 temporal-validation results**, not
 final paper results. The 2025–2026 test period remains locked and its outcomes have
 not been scored. The intended pitch result is a prespecified effect-modification
 analysis nested within the same powerplay question, not a separate finding. It
-remains unavailable: 75 of 1,094 matches have timing-verified provisional pitch
+remains unavailable: 76 of 1,094 matches have timing-verified provisional pitch
 codes, but independent double-coding and adequate coverage have not been achieved.
 
 ## Cohort construction
