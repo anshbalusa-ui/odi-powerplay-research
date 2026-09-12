@@ -426,3 +426,42 @@ or match-prediction content. All 25 working rows record the common collection
 instant `2026-09-12T08:00:55Z`; the accepted row separately retains exact
 source-publication and scheduled-start instants. The reviewed match range is
 2024-08-21 through 2024-11-07.
+
+## Twelfth-batch source release
+
+The twelfth 25-match outcome-blind batch prioritized the newest remaining
+non-qualification competitions using only queue metadata and was reviewed
+individually on 2026-09-12. Twelve non-ESPN reports met the source, timing, and
+surface-evidence requirements:
+
+- MyKhel, Sri Lanka–India Colombo third-ODI pitch report:
+  https://www.mykhel.com/cricket/ind-vs-sl-3rd-odi-r-premadasa-cricket-stadium-pitch-report-and-colombo-weather-forecast-298947.html
+- The Economic Times, Sri Lanka–India Colombo second-ODI pitch report:
+  https://economictimes.indiatimes.com/news/sports/india-vs-sri-lanka-pitch-report-2nd-odi-r-premadasa-stadium-columbo-weather-ind-vs-sl-2nd-odi-live-streaming-timing-win-predictor/articleshow/112259141.cms
+- Hindi OneIndia, Bangladesh–Sri Lanka Chattogram third-ODI pitch report:
+  https://hindi.oneindia.com/news/sports/cricket/bangladesh-vs-sri-lanka-3rd-odi-pitch-and-weather-report-ban-vs-sl-head-to-head-record-900015.html
+- Hindi OneIndia, Bangladesh–Sri Lanka Chattogram second-ODI pitch report:
+  https://hindi.oneindia.com/news/sports/cricket/bangladesh-vs-sri-lanka-2nd-odi-pitch-and-weather-report-zahur-ahmed-chowdhury-stadium-chattogram-898387.html
+- MyKhel, South Africa–India Gqeberha second-ODI pitch report:
+  https://www.mykhel.com/cricket/india-vs-south-africa-2nd-odi-st-georges-park-gqeberha-pitch-report-weather-forecast-records-252075.html
+- MyKhel, India–Australia Ahmedabad World Cup final pitch report:
+  https://www.mykhel.com/cricket/narendra-modi-stadium-ahmedabad-pitch-report-weather-forecast-for-ind-vs-aus-world-cup-2023-final-246105.html
+- The Sporting News, South Africa–Australia Kolkata World Cup semifinal pitch report:
+  https://www.sportingnews.com/in/cricket/news/australia-south-africa-how-has-eden-gardens-pitch-played-world-cup-2023/495b888f41e0f531e3d82763
+- Mint, India–New Zealand Mumbai World Cup semifinal preview:
+  https://www.livemint.com/sports/cricket-news/india-v-new-zealand-semifinal-preview-world-cup-2023-predicted-xi-pitch-report-where-to-watch/amp-11699989807751.html
+- MyKhel, India–Netherlands Bengaluru World Cup pitch report:
+  https://www.mykhel.com/cricket/m-chinnaswamy-stadium-bengaluru-pitch-report-weather-forecast-for-ind-vs-ned-icc-world-cup-2023-244867.html
+- MyKhel, England–Pakistan Kolkata World Cup pitch report:
+  https://www.mykhel.com/cricket/eden-gardens-kolkata-pitch-report-weather-forecast-for-eng-vs-pak-icc-odi-world-cup-2023-match-44-244735.html
+- MyKhel, Australia–Bangladesh Pune World Cup pitch report:
+  https://www.mykhel.com/cricket/mca-stadium-pune-pitch-report-weather-forecast-for-aus-vs-ban-icc-odi-world-cup-2023-match-43-244707.html
+- MyKhel, New Zealand–Sri Lanka Bengaluru World Cup pitch report:
+  https://www.mykhel.com/cricket/m-chinnaswamy-stadium-bengaluru-pitch-report-weather-forecast-for-nz-vs-sl-icc-odi-world-cup-2023-244335.html
+
+Thirteen twelfth-batch matches were set aside. The rejected material lacked an
+exact accessible publication timestamp, was source-free, was live or post-match,
+or appeared in fantasy or match-prediction content. All 25 working rows record the
+common collection instant `2026-09-12T08:05:57Z`; accepted rows separately retain
+exact source-publication and scheduled-start instants. The reviewed match range is
+2023-11-06 through 2024-08-07.

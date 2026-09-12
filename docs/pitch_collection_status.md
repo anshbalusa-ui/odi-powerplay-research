@@ -4,28 +4,29 @@ Last updated: 2026-09-11
 
 The current primary cohort contains 1,094 men's ODIs (2,188 team-innings) from
 2015 through the checksummed Cricsheet snapshot. `build_pitch_collection_queue.py`
-creates one deterministic, outcome-blind source row per match. The first four
-balanced 25-match batches and seven 25-match batches selected newest-first have now
-been reviewed: 76 non-ESPN reports passed source, timing, and coding validation,
-while 199 matches were set aside with explicit reasons.
+creates one deterministic, outcome-blind source row per match. Twelve 25-match
+batches have now been reviewed: 88 non-ESPN reports passed source, timing, and
+coding validation, while 212 matches were set aside with explicit reasons. The
+twelfth batch prioritized remaining non-qualification competitions using only
+pre-outcome queue metadata after an older League 2-heavy batch yielded one source.
 
 ## Current reproducible coverage
 
 | Status | Matches |
 |---|---:|
 | Eligible matches queued | 1,094 |
-| Matches reviewed in eleven 25-match batches | 275 |
-| Timing-verified, source-coded matches | 76 |
-| Matches set aside for later review | 199 |
-| Leakage-safe model-table merge dry run | 76 |
-| Current cohort coverage | 6.94698% |
+| Matches reviewed in twelve 25-match batches | 300 |
+| Timing-verified, source-coded matches | 88 |
+| Matches set aside for later review | 212 |
+| Leakage-safe model-table merge dry run | 88 |
+| Current cohort coverage | 8.04388% |
 
 The tracked `data/manual/pitch_reports_verified.csv` and
-`data/manual/match_start_times_verified.csv` files contain the 76 verified rows.
+`data/manual/match_start_times_verified.csv` files contain the 88 verified rows.
 They contain source provenance, source-publication time, collection time
 (`accessed_at_utc`), derived codes, and short original paraphrases—not copied
 article text. `data/manual/pitch_set_aside.csv` is the outcome-blind follow-up list
-for 199 reviewed matches without currently eligible analysis.
+for 212 reviewed matches without currently eligible analysis.
 
 ## Collection constraint
 
@@ -51,7 +52,7 @@ govern whether a specific model is defensible.
 `scripts/build_match_start_queue.py` generates
 `data/manual/match_start_times_template.csv` from primary-cohort metadata without
 reading result or powerplay fields. The full template has 1,094 pending rows. The
-tracked `data/manual/match_start_times_verified.csv` release contains only the 76
+tracked `data/manual/match_start_times_verified.csv` release contains only the 88
 rows corresponding to currently verified non-ESPN pitch reports.
 
 A collector should copy only rows corresponding to collected pitch reports into
