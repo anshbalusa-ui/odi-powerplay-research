@@ -30,7 +30,7 @@ pipeline saves model binaries and hashes, one validation prediction per
 model/team-innings, fixed-width calibration tables with whole-match uncertainty,
 calibration intercept/slope, and 2,000 whole-match cluster-bootstrap intervals
 using study seed `20250905`. It does not score or inspect outcomes from the
-2025–2026 locked-test partition. A separate 200-match complete-case pitch smoke test
+2025–2026 locked-test partition. A separate 222-match complete-case pitch smoke test
 uses 2022 and 2023 rolling-origin folds because 2021 has no verified-pitch match,
 then evaluates only ten 2024 match clusters; its values are not substantive results.
 No hyperparameter search has been conducted; the current settings are

@@ -4,30 +4,30 @@ Last updated: 2026-09-12
 
 The current primary cohort contains 1,094 men's ODIs (2,188 team-innings) from
 2015 through the checksummed Cricsheet snapshot. `build_pitch_collection_queue.py`
-creates one deterministic, outcome-blind source row per match. Nineteen 25-match
-batches have now been reviewed: 200 non-ESPN reports passed source, timing, and
-coding validation, while 275 reviewed matches were set aside with explicit reasons.
-The prespecified 200-match collection target is complete.
+creates one deterministic, outcome-blind source row per match. Twenty-two 25-match
+batches have now been reviewed: 222 non-ESPN reports passed source, timing, and
+coding validation, while 328 reviewed matches were set aside with explicit reasons.
+The prespecified 200-match collection target is exceeded.
 
 ## Current reproducible coverage
 
 | Status | Matches |
 |---|---:|
 | Eligible matches queued | 1,094 |
-| Matches reviewed in nineteen 25-match batches | 475 |
-| Timing-verified, source-coded matches | 200 |
-| Reviewed matches set aside | 275 |
-| Unreviewed matches | 619 |
-| Leakage-safe model-table merge | 200 |
-| Current cohort coverage | 18.281536% |
+| Matches reviewed in twenty-two 25-match batches | 550 |
+| Timing-verified, source-coded matches | 222 |
+| Reviewed matches set aside | 328 |
+| Unreviewed matches | 544 |
+| Leakage-safe model-table merge | 222 |
+| Current cohort coverage | 20.292505% |
 
 The tracked `data/manual/pitch_reports_verified.csv` and
-`data/manual/match_start_times_verified.csv` files contain the 200 verified rows.
+`data/manual/match_start_times_verified.csv` files contain the 222 verified rows.
 They contain source provenance, source-publication time, collection time
 (`accessed_at_utc`), derived codes, and short original paraphrases—not copied
-article text. `data/manual/pitch_set_aside.csv` records the 275 reviewed matches
+article text. `data/manual/pitch_set_aside.csv` records the 328 reviewed matches
 without currently eligible analysis. `artifacts/tables/pitch_collection_status.csv`
-records all 1,094 cohort matches as 200 `verified`, 275 `set_aside`, or 619
+records all 1,094 cohort matches as 222 `verified`, 328 `set_aside`, or 544
 `unreviewed`; it contains no outcome or powerplay field.
 
 ## Collection constraint
@@ -43,8 +43,8 @@ matches explicitly.
 
 The usable pitch subset target was 200 matches (400 paired team-innings) from the
 modern 2015-forward ODI cohort. The statistical sampling unit remains the match:
-the two innings are paired observations, not 400 independent games. The released
-subset reaches that source- and timing-verified target. This supports an
+the two innings are paired observations, not independent games. The 222-match
+released subset exceeds that source- and timing-verified target. This supports an
 exploratory, parsimonious pitch-adjusted analysis, but category strata,
 missingness, source selection, and independent coding reliability still govern
 whether any result is defensible.
@@ -54,7 +54,7 @@ whether any result is defensible.
 `scripts/build_match_start_queue.py` generates
 `data/manual/match_start_times_template.csv` from primary-cohort metadata without
 reading result or powerplay fields. The full template has 1,094 pending rows. The
-tracked `data/manual/match_start_times_verified.csv` release contains only the 200
+tracked `data/manual/match_start_times_verified.csv` release contains only the 222
 rows corresponding to currently verified non-ESPN pitch reports.
 
 A collector should copy only rows corresponding to collected pitch reports into
@@ -84,10 +84,10 @@ every timestamp not explicitly marked `verified`.
 
 ## Source-provider audit
 
-The 200 reports span 29 normalized provider hostnames. MyKhel contributes 53
-matches (26.5%), ICC 36 (18.0%), and Indian Express 23 (11.5%). The top three
-providers account for 56.0% of accepted reports; the provider
-Herfindahl–Hirschman Index is 1,313 on the conventional 0–10,000 scale.
+The 222 reports span 31 normalized provider hostnames. MyKhel contributes 53
+matches (23.9%), ICC 36 (16.2%), and Indian Express 23 (10.4%). The top three
+providers account for 51.8% of accepted reports; the provider
+Herfindahl–Hirschman Index is 1,192 on the conventional 0–10,000 scale.
 `scripts/audit_pitch_sources.py` reproduces
 `artifacts/tables/pitch_source_providers.csv` and
 `artifacts/tables/pitch_source_provider_audit.json`, including provider-specific
@@ -155,7 +155,7 @@ then export unsupported attempts for later review:
 
 The public verified, set-aside, and collection-status files are minimized releases:
 no source passage, score, result, or powerplay metric is copied into them.
-Independently double-code at least 40 of the 200 usable rows before treating any
+Independently double-code at least 45 of the 222 usable rows before treating any
 pitch-adjusted model as a research result.
 
 ## Independent coding reliability gate

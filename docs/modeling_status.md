@@ -4,7 +4,7 @@
 
 This is a full-cohort preliminary analysis with a leakage-safe historical venue
 proxy. The main fitted models still exclude source-coded match-day pitch reports.
-The audited merge now recognizes the target 200 provisional pitch-report matches,
+The audited merge now recognizes 222 provisional pitch-report matches,
 but independent double-coding has not passed and only ten of those matches fall in
 the 2024 validation year. Pitch interactions are therefore a pipeline smoke test,
 not a published research result.
@@ -17,9 +17,9 @@ The fixed Cricsheet snapshot contributes 1,094 primary matches and 2,188 team-in
 | validation | 2024-01-01–2024-12-31 | 71 | 142 | preliminary temporal evaluation |
 | locked test | 2025-01-01–snapshot cutoff | 152 | 304 | untouched; not scored |
 
-Both innings from each match remain in the same split. The current 200-pitch merged
+Both innings from each match remain in the same split. The current 222-pitch merged
 model-table SHA-256 is
-`3b50566ec10a96638cb5394c52d45afe5b4f9cd7ea49417c90a767dd52c8f03d`.
+`7979ac2f3580e09253ffc4980cc968673f83ca9048c6414c2b85eb0aa2c41162`.
 
 ## Specifications
 
@@ -61,19 +61,19 @@ the declared settings are prespecified rather than selected on 2024.
 
 ## Provisional verified-pitch subset
 
-The target-complete pitch merge contains 400 paired team-innings from 200 matches:
-278 development rows from 139 matches, 20 validation rows from ten 2024 matches,
+The expanded pitch merge contains 444 paired team-innings from 222 matches:
+322 development rows from 161 matches, 20 validation rows from ten 2024 matches,
 and 102 unscored locked-test rows from 51 matches. A separate smoke-test fit used
 only this complete-case subset and activated the prespecified pitch main effects
 and powerplay × pitch interactions. Because there are no verified-pitch matches in
 2021, its explicitly requested rolling-origin diagnostics use 2022 and 2023 only;
 the missing year is not silently represented as a fold.
 
-On the ten-match 2024 subset, the runs-and-wickets benchmark had ROC-AUC 0.67,
-log loss 0.6490, and Brier score 0.2290. M1 with context, pitch main effects, and
-powerplay had ROC-AUC 0.46, log loss 0.9113, and Brier score 0.3401. M2 with the
-prespecified pitch interactions had ROC-AUC 0.48, log loss 0.8484, and Brier score
-0.3225. These values are too unstable for substantive interpretation: the
+On the ten-match 2024 subset, the runs-and-wickets benchmark had ROC-AUC 0.69,
+log loss 0.6371, and Brier score 0.2235. M1 with context, pitch main effects, and
+powerplay had ROC-AUC 0.48, log loss 0.8469, and Brier score 0.3155. M2 with the
+prespecified pitch interactions had ROC-AUC 0.54, log loss 0.7969, and Brier score
+0.3019. These values are too unstable for substantive interpretation: the
 validation set has only ten independent match clusters, source coverage is
 selected, and no independent double-coding exists. The locked 2025–2026 outcomes
 remain untouched.
