@@ -341,3 +341,37 @@ fantasy, betting, or match-prediction content. All 25 working rows record the co
 collection instant `2026-09-12T00:13:48Z`; accepted rows separately retain exact
 source-publication and scheduled-start instants. The reviewed match range is
 2025-05-25 through 2025-09-04.
+
+## Ninth-batch source release
+
+The ninth 25-match outcome-blind batch was selected newest-first and reviewed
+individually on 2026-09-12. Ten non-ESPN reports met the source, timing, and
+surface-evidence requirements:
+
+- Cricket Times, New Zealand–Pakistan Hamilton second-ODI pitch report:
+  https://crickettimes.com/2025/04/nz-vs-pak-2025-2nd-odi-injury-update-pitch-report-and-seddon-park-stats-records/
+- InsideSport, New Zealand–Pakistan Napier first-ODI pitch report:
+  https://www.insidesport.in/cricket/nz-vs-pak-1st-odi-pitch-report-how-will-the-mclean-park-surface-behave-in-napier/
+- The Indian Express, South Africa–New Zealand Lahore semifinal pitch report:
+  https://indianexpress.com/article/sports/cricket/sa-vs-nz-pitch-weather-report-semi-final-champions-trophy-2025-match-9868158/
+- Mint, Australia–India Dubai semifinal pitch report:
+  https://www.livemint.com/sports/cricket-news/champions-trophy-2025-india-vs-australia-semifinal-weather-prediction-today-s-ind-vs-aus-match-dubai-pitch-report-11741065171673.html
+- Business Standard, India–New Zealand Dubai group-match pitch report:
+  https://www.business-standard.com/cricket/champions-trophy/champions-trophy-ind-vs-nz-pitch-report-and-key-stats-of-dubai-stadium-125030100284_1.html
+- The Indian Express, Bangladesh–New Zealand Rawalpindi group-match pitch report:
+  https://indianexpress.com/article/sports/cricket/bangladesh-vs-new-zealand-champions-trophy-2025-weather-pitch-9851883/
+- The Economic Times, Pakistan–India Dubai group-match pitch report:
+  https://economictimes.indiatimes.com/news/sports/ind-vs-pak-pitch-report-champions-trophy-2025-india-vs-pakistan-match-dubai-international-cricket-stadium-pitch-and-weather-today/articleshow/118497966.cms
+- India Today, England–Australia Lahore group-match pitch report:
+  https://www.indiatoday.in/sports/cricket/story/champions-trophy-cricket-australia-vs-england-aus-vs-eng-lahore-pitch-report-playing-xi-2683625-2025-02-21
+- Business Standard, India–Bangladesh Dubai group-match pitch report:
+  https://www.business-standard.com/cricket/champions-trophy/champions-trophy-ind-vs-ban-pitch-report-and-key-stats-of-dubai-stadium-125021900679_1.html
+- MyKhel, Zimbabwe–Ireland Harare second-ODI preview:
+  https://www.mykhel.com/cricket/zim-vs-ire-playing-11-2nd-odi-zimbabwe-vs-ireland-probable-xi-preview-weather-and-pitch-report-341182.html
+
+Fifteen ninth-batch matches were set aside. The rejected material was absent,
+surface-free, generic, ESPN-restricted, or embedded in fantasy, live, post-match,
+or match-prediction content. All 25 working rows record the common collection
+instant `2026-09-12T07:51:50Z`; accepted rows separately retain exact
+source-publication and scheduled-start instants. The reviewed match range is
+2025-02-16 through 2025-05-21.
