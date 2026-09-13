@@ -11,6 +11,7 @@ sys.path.insert(0, str(ROOT / "src"))
 from odi_powerplay.pitch import (
     PITCH_QUEUE_FIELDS,
     PITCH_SET_ASIDE_FIELDS,
+    build_blinded_pitch_reliability_sample,
     build_pitch_collection_status,
     build_pitch_set_aside,
     build_pitch_collection_queue,
@@ -482,6 +483,40 @@ class PitchPipelineTests(unittest.TestCase):
             },
         )
 
+    def test_reliability_sample_is_deterministic_and_blinds_first_coder(self) -> None:
+        rows = []
+        for index in range(10):
+            row = {
+                **self.verified_pitch_row(),
+                "cricsheet_match_id": f"match-{index}",
+                "match_date": f"{2015 if index < 5 else 2023}-01-{index + 1:02d}",
+                "source_url": f"https://example.com/pre-match-report-{index}",
+            }
+            rows.append(row)
+
+        first = build_blinded_pitch_reliability_sample(
+            rows,
+            sample_fraction=0.4,
+            seed=7,
+        )
+        second = build_blinded_pitch_reliability_sample(
+            reversed(rows),
+            sample_fraction=0.4,
+            seed=7,
+        )
+
+        self.assertEqual(first, second)
+        self.assertEqual(len(first), 4)
+        self.assertEqual({row["match_date"][:4] for row in first}, {"2015", "2023"})
+        self.assertEqual([row["sample_sequence"] for row in first], [1, 2, 3, 4])
+        for row in first:
+            self.assertEqual(row["pre_match_verified"], "1")
+            self.assertTrue(row["source_url"].startswith("https://example.com/"))
+            self.assertEqual(row["coder_id"], "")
+            self.assertEqual(row["pitch_primary_category"], "")
+            self.assertEqual(row["batting_ease"], "")
+            self.assertEqual(row["short_paraphrased_note"], "")
+
     def test_intercoder_reliability_reports_agreement_kappa_and_sample_target(
         self,
     ) -> None:
@@ -533,6 +568,10 @@ class PitchPipelineTests(unittest.TestCase):
         primary = summary["fields"]["pitch_primary_category"]
         self.assertEqual(primary["agreement_pct"], 75.0)
         self.assertEqual(primary["cohen_kappa"], 0.5)
+        self.assertEqual(primary["cohen_kappa_weighting"], "unweighted")
+        batting_ease = summary["fields"]["batting_ease"]
+        self.assertEqual(batting_ease["cohen_kappa"], 0.5)
+        self.assertEqual(batting_ease["cohen_kappa_weighting"], "linear")
         self.assertEqual(summary["fields"]["dew_expected"]["comparable_pairs"], 0)
         self.assertIsNone(summary["fields"]["dew_expected"]["cohen_kappa"])
 

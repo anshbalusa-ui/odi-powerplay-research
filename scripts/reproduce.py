@@ -82,6 +82,7 @@ def main() -> int:
                 "data/manual/match_start_times_verified.csv",
             ],
             [sys.executable, "scripts/audit_pitch_sources.py"],
+            [sys.executable, "scripts/build_pitch_reliability_sample.py"],
             [sys.executable, "scripts/audit_espn_linkage.py"],
             [
                 sys.executable,
@@ -147,6 +148,7 @@ def main() -> int:
         ROOT / "artifacts/tables/pitch_collection_status.csv",
         ROOT / "artifacts/tables/pitch_source_provider_audit.json",
         ROOT / "artifacts/tables/pitch_source_providers.csv",
+        ROOT / "data/manual/pitch_reliability_sample_template.csv",
         ROOT / "artifacts/models/validation_frozen/manifest.json",
         ROOT / "artifacts/tables/rolling_origin_metrics.json",
         ROOT / "artifacts/tables/validation_metrics.json",

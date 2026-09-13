@@ -492,7 +492,7 @@ every accepted URL, publication value, access timestamp, code, confidence, and
 short original paraphrase—is `data/manual/pitch_reports_verified.csv`; every
 reviewed rejection and reason is in `data/manual/pitch_set_aside.csv`.
 
-### Post-target expansion batches (20–22)
+### Post-target expansion batches (20–23)
 
 The same outcome-blind queue and source/timing gates were retained after the
 prespecified 200-match target was reached. No separate post-target category was
@@ -503,19 +503,22 @@ introduced: all accepted rows enter the same verified pitch and start-time files
 | 20 | Newest unreviewed 2024–2023 matches | 4 | 21 |
 | 21 | June–July 2023 qualifiers and bilaterals | 14 | 11 |
 | 22 | March–May 2023 qualifiers and bilaterals | 4 | 21 |
-| **Total** |  | **22** | **53** |
+| 23 | February–March 2023 qualifiers and bilaterals | 6 | 19 |
+| **Total** |  | **28** | **72** |
 
 Batch 20 used three match-specific Business Standard previews and one NewsBytes
 preview. Batch 21 used eight dated Business Standard day previews to code 14
 match-specific venue reports. Batch 22 used one Daily Star preview, two Dawn
-previews, and one SuperSport preview. Each source URL, publication time, access
-time, match linkage, code, confidence, and original short paraphrase is retained in
+previews, and one SuperSport preview. Batch 23 used two SportsUnfold pitch reports,
+two The SportsRush pitch reports, one Dhaka Tribune preview, and one
+SportsTime247 pitch report. Each source URL, publication time, access time, match
+linkage, code, confidence, and original short paraphrase is retained in
 `data/manual/pitch_reports_verified.csv`.
 
-Across all 22 batches, 222 of 550 reviewed matches have eligible, timing-verified
-codes; 328 are explicitly set aside and 544 remain unreviewed. The accepted reports
-span 31 normalized provider hostnames. MyKhel contributes 53 matches (23.9%), ICC
-36 (16.2%), and Indian Express 23 (10.4%); the top three contribute 51.8%, and the
-provider HHI is 1,192. Provider concentration and confidence/category counts are
+Across all 23 batches, 228 of 575 reviewed matches have eligible, timing-verified
+codes; 347 are explicitly set aside and 519 remain unreviewed. The accepted reports
+span 35 normalized provider hostnames. MyKhel contributes 53 matches (23.2%), ICC
+36 (15.8%), and Business Standard 26 (11.4%); the top three contribute 50.4%, and
+the provider HHI is 1,132. Provider concentration and confidence/category counts are
 reproduced in `artifacts/tables/pitch_source_providers.csv` and
 `artifacts/tables/pitch_source_provider_audit.json`.

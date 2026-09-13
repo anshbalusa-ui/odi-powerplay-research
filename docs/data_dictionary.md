@@ -107,7 +107,7 @@ No start-time, timezone, status, verifier, or source-provenance field is joined 
 the model table; all are also named in the prohibited-predictor guard.
 
 
-The tracked release contains 222 verified scheduled starts. No start-time,
+The tracked release contains 228 verified scheduled starts. No start-time,
 timezone, provenance, or verifier field is available to the fitted model.
 
 ## Pitch fields

@@ -54,8 +54,8 @@ One row represents one batting-team innings in one match. The outcome is `battin
   human-verification fields and a zero-network structural audit.
 - A 1,094-match outcome-blind scheduled-start template with IANA-timezone,
   cohort-identity, provenance, and UTC-conversion validation.
-- An expanded release of 222 timing-verified provisional pitch codes, 328
-  reviewed set-asides, and 544 explicitly unreviewed matches.
+- An expanded release of 228 timing-verified provisional pitch codes, 347
+  reviewed set-asides, and 519 explicitly unreviewed matches.
 - Pitch/source-timing templates, research design, data dictionary, pitch codebook,
   transformation log, paper outline, and execution roadmap.
 
@@ -99,6 +99,7 @@ python scripts/build_match_start_queue.py
 python scripts/audit_match_start_times.py
 python scripts/audit_espn_linkage.py
 python scripts/select_pitch_batch.py --output data/manual/pitch_batch_working.csv
+python scripts/build_pitch_reliability_sample.py
 .venv/bin/python scripts/train_models.py --fit-without-locked-test
 .venv/bin/python scripts/evaluate_models.py
 .venv/bin/python scripts/make_figures.py
@@ -109,23 +110,25 @@ Generated primary/cohort datasets are ignored by Git and reproduced from the
 checksummed raw snapshot. The tracked hand-audit and pitch-queue templates contain
 no source prose and no secret data.
 
-Twenty-two outcome-blind pitch batches cover 550 reviewed matches: 222 non-ESPN
-pre-match reports passed source and timing validation, 328 reviewed matches are
-listed in `data/manual/pitch_set_aside.csv`, and 544 remain explicitly unreviewed.
-Verified coverage is 222/1,094 (20.292505%). The prespecified 200-match collection
-target is exceeded, but the codes remain provisional until at least 45 reports are
-recoded by a genuinely independent coder. The minimized tracked releases are
-`data/manual/pitch_reports_verified.csv` and
+Twenty-three outcome-blind pitch batches cover 575 reviewed matches: 228 non-ESPN
+pre-match reports passed source and timing validation, 347 reviewed matches are
+listed in `data/manual/pitch_set_aside.csv`, and 519 remain explicitly unreviewed.
+Verified coverage is 228/1,094 (20.840951%). The prespecified 200-match collection
+target is exceeded, but the codes remain provisional until at least 46 reports are
+recoded by a genuinely independent coder. The blinded 46-row assignment is
+`data/manual/pitch_reliability_sample_template.csv`; it retains source documents
+and match identity but omits every first-coder pitch judgment. The minimized tracked
+releases are `data/manual/pitch_reports_verified.csv` and
 `data/manual/match_start_times_verified.csv`; they contain provenance, factual
 timestamps, derived codes, and short original paraphrases, not copied article text.
 
-The 222 accepted sources span 31 normalized provider hostnames. MyKhel contributes
-53 matches (23.9%), ICC 36 (16.2%), and Indian Express 23 (10.4%); the top three
-account for 51.8%, and the provider HHI is 1,192. This documents a multi-source
-measurement design rather than implying that all pitch data came from ESPN or any
-single publisher. Provider diversity does not remove source-specific wording or
-selection bias, so `artifacts/tables/pitch_source_providers.csv` reports each
-provider's category and confidence mix.
+The 228 accepted sources span 35 normalized provider hostnames. MyKhel contributes
+53 matches (23.2%), ICC 36 (15.8%), and Business Standard 26 (11.4%); the top
+three account for 50.4%, and the provider HHI is 1,132. This documents a
+multi-source measurement design rather than implying that all pitch data came from
+ESPN or any single publisher. Provider diversity does not remove source-specific
+wording or selection bias, so `artifacts/tables/pitch_source_providers.csv` reports
+each provider's category and confidence mix.
 
 For continued coding, start with the tracked contributor template or select another
 balanced batch, then copy completed rows into the ignored local
@@ -137,7 +140,7 @@ timezone, convert to UTC, and audit the working subset before validating pitch r
 Only rows with `start_time_status=verified` can establish that a pitch report
 predated play. Start-time and source-provenance fields are audit metadata only:
 they are never joined into the model table and are explicitly prohibited as
-predictors. Reproduce the tracked audits and 222-match merge with:
+predictors. Reproduce the tracked audits and 228-match merge with:
 
 ```bash
 .venv/bin/python scripts/audit_match_start_times.py \
@@ -146,6 +149,7 @@ predictors. Reproduce the tracked audits and 222-match merge with:
   --pitch-input data/manual/pitch_reports_verified.csv \
   --match-start-input data/manual/match_start_times_verified.csv
 .venv/bin/python scripts/audit_pitch_sources.py
+.venv/bin/python scripts/build_pitch_reliability_sample.py
 .venv/bin/python scripts/build_model_table.py \
   --pitch-input data/manual/pitch_reports_verified.csv \
   --match-start-input data/manual/match_start_times_verified.csv
@@ -189,8 +193,8 @@ and report source coverage across years, venues, competition types, and outcomes
 
 ## Data-source attribution
 
-Match data: one fixed, checksummed Cricsheet JSON archive. Pitch conditions: 222
-individually cited non-ESPN pre-match pitch/conditions reports from 31 normalized
+Match data: one fixed, checksummed Cricsheet JSON archive. Pitch conditions: 228
+individually cited non-ESPN pre-match pitch/conditions reports from 35 normalized
 provider hostnames. ESPN candidates are retained only for human/licensed follow-up;
 no ESPN page text or live/post-match commentary is in the released pitch codes.
 Generic hourly weather variables are not part of the primary design. Follow each

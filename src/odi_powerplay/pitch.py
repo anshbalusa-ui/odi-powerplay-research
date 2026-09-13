@@ -401,6 +401,45 @@ def select_next_pitch_batch(
     return selected
 
 
+def build_blinded_pitch_reliability_sample(
+    rows: Iterable[dict[str, Any]],
+    *,
+    sample_fraction: float = 0.2,
+    seed: int = 20250905,
+) -> list[dict[str, Any]]:
+    """Select a deterministic sample without exposing first-coder judgments."""
+    if not 0 < sample_fraction <= 1:
+        raise ValueError("Sample fraction must be greater than zero and at most one")
+    verified = sorted(
+        (row for row in rows if str(row.get("pre_match_verified", "")).strip() == "1"),
+        key=lambda row: str(row.get("cricsheet_match_id", "")),
+    )
+    if not verified:
+        raise ValueError("No verified pitch rows are available for reliability sampling")
+
+    sample_size = math.ceil(len(verified) * sample_fraction)
+    selected = select_next_pitch_batch(
+        verified,
+        n=sample_size,
+        seed=seed,
+    )
+    blinded: list[dict[str, Any]] = []
+    concealed_fields = (
+        "coder_id",
+        "coder_confidence",
+        *PITCH_FIELDS,
+        "short_paraphrased_note",
+        "exclusion_reason",
+    )
+    for sequence, row in enumerate(selected, start=1):
+        blinded_row = {field: row.get(field, "") for field in PITCH_QUEUE_FIELDS}
+        for field in concealed_fields:
+            blinded_row[field] = ""
+        blinded_row["sample_sequence"] = sequence
+        blinded.append(blinded_row)
+    return blinded
+
+
 def _parse_timestamp(value: Any) -> datetime | None:
     normalized = str(value or "").strip().replace("Z", "+00:00")
     if not normalized:
@@ -518,10 +557,7 @@ def validate_pitch_rows(
                     match_id, "match_start_utc", "verified timing requires a match start timestamp"
                 )
             elif published_at and (
-                (
-                    published_date_only
-                    and published_value >= str(row.get("match_date", "")).strip()
-                )
+                (published_date_only and published_value >= str(row.get("match_date", "")).strip())
                 or (not published_date_only and published_at >= match_start)
             ):
                 issue(match_id, "published_at_utc", "source was not published before match start")
@@ -571,9 +607,7 @@ def pitch_source_provider_summary(
 ) -> dict[str, Any]:
     """Summarize verified pitch-source mix by normalized provider hostname."""
 
-    verified = [
-        row for row in rows if str(row.get("pre_match_verified", "")).strip() == "1"
-    ]
+    verified = [row for row in rows if str(row.get("pre_match_verified", "")).strip() == "1"]
     provider_rows: dict[str, list[dict[str, Any]]] = defaultdict(list)
     for row in verified:
         hostname = (urlparse(str(row.get("source_url", "")).strip()).hostname or "").lower()
@@ -620,8 +654,7 @@ def pitch_source_provider_summary(
     top_count = int(providers[0]["verified_matches"]) if providers else 0
     top_three_count = sum(int(provider["verified_matches"]) for provider in providers[:3])
     hhi = (
-        sum((int(provider["verified_matches"]) / total) ** 2 for provider in providers)
-        * 10_000
+        sum((int(provider["verified_matches"]) / total) ** 2 for provider in providers) * 10_000
         if total
         else 0.0
     )
@@ -631,9 +664,7 @@ def pitch_source_provider_summary(
         "top_provider_hostname": providers[0]["source_provider_hostname"] if providers else None,
         "top_provider_matches": top_count,
         "top_provider_share_pct": round(100 * top_count / total, 6) if total else 0.0,
-        "top_three_provider_share_pct": (
-            round(100 * top_three_count / total, 6) if total else 0.0
-        ),
+        "top_three_provider_share_pct": (round(100 * top_three_count / total, 6) if total else 0.0),
         "herfindahl_hirschman_index": round(hhi, 6),
         "providers": providers,
     }
@@ -680,13 +711,9 @@ def build_pitch_collection_status(
 ) -> list[dict[str, str]]:
     """Record verified, set-aside, and unreviewed status for every eligible match."""
 
-    verified_ids = {
-        str(row.get("cricsheet_match_id", "")).strip() for row in verified_rows
-    }
+    verified_ids = {str(row.get("cricsheet_match_id", "")).strip() for row in verified_rows}
     set_aside = {
-        str(row.get("cricsheet_match_id", "")).strip(): str(
-            row.get("exclusion_reason", "")
-        ).strip()
+        str(row.get("cricsheet_match_id", "")).strip(): str(row.get("exclusion_reason", "")).strip()
         for row in set_aside_rows
     }
     if "" in verified_ids or "" in set_aside:
@@ -712,8 +739,7 @@ def build_pitch_collection_status(
             else "unreviewed"
         )
         status_row = {
-            field: str(row.get(field, "")).strip()
-            for field in PITCH_COLLECTION_STATUS_FIELDS
+            field: str(row.get(field, "")).strip() for field in PITCH_COLLECTION_STATUS_FIELDS
         }
         status_row["collection_status"] = status
         status_row["exclusion_reason"] = set_aside.get(match_id, "")
@@ -759,31 +785,55 @@ def _verified_pitch_rows_by_match(
 def _categorical_agreement(
     first: list[str],
     second: list[str],
-) -> dict[str, int | float | None]:
+    *,
+    ordered_labels: tuple[str, ...] | None = None,
+) -> dict[str, int | float | str | None]:
     comparable = [
         (left, right) for left, right in zip(first, second, strict=True) if left and right
     ]
     n = len(comparable)
+    weighting = "linear" if ordered_labels else "unweighted"
     if not n:
         return {
             "comparable_pairs": 0,
             "agreement_count": 0,
             "agreement_pct": None,
             "cohen_kappa": None,
+            "cohen_kappa_weighting": weighting,
         }
 
     agreements = sum(left == right for left, right in comparable)
     first_counts = Counter(left for left, _ in comparable)
     second_counts = Counter(right for _, right in comparable)
-    labels = first_counts.keys() | second_counts.keys()
-    expected = sum(first_counts[label] * second_counts[label] for label in labels) / (n * n)
     observed = agreements / n
-    kappa = None if math.isclose(expected, 1.0) else (observed - expected) / (1.0 - expected)
+    if ordered_labels:
+        positions = {label: index for index, label in enumerate(ordered_labels)}
+        maximum_distance = len(ordered_labels) - 1
+
+        def disagreement(left: str, right: str) -> float:
+            return abs(positions[left] - positions[right]) / maximum_distance
+
+        observed_disagreement = sum(disagreement(left, right) for left, right in comparable) / n
+        expected_disagreement = sum(
+            first_counts[left] * second_counts[right] * disagreement(left, right)
+            for left in first_counts
+            for right in second_counts
+        ) / (n * n)
+        kappa = (
+            None
+            if math.isclose(expected_disagreement, 0.0)
+            else 1.0 - observed_disagreement / expected_disagreement
+        )
+    else:
+        labels = first_counts.keys() | second_counts.keys()
+        expected = sum(first_counts[label] * second_counts[label] for label in labels) / (n * n)
+        kappa = None if math.isclose(expected, 1.0) else (observed - expected) / (1.0 - expected)
     return {
         "comparable_pairs": n,
         "agreement_count": agreements,
         "agreement_pct": round(100 * observed, 6),
         "cohen_kappa": round(kappa, 6) if kappa is not None else None,
+        "cohen_kappa_weighting": weighting,
     }
 
 
@@ -816,13 +866,18 @@ def pitch_intercoder_reliability(
                 f"{reference_coder!r} in both sets"
             )
 
-    field_metrics: dict[str, dict[str, int | float | None]] = {}
+    field_metrics: dict[str, dict[str, int | float | str | None]] = {}
     total_comparable = 0
     total_agreements = 0
+    ordinal_fields = {"batting_ease", "pace_seam_support", "spin_support"}
     for field in PITCH_FIELDS:
         first = [str(reference[match_id].get(field, "")).strip() for match_id in paired_ids]
         second = [str(recoded[match_id].get(field, "")).strip() for match_id in paired_ids]
-        metrics = _categorical_agreement(first, second)
+        metrics = _categorical_agreement(
+            first,
+            second,
+            ordered_labels=("0", "1", "2") if field in ordinal_fields else None,
+        )
         comparable = int(metrics["comparable_pairs"])
         field_metrics[field] = {
             **metrics,

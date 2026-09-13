@@ -6,7 +6,7 @@ These are reproducible **development and 2024 temporal-validation results**, not
 final paper results. The 2025–2026 test period remains locked and its outcomes have
 not been scored. The intended pitch result is a prespecified effect-modification
 analysis nested within the same powerplay question, not a separate finding. The
-222 source- and timing-verified pitch reports now exceed the collection target,
+228 source- and timing-verified pitch reports now exceed the collection target,
 but the pitch codes have not passed independent double-coding.
 
 ## Cohort construction
@@ -96,15 +96,15 @@ calibration slope is unidentifiable because its probabilities are constant.
 
 ## Provisional pitch-subset smoke test
 
-The verified pitch subset contains 222 matches and 444 paired innings: 161
+The verified pitch subset contains 228 matches and 456 paired innings: 167
 development matches, ten 2024 validation matches, and 51 locked-test matches. The
 locked outcomes remain unscored. A separate complete-case fit confirmed that the
 prespecified pitch main effects and interactions execute end to end.
 
 The ten-match 2024 sample is not adequate for substantive model comparison. Point
-estimates were ROC-AUC 0.69 and log loss 0.6371 for the powerplay runs-and-wickets
-benchmark, ROC-AUC 0.48 and log loss 0.8469 for M1 with context and pitch main
-effects, and ROC-AUC 0.54 and log loss 0.7969 for M2 with the prespecified pitch
+estimates were ROC-AUC 0.69 and log loss 0.6305 for the powerplay runs-and-wickets
+benchmark, ROC-AUC 0.48 and log loss 0.8289 for M1 with context and pitch main
+effects, and ROC-AUC 0.57 and log loss 0.7693 for M2 with the prespecified pitch
 interactions. These unstable values are reported only as reproducibility evidence,
 not as Finding 2. Source selection, provider-specific framing, the tiny validation
 sample, and absent independent double-coding prevent a pitch-effect conclusion.
