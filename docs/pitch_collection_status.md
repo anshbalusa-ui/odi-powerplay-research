@@ -1,4 +1,4 @@
-# Pitch Collection Status
+# Pitch-Report Collection Status
 
 Last updated: 2026-09-13
 
@@ -7,8 +7,21 @@ The current primary cohort contains 1,094 men's ODIs (2,188 team-innings) from
 creates one deterministic, outcome-blind source row per match. Twenty-three
 25-match batches have now been reviewed: 228 non-ESPN reports passed source,
 timing, and coding validation, while 347 reviewed matches were set aside with
-explicit reasons.
-The prespecified 200-match collection target is exceeded.
+explicit reasons. The prespecified 200-match collection target is exceeded.
+
+## Measurement rule
+
+The collection produces **standardized source-stated pre-match pitch effects**, not independent researcher pitch analysis.
+
+- Code only an expected playing effect explicitly stated by an eligible pre-match source.
+- Do not infer spin from dry/dusty/cracked wording.
+- Do not infer pace/seam from grass/green/moist wording.
+- Do not infer batting ease from hard/flat wording.
+- Do not infer slow/two-paced behavior from used/worn/tacky wording.
+- Physical descriptions may remain in `short_paraphrased_note` for provenance only.
+- If the source does not state the playing effect, leave that effect blank or `unknown`.
+
+This rule applies to first-pass coding, independent recoding, reliability analysis, and every model table built from these reports.
 
 ## Current reproducible coverage
 
@@ -25,7 +38,7 @@ The prespecified 200-match collection target is exceeded.
 The tracked `data/manual/pitch_reports_verified.csv` and
 `data/manual/match_start_times_verified.csv` files contain the 228 verified rows.
 They contain source provenance, source-publication time, collection time
-(`accessed_at_utc`), derived codes, and short original paraphrases—not copied
+(`accessed_at_utc`), standardized source-stated effect codes, and short original paraphrases—not copied
 article text. `data/manual/pitch_set_aside.csv` records the 347 reviewed matches
 without currently eligible analysis. `artifacts/tables/pitch_collection_status.csv`
 records all 1,094 cohort matches as 228 `verified`, 347 `set_aside`, or 519
@@ -35,18 +48,18 @@ records all 1,094 cohort matches as 228 `verified`, 347 `set_aside`, or 519
 
 ESPNcricinfo's reviewed terms prohibit automated extraction for dataset building.
 Ball-by-ball commentary and live/post-match pages are also post-start information and
-cannot be used as pitch predictors. A human or licensed workflow must collect only
+cannot be used as pre-match predictors. A human or licensed workflow must collect only
 eligible match-specific pre-match reports, record publication and match-start times,
-retain short original paraphrases rather than article text, and mark unsupported
-matches explicitly.
+retain short original paraphrases rather than article text, standardize only effects
+explicitly stated by the source, and mark unsupported matches explicitly.
 
 ## Prespecified collection target
 
-The usable pitch subset target was 200 matches (400 paired team-innings) from the
+The usable pitch-report subset target was 200 matches (400 paired team-innings) from the
 modern 2015-forward ODI cohort. The statistical sampling unit remains the match:
 the two innings are paired observations, not independent games. The 228-match
 released subset exceeds that source- and timing-verified target. This supports an
-exploratory, parsimonious pitch-adjusted analysis, but category strata,
+exploratory, parsimonious analysis of source-stated pre-match pitch effects, but category strata,
 missingness, source selection, and independent coding reliability still govern
 whether any result is defensible.
 
@@ -68,7 +81,7 @@ teams/date/event/venue against a cited schedule or match page, and record:
 4. the corresponding UTC datetime;
 5. `start_time_status=verified` and an anonymized `verifier_id`.
 
-Run the zero-network audit before pitch validation:
+Run the zero-network audit before source-stated pitch-effect validation:
 
 ```bash
 .venv/bin/python scripts/audit_match_start_times.py \
@@ -80,7 +93,7 @@ timezone existence, local-date agreement, exact local-to-UTC conversion includin
 historical daylight-saving rules, provenance fields, duplicate IDs, and explicit
 reasons for `unavailable` or `rejected` rows. Use `--require-full-cohort` only to
 audit the generated template itself; collectors do not need start times for matches
-without pitch reports. Downstream pitch audits and model-table generation discard
+without pitch reports. Downstream audits and model-table generation discard
 every timestamp not explicitly marked `verified`.
 
 ## Source-provider audit
@@ -92,9 +105,9 @@ Herfindahl–Hirschman Index is 1,132 on the conventional 0–10,000 scale.
 `scripts/audit_pitch_sources.py` reproduces
 `artifacts/tables/pitch_source_providers.csv` and
 `artifacts/tables/pitch_source_provider_audit.json`, including provider-specific
-pitch-category and coder-confidence counts.
+source-stated category and coder-confidence counts.
 
-This is intentionally a multi-source pitch measurement layer attached to a
+This is intentionally a multi-source **reported-expectation measurement layer** attached to a
 single-source Cricsheet ball-by-ball outcome dataset. Provider diversity improves
 traceability and reduces dependence on one publisher, but it does not make
 editorial descriptions exchangeable. Outlet-specific wording, match selection,
@@ -157,7 +170,7 @@ then export unsupported attempts for later review:
 The public verified, set-aside, and collection-status files are minimized releases:
 no source passage, score, result, or powerplay metric is copied into them.
 Independently double-code at least 46 of the 228 usable rows before treating any
-pitch-adjusted model as a research result.
+source-stated pitch-effect model as a research result.
 
 ## Independent coding reliability gate
 
@@ -169,6 +182,10 @@ pre-match source documents and match identity, and blanks every first-coder pitc
 judgment. Give this file to a genuinely independent second coder, then store the
 completed rows in ignored `data/manual/pitch_reports_double_coded.csv` with a
 different `coder_id`.
+
+The second coder must follow the same explicit-source-only rule: standardize only
+playing effects stated by the source and never infer an effect from physical pitch
+wording or cricket knowledge.
 
 Regenerate the blinded assignment and then audit completed independent codes:
 
