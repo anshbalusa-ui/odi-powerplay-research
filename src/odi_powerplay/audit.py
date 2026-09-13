@@ -1,4 +1,4 @@
-"""Deterministic, field-level audits of processed Cricsheet ODI data."""
+"""Build deterministic hand audits and compare processed rows with raw JSON."""
 
 from __future__ import annotations
 
@@ -10,6 +10,19 @@ from typing import Any, Iterable
 
 from .extract_cricsheet import extract_match
 
+
+EXTRACTED_AUDIT_FIELDS = (
+    "pp_runs",
+    "pp_wickets",
+    "pp_legal_balls",
+    "pp_boundary_balls",
+    "pp_boundary_pct",
+    "pp_dot_balls",
+    "pp_dot_ball_pct",
+    "toss_winner",
+    "toss_decision",
+    "batting_team_won",
+)
 
 AUDIT_FIELDS = (
     "match_date",
@@ -42,7 +55,7 @@ AUDIT_FIELDS = (
     "balls_per_over",
 )
 
-NUMERIC_FIELDS = {
+NUMERIC_AUDIT_FIELDS = {
     "year",
     "innings_number",
     "batting_first",
@@ -63,8 +76,89 @@ NUMERIC_FIELDS = {
 }
 
 
-def _stable_rank(seed: int, year: int, match_id: str) -> str:
-    value = f"{seed}:{year}:{match_id}".encode("utf-8")
+def _stable_rank(seed: str, match_id: str) -> str:
+    return hashlib.sha256(f"{seed}|{match_id}".encode()).hexdigest()
+
+
+def select_hand_audit_rows(
+    rows: Iterable[dict[str, Any]],
+    *,
+    minimum_innings: int = 20,
+    seed: str = "odi-powerplay-gate-2-v1",
+) -> list[dict[str, Any]]:
+    """Select full match pairs across years without inspecting outcomes or metrics."""
+
+    if minimum_innings < 2:
+        raise ValueError("minimum_innings must be at least 2")
+
+    matches: dict[str, list[dict[str, Any]]] = defaultdict(list)
+    for row in rows:
+        matches[str(row["match_id"])].append(row)
+
+    eligible = {
+        match_id: sorted(match_rows, key=lambda row: int(row["innings_number"]))
+        for match_id, match_rows in matches.items()
+        if len(match_rows) == 2 and {int(row["innings_number"]) for row in match_rows} == {1, 2}
+    }
+    by_year: dict[int, list[str]] = defaultdict(list)
+    for match_id, match_rows in eligible.items():
+        by_year[int(match_rows[0]["year"])].append(match_id)
+
+    selected: list[str] = []
+    for year in sorted(by_year):
+        selected.append(min(by_year[year], key=lambda match_id: _stable_rank(seed, match_id)))
+
+    remaining = sorted(
+        (match_id for match_id in eligible if match_id not in selected),
+        key=lambda match_id: _stable_rank(seed, match_id),
+    )
+    while len(selected) * 2 < minimum_innings and remaining:
+        selected.append(remaining.pop(0))
+
+    if len(selected) * 2 < minimum_innings:
+        raise ValueError("Not enough complete matches to build the requested audit sample")
+
+    sampled = [row for match_id in selected for row in eligible[match_id]]
+    return sorted(
+        sampled,
+        key=lambda row: (int(row["year"]), str(row["match_id"]), int(row["innings_number"])),
+    )
+
+
+def build_hand_audit_template(rows: Iterable[dict[str, Any]]) -> list[dict[str, Any]]:
+    """Return auditable rows with extracted values and blank independent checks."""
+
+    output: list[dict[str, Any]] = []
+    for row in rows:
+        audit_row: dict[str, Any] = {
+            "match_id": row["match_id"],
+            "source_json": f"data/raw/cricsheet/{row['match_id']}.json",
+            "match_date": row["match_date"],
+            "year": row["year"],
+            "event_name": row["event_name"],
+            "venue": row["venue"],
+            "batting_team": row["batting_team"],
+            "opponent": row["opponent"],
+            "innings_number": row["innings_number"],
+        }
+        for field in EXTRACTED_AUDIT_FIELDS:
+            audit_row[f"extracted_{field}"] = row[field]
+            audit_row[f"audited_{field}"] = ""
+        audit_row.update(
+            {
+                "scorecard_url": "",
+                "auditor_id": "",
+                "audit_date": "",
+                "discrepancy_found": "",
+                "discrepancy_note": "",
+            }
+        )
+        output.append(audit_row)
+    return output
+
+
+def _stable_year_rank(seed: int, year: int, match_id: str) -> str:
+    value = f"{seed}:{year}:{match_id}".encode()
     return hashlib.sha256(value).hexdigest()
 
 
@@ -74,7 +168,7 @@ def select_audit_match_ids(
     n: int,
     seed: int,
 ) -> list[str]:
-    """Select unique matches in a deterministic round-robin sample across years."""
+    """Select unique matches in deterministic round-robin order across years."""
 
     if n < 1:
         raise ValueError("n must be at least 1")
@@ -88,7 +182,10 @@ def select_audit_match_ids(
         raise ValueError(f"Requested {n} matches but only {available} are available")
 
     ranked = {
-        year: sorted(match_ids, key=lambda match_id: _stable_rank(seed, year, match_id))
+        year: sorted(
+            match_ids,
+            key=lambda match_id: _stable_year_rank(seed, year, match_id),
+        )
         for year, match_ids in by_year.items()
     }
     selected: list[str] = []
@@ -104,18 +201,18 @@ def select_audit_match_ids(
     return selected
 
 
-def _normalized(value: Any, field: str) -> Any:
+def _normalized_audit_value(value: Any, field: str) -> Any:
     if value is None or str(value).strip() == "":
         return None
-    if field in NUMERIC_FIELDS:
+    if field in NUMERIC_AUDIT_FIELDS:
         return float(value)
     return str(value).strip()
 
 
-def _values_match(processed: Any, reextracted: Any, field: str) -> bool:
-    left = _normalized(processed, field)
-    right = _normalized(reextracted, field)
-    if field in NUMERIC_FIELDS and left is not None and right is not None:
+def _audit_values_match(processed: Any, reextracted: Any, field: str) -> bool:
+    left = _normalized_audit_value(processed, field)
+    right = _normalized_audit_value(reextracted, field)
+    if field in NUMERIC_AUDIT_FIELDS and left is not None and right is not None:
         return abs(left - right) <= 1e-6
     return left == right
 
@@ -129,8 +226,7 @@ def audit_raw_against_processed(
 
     raw_root = Path(raw_dir)
     processed_index = {
-        (str(row["match_id"]), int(row["innings_number"])): row
-        for row in processed_rows
+        (str(row["match_id"]), int(row["innings_number"])): row for row in processed_rows
     }
     audit_rows: list[dict[str, Any]] = []
 
@@ -140,14 +236,13 @@ def audit_raw_against_processed(
             candidates = list(raw_root.rglob(f"{match_id}.json"))
             if len(candidates) != 1:
                 raise FileNotFoundError(
-                    f"Expected one raw JSON file for match {match_id}; found {len(candidates)}"
+                    f"Expected one raw JSON file for match {match_id}; " f"found {len(candidates)}"
                 )
             path = candidates[0]
 
         reextracted_rows = extract_match(path)
         reextracted_index = {
-            (str(row["match_id"]), int(row["innings_number"])): row
-            for row in reextracted_rows
+            (str(row["match_id"]), int(row["innings_number"])): row for row in reextracted_rows
         }
         innings_numbers = sorted(
             {
@@ -173,7 +268,11 @@ def audit_raw_against_processed(
                         "processed_value": processed_value,
                         "reextracted_value": reextracted_value,
                         "matches": int(
-                            _values_match(processed_value, reextracted_value, field)
+                            _audit_values_match(
+                                processed_value,
+                                reextracted_value,
+                                field,
+                            )
                         ),
                     }
                 )

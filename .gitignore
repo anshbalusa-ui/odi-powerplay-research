@@ -4,6 +4,7 @@ __pycache__/
 *.py[cod]
 .pytest_cache/
 .ruff_cache/
+*.egg-info/
 
 # Raw and derived datasets are reproduced by scripts.
 data/raw/cricsheet/*
@@ -15,11 +16,14 @@ data/processed/*
 # Local pitch-research working files may contain source-derived notes that are
 # not cleared for redistribution. Publish only after a separate rights review.
 data/manual/pitch_reports.csv
+data/manual/pitch_reports_double_coded.csv
+data/manual/match_start_times.csv
 data/manual/pitch_collection_queue.xlsx
-data/manual/pitch_batch_*.csv
+data/manual/pitch_batch_working*.csv
 data/manual/*.inspect.ndjson
 
 # Generated artifacts
+artifacts/run_manifest.json
 artifacts/figures/*
 artifacts/models/*
 artifacts/tables/*

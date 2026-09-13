@@ -1,270 +1,940 @@
-"""Validation and outcome-blind selection for pre-match pitch reports."""
+"""Create, validate, and merge source-audited pre-match pitch conditions."""
 
 from __future__ import annotations
 
 import hashlib
+import math
+import random
 from collections import Counter, defaultdict
-from datetime import date, datetime, timezone
+from datetime import datetime, timezone
 from typing import Any, Iterable
+from urllib.parse import parse_qs, urlparse
 
 
-PITCH_CATEGORIES = {
-    "batting_friendly",
-    "balanced",
-    "pace_seam",
-    "spin",
-    "slow_two_paced",
-    "unknown",
+PITCH_FIELDS = (
+    "pitch_primary_category",
+    "batting_ease",
+    "pace_seam_support",
+    "spin_support",
+    "bounce_profile",
+    "two_paced_expected",
+    "dew_expected",
+)
+ALLOWED_VALUES = {
+    "pitch_primary_category": {
+        "batting_friendly",
+        "balanced",
+        "pace_seam",
+        "spin",
+        "slow_two_paced",
+        "unknown",
+    },
+    "batting_ease": {"", "0", "1", "2"},
+    "pace_seam_support": {"", "0", "1", "2"},
+    "spin_support": {"", "0", "1", "2"},
+    "bounce_profile": {"", "low", "standard", "steep", "variable"},
+    "two_paced_expected": {"", "0", "1"},
+    "dew_expected": {"", "0", "1"},
+    "coder_confidence": {"high", "medium", "low"},
 }
-CONFIDENCE_LEVELS = {"low", "medium", "high"}
-BOUNCE_PROFILES = {"low", "standard", "steep", "variable"}
-ORDINAL_FIELDS = ("batting_ease", "pace_seam_support", "spin_support")
-BINARY_FIELDS = ("two_paced_expected", "dew_expected")
+ESPN_LINKAGE_VALUES = {
+    "unverified_candidate",
+    "verified_match",
+    "not_espn_id",
+    "wrong_match",
+    "not_available",
+}
+DISALLOWED_PITCH_SOURCE_MARKERS = (
+    "/betting",
+    "/fantasy",
+    "dream11",
+    "fantasy cricket",
+    "match-prediction",
+    "match prediction",
+)
+PITCH_QUEUE_FIELDS = (
+    "cricsheet_match_id",
+    "match_date",
+    "event_name",
+    "competition_type",
+    "venue",
+    "city",
+    "team_1",
+    "team_2",
+    "espn_match_id_candidate",
+    "espn_legacy_match_url_candidate",
+    "espn_match_id_verified",
+    "espn_match_url_verified",
+    "espn_linkage_status",
+    "source_search_query",
+    "source_url",
+    "source_title",
+    "published_at_utc",
+    "accessed_at_utc",
+    "pre_match_verified",
+    "coder_id",
+    "coder_confidence",
+    *PITCH_FIELDS,
+    "short_paraphrased_note",
+    "exclusion_reason",
+)
+PITCH_SET_ASIDE_FIELDS = (
+    "cricsheet_match_id",
+    "match_date",
+    "event_name",
+    "competition_type",
+    "venue",
+    "city",
+    "team_1",
+    "team_2",
+    "source_search_query",
+    "review_status",
+    "exclusion_reason",
+)
+PITCH_COLLECTION_STATUS_FIELDS = (
+    "cricsheet_match_id",
+    "match_date",
+    "event_name",
+    "competition_type",
+    "venue",
+    "city",
+    "team_1",
+    "team_2",
+    "source_search_query",
+    "collection_status",
+    "exclusion_reason",
+)
 
 
-def _issue(
-    match_id: str,
-    issue_code: str,
-    detail: str,
-    *,
-    severity: str = "error",
-) -> dict[str, str]:
+def espn_link_candidate(match_id: Any) -> dict[str, str]:
+    """Return an unfetched ESPN linkage candidate for a probable numeric Cricinfo ID."""
+
+    identifier = str(match_id or "").strip()
+    if not identifier.isascii() or not identifier.isdigit():
+        return {
+            "espn_match_id_candidate": "",
+            "espn_legacy_match_url_candidate": "",
+            "espn_match_id_verified": "",
+            "espn_match_url_verified": "",
+            "espn_linkage_status": "not_available",
+        }
     return {
-        "cricsheet_match_id": match_id,
-        "severity": severity,
-        "issue_code": issue_code,
-        "detail": detail,
+        "espn_match_id_candidate": identifier,
+        "espn_legacy_match_url_candidate": (
+            f"https://www.espncricinfo.com/ci/engine/match/{identifier}.html"
+        ),
+        "espn_match_id_verified": "",
+        "espn_match_url_verified": "",
+        "espn_linkage_status": "unverified_candidate",
     }
 
 
-def _parse_datetime(value: str) -> datetime:
-    normalized = value.strip().replace("Z", "+00:00")
-    parsed = datetime.fromisoformat(normalized)
-    if parsed.tzinfo is None:
-        parsed = parsed.replace(tzinfo=timezone.utc)
-    return parsed.astimezone(timezone.utc)
+def _is_espncricinfo_url(value: Any) -> bool:
+    parsed = urlparse(str(value or "").strip())
+    host = (parsed.hostname or "").casefold()
+    if parsed.scheme not in {"http", "https"} or not host:
+        return False
+    if host == "espncricinfo.com" or host.endswith(".espncricinfo.com"):
+        return True
+    espn_domains = ("espn.com", "espn.in", "espn.com.au", "espn.co.uk")
+    if not any(host == domain or host.endswith(f".{domain}") for domain in espn_domains):
+        return False
+    if parsed.path.startswith("/cricket/"):
+        return True
+    print_ids = parse_qs(parsed.query).get("id", [])
+    return (
+        parsed.path == "/espn/print"
+        and len(print_ids) == 1
+        and print_ids[0].isascii()
+        and print_ids[0].isdigit()
+    )
 
 
-def _parse_nullable_integer(
-    row: dict[str, Any],
-    field: str,
-    allowed: set[int],
-    issues: list[dict[str, str]],
-    match_id: str,
-) -> int | None:
-    raw = row.get(field)
-    if raw is None or str(raw).strip() == "":
+def validate_espn_linkage_rows(
+    rows: Iterable[dict[str, Any]],
+) -> list[dict[str, str]]:
+    """Validate unfetched candidates and human-verified ESPN match mappings."""
+
+    issues: list[dict[str, str]] = []
+    seen: set[str] = set()
+
+    def issue(match_id: str, field: str, message: str) -> None:
+        issues.append({"cricsheet_match_id": match_id, "field": field, "message": message})
+
+    for row in rows:
+        match_id = str(row.get("cricsheet_match_id", "")).strip()
+        if not match_id:
+            issue("", "cricsheet_match_id", "missing match ID")
+            continue
+        if match_id in seen:
+            issue(match_id, "cricsheet_match_id", "duplicate match ID")
+        seen.add(match_id)
+
+        status = str(row.get("espn_linkage_status", "")).strip()
+        if status not in ESPN_LINKAGE_VALUES:
+            issue(match_id, "espn_linkage_status", f"unsupported value: {status}")
+            continue
+        candidate_id = str(row.get("espn_match_id_candidate", "")).strip()
+        candidate_url = str(row.get("espn_legacy_match_url_candidate", "")).strip()
+        verified_id = str(row.get("espn_match_id_verified", "")).strip()
+        verified_url = str(row.get("espn_match_url_verified", "")).strip()
+
+        if status == "unverified_candidate":
+            expected = espn_link_candidate(match_id)
+            if expected["espn_linkage_status"] != "unverified_candidate":
+                issue(
+                    match_id,
+                    "espn_linkage_status",
+                    "nonnumeric Cricsheet ID cannot be an ESPN ID candidate",
+                )
+            if candidate_id != expected["espn_match_id_candidate"]:
+                issue(
+                    match_id,
+                    "espn_match_id_candidate",
+                    "candidate must equal the numeric Cricsheet ID",
+                )
+            if candidate_url != expected["espn_legacy_match_url_candidate"]:
+                issue(
+                    match_id,
+                    "espn_legacy_match_url_candidate",
+                    "candidate URL does not match the unfetched legacy URL template",
+                )
+        elif status == "not_available" and (candidate_id or candidate_url):
+            issue(
+                match_id,
+                "espn_linkage_status",
+                "not_available rows cannot contain candidate linkage",
+            )
+
+        if status == "verified_match":
+            if not verified_id.isascii() or not verified_id.isdigit():
+                issue(
+                    match_id,
+                    "espn_match_id_verified",
+                    "verified ESPN linkage requires a numeric match ID",
+                )
+            if not _is_espncricinfo_url(verified_url):
+                issue(
+                    match_id,
+                    "espn_match_url_verified",
+                    "verified ESPN linkage requires an ESPNcricinfo match URL",
+                )
+        elif verified_id or verified_url:
+            issue(
+                match_id,
+                "espn_linkage_status",
+                "verified ESPN ID or URL requires verified_match status",
+            )
+
+    return issues
+
+
+def espn_linkage_summary(rows: Iterable[dict[str, Any]]) -> dict[str, Any]:
+    """Summarize linkage state without fetching ESPN or reading outcomes."""
+
+    materialized = list(rows)
+    statuses = Counter(str(row.get("espn_linkage_status", "")).strip() for row in materialized)
+    verified = statuses["verified_match"]
+    return {
+        "rows": len(materialized),
+        "candidate_rows": sum(
+            bool(str(row.get("espn_match_id_candidate", "")).strip()) for row in materialized
+        ),
+        "human_verified_rows": verified,
+        "human_verified_pct": (
+            round(100 * verified / len(materialized), 6) if materialized else 0.0
+        ),
+        "status_counts": dict(sorted(statuses.items())),
+        "network_requests_performed": 0,
+    }
+
+
+def build_pitch_collection_queue(rows: Iterable[dict[str, Any]]) -> list[dict[str, Any]]:
+    """Return one outcome-blind source-collection row per eligible match."""
+
+    grouped: dict[str, list[dict[str, Any]]] = defaultdict(list)
+    for row in rows:
+        grouped[str(row["match_id"])].append(row)
+
+    queue: list[dict[str, Any]] = []
+    for match_id in sorted(grouped, key=lambda value: (grouped[value][0]["match_date"], value)):
+        match_rows = sorted(grouped[match_id], key=lambda row: int(row["innings_number"]))
+        if len(match_rows) != 2:
+            raise ValueError(f"Match {match_id} does not have exactly two innings rows")
+        first = match_rows[0]
+        team_1 = str(first["batting_team"])
+        team_2 = str(first["opponent"])
+        search_query = (
+            f'site:espncricinfo.com "{team_1}" "{team_2}" '
+            f'"{first["match_date"]}" preview pitch conditions'
+        )
+        espn_candidate = espn_link_candidate(match_id)
+        queue.append(
+            {
+                "cricsheet_match_id": match_id,
+                "match_date": first["match_date"],
+                "event_name": first["event_name"],
+                "competition_type": first["competition_type"],
+                "venue": first["venue"],
+                "city": first["city"],
+                "team_1": team_1,
+                "team_2": team_2,
+                **espn_candidate,
+                "source_search_query": search_query,
+                "source_url": "",
+                "source_title": "",
+                "published_at_utc": "",
+                "accessed_at_utc": "",
+                "pre_match_verified": "",
+                "coder_id": "",
+                "coder_confidence": "",
+                "pitch_primary_category": "",
+                "batting_ease": "",
+                "pace_seam_support": "",
+                "spin_support": "",
+                "bounce_profile": "",
+                "two_paced_expected": "",
+                "dew_expected": "",
+                "short_paraphrased_note": "",
+                "exclusion_reason": "",
+            }
+        )
+    return queue
+
+
+def select_next_pitch_batch(
+    rows: Iterable[dict[str, Any]],
+    *,
+    completed_match_ids: set[str] | None = None,
+    n: int = 25,
+    seed: int = 20250905,
+    newest_first: bool = False,
+) -> list[dict[str, Any]]:
+    """Select a deterministic outcome-blind balanced or newest-first batch."""
+    if n < 1:
+        raise ValueError("Batch size must be positive")
+    completed = {str(value) for value in completed_match_ids or set()}
+    eligible: list[dict[str, Any]] = []
+    grouped: dict[tuple[str, str], list[dict[str, Any]]] = defaultdict(list)
+    seen: set[str] = set()
+    for row in rows:
+        match_id = str(row.get("cricsheet_match_id", "")).strip()
+        if not match_id:
+            raise ValueError("Queue row is missing cricsheet_match_id")
+        if match_id in seen:
+            raise ValueError(f"Duplicate queue match ID: {match_id}")
+        seen.add(match_id)
+        if match_id in completed:
+            continue
+        safe_row = {field: row.get(field, "") for field in PITCH_QUEUE_FIELDS}
+        eligible.append(safe_row)
+        if not newest_first:
+            stratum = (
+                str(safe_row["match_date"])[:4],
+                str(safe_row["competition_type"]),
+            )
+            grouped[stratum].append(safe_row)
+
+    if newest_first:
+        recent = sorted(
+            eligible,
+            key=lambda row: (
+                str(row["match_date"]),
+                str(row["cricsheet_match_id"]),
+            ),
+            reverse=True,
+        )[:n]
+        return [{**row, "batch_sequence": position} for position, row in enumerate(recent, start=1)]
+
+    random_generator = random.Random(seed)
+    for values in grouped.values():
+        values.sort(key=lambda row: str(row["cricsheet_match_id"]))
+        random_generator.shuffle(values)
+
+    selected: list[dict[str, Any]] = []
+    positions = {stratum: 0 for stratum in grouped}
+    strata = sorted(grouped)
+    random_generator.shuffle(strata)
+
+    def take(stratum: tuple[str, str]) -> bool:
+        position = positions[stratum]
+        values = grouped[stratum]
+        if position >= len(values) or len(selected) >= n:
+            return False
+        selected.append({**values[position], "batch_sequence": len(selected) + 1})
+        positions[stratum] += 1
+        return True
+
+    years = sorted({stratum[0] for stratum in strata})
+    random_generator.shuffle(years)
+    for year in years:
+        candidates = [
+            stratum
+            for stratum in strata
+            if stratum[0] == year and positions[stratum] < len(grouped[stratum])
+        ]
+        random_generator.shuffle(candidates)
+        if candidates:
+            take(candidates[0])
+
+    represented_competitions = {str(row["competition_type"]) for row in selected}
+    competitions = sorted({stratum[1] for stratum in strata} - represented_competitions)
+    random_generator.shuffle(competitions)
+    for competition in competitions:
+        candidates = [
+            stratum
+            for stratum in strata
+            if stratum[1] == competition and positions[stratum] < len(grouped[stratum])
+        ]
+        random_generator.shuffle(candidates)
+        if candidates:
+            take(candidates[0])
+
+    while len(selected) < n:
+        added = False
+        for stratum in strata:
+            added = take(stratum) or added
+            if len(selected) == n:
+                break
+        if not added:
+            break
+    return selected
+
+
+def build_blinded_pitch_reliability_sample(
+    rows: Iterable[dict[str, Any]],
+    *,
+    sample_fraction: float = 0.2,
+    seed: int = 20250905,
+) -> list[dict[str, Any]]:
+    """Select a deterministic sample without exposing first-coder judgments."""
+    if not 0 < sample_fraction <= 1:
+        raise ValueError("Sample fraction must be greater than zero and at most one")
+    verified = sorted(
+        (row for row in rows if str(row.get("pre_match_verified", "")).strip() == "1"),
+        key=lambda row: str(row.get("cricsheet_match_id", "")),
+    )
+    if not verified:
+        raise ValueError("No verified pitch rows are available for reliability sampling")
+
+    sample_size = math.ceil(len(verified) * sample_fraction)
+    selected = select_next_pitch_batch(
+        verified,
+        n=sample_size,
+        seed=seed,
+    )
+    blinded: list[dict[str, Any]] = []
+    concealed_fields = (
+        "coder_id",
+        "coder_confidence",
+        *PITCH_FIELDS,
+        "short_paraphrased_note",
+        "exclusion_reason",
+    )
+    for sequence, row in enumerate(selected, start=1):
+        blinded_row = {field: row.get(field, "") for field in PITCH_QUEUE_FIELDS}
+        for field in concealed_fields:
+            blinded_row[field] = ""
+        blinded_row["sample_sequence"] = sequence
+        blinded.append(blinded_row)
+    return blinded
+
+
+def _parse_timestamp(value: Any) -> datetime | None:
+    normalized = str(value or "").strip().replace("Z", "+00:00")
+    if not normalized:
         return None
     try:
-        value = int(str(raw))
+        parsed = datetime.fromisoformat(normalized)
     except ValueError:
-        value = -999
-    if value not in allowed:
-        issues.append(
-            _issue(match_id, f"INVALID_{field.upper()}", f"{field}={raw!r}")
-        )
         return None
-    return value
+    return parsed if parsed.tzinfo is not None else parsed.replace(tzinfo=timezone.utc)
+
+
+def _is_disallowed_pitch_source(source_url: str, source_title: str) -> bool:
+    parsed_url = urlparse(source_url)
+    searchable = f"{parsed_url.path} {parsed_url.query} {source_title}".casefold()
+    return any(marker in searchable for marker in DISALLOWED_PITCH_SOURCE_MARKERS)
 
 
 def validate_pitch_rows(
     rows: Iterable[dict[str, Any]],
-    match_index: dict[str, dict[str, Any]],
-) -> tuple[list[dict[str, Any]], list[dict[str, str]]]:
-    """Return normalized usable pitch rows and field-level validation issues."""
+    *,
+    eligible_match_ids: set[str] | None = None,
+    match_start_by_id: dict[str, str] | None = None,
+) -> list[dict[str, str]]:
+    """Return validation issues; only verified pre-match rows may enter a model table."""
 
-    materialized = [dict(row) for row in rows]
-    duplicate_ids = {
-        match_id
-        for match_id, count in Counter(
-            str(row.get("cricsheet_match_id", "")).strip() for row in materialized
-        ).items()
-        if match_id and count > 1
-    }
-    usable: list[dict[str, Any]] = []
     issues: list[dict[str, str]] = []
+    seen: set[str] = set()
 
+    def issue(match_id: str, field: str, message: str) -> None:
+        issues.append({"cricsheet_match_id": match_id, "field": field, "message": message})
+
+    for row in rows:
+        match_id = str(row.get("cricsheet_match_id", "")).strip()
+        if not match_id:
+            issue("", "cricsheet_match_id", "missing match ID")
+            continue
+        if match_id in seen:
+            issue(match_id, "cricsheet_match_id", "duplicate match ID")
+        seen.add(match_id)
+        if eligible_match_ids is not None and match_id not in eligible_match_ids:
+            issue(match_id, "cricsheet_match_id", "match is outside the eligible primary cohort")
+
+        verified = str(row.get("pre_match_verified", "")).strip()
+        if verified not in {"0", "1"}:
+            issue(match_id, "pre_match_verified", "must be 0 or 1")
+            continue
+        if verified == "0":
+            if not str(row.get("exclusion_reason", "")).strip():
+                issue(match_id, "exclusion_reason", "required when source is not verified")
+            continue
+
+        source_url = str(row.get("source_url", "")).strip()
+        parsed_url = urlparse(source_url)
+        if parsed_url.scheme not in {"http", "https"} or not parsed_url.netloc:
+            issue(match_id, "source_url", "verified rows require an HTTP(S) source URL")
+        elif _is_disallowed_pitch_source(
+            source_url,
+            str(row.get("source_title", "")).strip(),
+        ):
+            issue(
+                match_id,
+                "source_url",
+                "source protocol excludes fantasy, Dream11, betting, and match-prediction pages",
+            )
+        for field in ("source_title", "coder_id", "coder_confidence", "pitch_primary_category"):
+            if not str(row.get(field, "")).strip():
+                issue(match_id, field, "required for verified rows")
+
+        espn_status = str(row.get("espn_linkage_status", "")).strip()
+        if espn_status and espn_status not in ESPN_LINKAGE_VALUES:
+            issue(match_id, "espn_linkage_status", f"unsupported value: {espn_status}")
+        if _is_espncricinfo_url(source_url) and espn_status != "verified_match":
+            issue(
+                match_id,
+                "espn_linkage_status",
+                "ESPN source rows require independently verified match linkage",
+            )
+        verified_espn_id = str(row.get("espn_match_id_verified", "")).strip()
+        verified_espn_url = str(row.get("espn_match_url_verified", "")).strip()
+        if espn_status == "verified_match":
+            if not verified_espn_id.isascii() or not verified_espn_id.isdigit():
+                issue(
+                    match_id,
+                    "espn_match_id_verified",
+                    "verified ESPN linkage requires a numeric match ID",
+                )
+            if not _is_espncricinfo_url(verified_espn_url):
+                issue(
+                    match_id,
+                    "espn_match_url_verified",
+                    "verified ESPN linkage requires an ESPNcricinfo match URL",
+                )
+        elif verified_espn_id or verified_espn_url:
+            issue(
+                match_id,
+                "espn_linkage_status",
+                "verified ESPN ID or URL requires verified_match status",
+            )
+
+        published_value = str(row.get("published_at_utc", "")).strip()
+        published_at = _parse_timestamp(published_value)
+        published_date_only = len(published_value) == 10 and published_at is not None
+        accessed_at = _parse_timestamp(row.get("accessed_at_utc"))
+        if published_at is None:
+            issue(match_id, "published_at_utc", "must be an ISO-8601 timestamp")
+        if accessed_at is None:
+            issue(match_id, "accessed_at_utc", "must be an ISO-8601 timestamp")
+        if published_at and accessed_at and published_at > accessed_at:
+            issue(match_id, "published_at_utc", "cannot be after access time")
+
+        if match_start_by_id is not None:
+            match_start = _parse_timestamp(match_start_by_id.get(match_id))
+            if match_start is None:
+                issue(
+                    match_id, "match_start_utc", "verified timing requires a match start timestamp"
+                )
+            elif published_at and (
+                (published_date_only and published_value >= str(row.get("match_date", "")).strip())
+                or (not published_date_only and published_at >= match_start)
+            ):
+                issue(match_id, "published_at_utc", "source was not published before match start")
+
+        for field, allowed in ALLOWED_VALUES.items():
+            value = str(row.get(field, "")).strip()
+            if field in {"coder_confidence", "pitch_primary_category"} and not value:
+                continue
+            if value not in allowed:
+                issue(match_id, field, f"unsupported value: {value}")
+
+        note = str(row.get("short_paraphrased_note", "")).strip()
+        if not note:
+            issue(match_id, "short_paraphrased_note", "verified rows require a short paraphrase")
+        elif len(note) > 300:
+            issue(match_id, "short_paraphrased_note", "must not exceed 300 characters")
+
+    return issues
+
+
+def pitch_coverage_summary(
+    rows: Iterable[dict[str, Any]],
+    *,
+    eligible_match_count: int | None = None,
+) -> dict[str, Any]:
+    """Summarize verified coverage without using match outcomes."""
+
+    materialized = list(rows)
+    verified = [row for row in materialized if str(row.get("pre_match_verified", "")) == "1"]
+    denominator = len(materialized) if eligible_match_count is None else eligible_match_count
+    if denominator < len(verified):
+        raise ValueError("Eligible match count cannot be smaller than verified pitch count")
+    by_year = Counter(str(row.get("match_date", ""))[:4] for row in verified)
+    by_category = Counter(str(row.get("pitch_primary_category", "")) for row in verified)
+    return {
+        "attempted_matches": len(materialized),
+        "eligible_cohort_matches": denominator,
+        "verified_pitch_matches": len(verified),
+        "coverage_pct": round(100 * len(verified) / denominator, 6) if denominator else 0.0,
+        "verified_by_year": dict(sorted(by_year.items())),
+        "verified_by_primary_category": dict(sorted(by_category.items())),
+    }
+
+
+def pitch_source_provider_summary(
+    rows: Iterable[dict[str, Any]],
+) -> dict[str, Any]:
+    """Summarize verified pitch-source mix by normalized provider hostname."""
+
+    verified = [row for row in rows if str(row.get("pre_match_verified", "")).strip() == "1"]
+    provider_rows: dict[str, list[dict[str, Any]]] = defaultdict(list)
+    for row in verified:
+        hostname = (urlparse(str(row.get("source_url", "")).strip()).hostname or "").lower()
+        for prefix in ("www.", "amp.", "m."):
+            if hostname.startswith(prefix):
+                hostname = hostname[len(prefix) :]
+                break
+        if not hostname:
+            raise ValueError("Verified pitch source is missing a provider hostname")
+        provider_rows[hostname].append(row)
+
+    total = len(verified)
+    categories = sorted(ALLOWED_VALUES["pitch_primary_category"])
+    providers: list[dict[str, int | float | str]] = []
+    for hostname, provider_matches in provider_rows.items():
+        category_counts = Counter(
+            str(row.get("pitch_primary_category", "")).strip() for row in provider_matches
+        )
+        confidence_counts = Counter(
+            str(row.get("coder_confidence", "")).strip() for row in provider_matches
+        )
+        provider_summary: dict[str, int | float | str] = {
+            "source_provider_hostname": hostname,
+            "verified_matches": len(provider_matches),
+            "share_pct": round(100 * len(provider_matches) / total, 6),
+        }
+        provider_summary.update(
+            {f"{category}_matches": category_counts[category] for category in categories}
+        )
+        provider_summary.update(
+            {
+                f"{confidence}_confidence_matches": confidence_counts[confidence]
+                for confidence in ("high", "medium", "low")
+            }
+        )
+        providers.append(provider_summary)
+
+    providers.sort(
+        key=lambda provider: (
+            -int(provider["verified_matches"]),
+            str(provider["source_provider_hostname"]),
+        )
+    )
+    top_count = int(providers[0]["verified_matches"]) if providers else 0
+    top_three_count = sum(int(provider["verified_matches"]) for provider in providers[:3])
+    hhi = (
+        sum((int(provider["verified_matches"]) / total) ** 2 for provider in providers) * 10_000
+        if total
+        else 0.0
+    )
+    return {
+        "verified_pitch_matches": total,
+        "source_provider_count": len(providers),
+        "top_provider_hostname": providers[0]["source_provider_hostname"] if providers else None,
+        "top_provider_matches": top_count,
+        "top_provider_share_pct": round(100 * top_count / total, 6) if total else 0.0,
+        "top_three_provider_share_pct": (round(100 * top_three_count / total, 6) if total else 0.0),
+        "herfindahl_hirschman_index": round(hhi, 6),
+        "providers": providers,
+    }
+
+
+def build_pitch_set_aside(rows: Iterable[dict[str, Any]]) -> list[dict[str, str]]:
+    """Project excluded attempts into an outcome-blind follow-up queue."""
+
+    set_aside: list[dict[str, str]] = []
+    seen: set[str] = set()
+    for row in rows:
+        match_id = str(row.get("cricsheet_match_id", "")).strip()
+        if not match_id:
+            raise ValueError("Pitch row is missing cricsheet_match_id")
+        if match_id in seen:
+            raise ValueError(f"Duplicate pitch match ID: {match_id}")
+        seen.add(match_id)
+
+        verified = str(row.get("pre_match_verified", "")).strip()
+        if verified not in {"0", "1"}:
+            raise ValueError(f"Match {match_id}: pre_match_verified must be 0 or 1")
+        if verified == "1":
+            continue
+
+        exclusion_reason = str(row.get("exclusion_reason", "")).strip()
+        if not exclusion_reason:
+            raise ValueError(f"Match {match_id}: excluded row is missing exclusion_reason")
+        output = {
+            field: ("set_aside" if field == "review_status" else str(row.get(field, "")).strip())
+            for field in PITCH_SET_ASIDE_FIELDS
+        }
+        set_aside.append(output)
+
+    return sorted(
+        set_aside,
+        key=lambda row: (row["match_date"], row["cricsheet_match_id"]),
+    )
+
+
+def build_pitch_collection_status(
+    eligible_rows: Iterable[dict[str, Any]],
+    verified_rows: Iterable[dict[str, Any]],
+    set_aside_rows: Iterable[dict[str, Any]],
+) -> list[dict[str, str]]:
+    """Record verified, set-aside, and unreviewed status for every eligible match."""
+
+    verified_ids = {str(row.get("cricsheet_match_id", "")).strip() for row in verified_rows}
+    set_aside = {
+        str(row.get("cricsheet_match_id", "")).strip(): str(row.get("exclusion_reason", "")).strip()
+        for row in set_aside_rows
+    }
+    if "" in verified_ids or "" in set_aside:
+        raise ValueError("Pitch status inputs contain a blank match ID")
+    overlap = verified_ids & set_aside.keys()
+    if overlap:
+        raise ValueError(f"Pitch status inputs overlap for match {min(overlap)}")
+
+    output: list[dict[str, str]] = []
+    eligible_ids: set[str] = set()
+    for row in eligible_rows:
+        match_id = str(row.get("cricsheet_match_id", "")).strip()
+        if not match_id:
+            raise ValueError("Eligible pitch row is missing cricsheet_match_id")
+        if match_id in eligible_ids:
+            raise ValueError(f"Duplicate eligible pitch match ID: {match_id}")
+        eligible_ids.add(match_id)
+        status = (
+            "verified"
+            if match_id in verified_ids
+            else "set_aside"
+            if match_id in set_aside
+            else "unreviewed"
+        )
+        status_row = {
+            field: str(row.get(field, "")).strip() for field in PITCH_COLLECTION_STATUS_FIELDS
+        }
+        status_row["collection_status"] = status
+        status_row["exclusion_reason"] = set_aside.get(match_id, "")
+        output.append(status_row)
+
+    unknown_ids = (verified_ids | set_aside.keys()) - eligible_ids
+    if unknown_ids:
+        raise ValueError(f"Pitch status input is outside the eligible cohort: {min(unknown_ids)}")
+    return sorted(output, key=lambda row: (row["match_date"], row["cricsheet_match_id"]))
+
+
+def _verified_pitch_rows_by_match(
+    rows: Iterable[dict[str, Any]],
+    *,
+    coding_set: str,
+) -> tuple[int, dict[str, dict[str, Any]]]:
+    materialized = list(rows)
+    verified: dict[str, dict[str, Any]] = {}
     for row in materialized:
         match_id = str(row.get("cricsheet_match_id", "")).strip()
-        row_issues: list[dict[str, str]] = []
+        flag = str(row.get("pre_match_verified", "")).strip()
+        if flag not in {"0", "1"}:
+            raise ValueError(f"{coding_set}: pre_match_verified must be 0 or 1")
+        if flag == "0":
+            continue
         if not match_id:
-            issues.append(_issue("", "MISSING_MATCH_ID", "cricsheet_match_id is blank"))
-            continue
-        if match_id in duplicate_ids:
-            issues.append(_issue(match_id, "DUPLICATE_MATCH_ID", "pitch match ID is repeated"))
-            continue
-
-        match = match_index.get(match_id)
-        if match is None:
-            issues.append(_issue(match_id, "UNMATCHED_MATCH_ID", "ID is absent from cohort"))
-            continue
-        if str(row.get("match_date", "")) != str(match.get("match_date", "")):
-            row_issues.append(
-                _issue(match_id, "MATCH_DATE_MISMATCH", "pitch and cohort dates differ")
-            )
-        if str(row.get("venue", "")).strip() != str(match.get("venue", "")).strip():
-            row_issues.append(
-                _issue(match_id, "VENUE_MISMATCH", "pitch and cohort venues differ")
-            )
-
-        pre_match_verified = _parse_nullable_integer(
-            row,
-            "pre_match_verified",
-            {0, 1},
-            row_issues,
-            match_id,
-        )
-        normalized = dict(row)
-        normalized["pre_match_verified"] = pre_match_verified
-        for field in ORDINAL_FIELDS:
-            normalized[field] = _parse_nullable_integer(
-                row, field, {0, 1, 2}, row_issues, match_id
-            )
-        for field in BINARY_FIELDS:
-            normalized[field] = _parse_nullable_integer(
-                row, field, {0, 1}, row_issues, match_id
-            )
-
-        category = str(row.get("pitch_primary_category", "")).strip()
-        confidence = str(row.get("coder_confidence", "")).strip()
-        bounce = str(row.get("bounce_profile", "")).strip()
-        exclusion_reason = str(row.get("exclusion_reason", "")).strip()
-        if category and category not in PITCH_CATEGORIES:
-            row_issues.append(
-                _issue(match_id, "INVALID_PITCH_PRIMARY_CATEGORY", f"category={category!r}")
-            )
-        if confidence and confidence not in CONFIDENCE_LEVELS:
-            row_issues.append(
-                _issue(match_id, "INVALID_CODER_CONFIDENCE", f"confidence={confidence!r}")
-            )
-        if bounce and bounce not in BOUNCE_PROFILES:
-            row_issues.append(
-                _issue(match_id, "INVALID_BOUNCE_PROFILE", f"bounce_profile={bounce!r}")
-            )
-
-        is_usable_candidate = (
-            pre_match_verified == 1 and not exclusion_reason and category != "unknown"
-        )
-        if pre_match_verified == 0 and not exclusion_reason:
-            row_issues.append(
-                _issue(match_id, "UNVERIFIED_WITHOUT_EXCLUSION", "exclusion_reason is blank")
-            )
-        if pre_match_verified == 1 and not exclusion_reason and category == "unknown":
-            row_issues.append(
-                _issue(match_id, "UNKNOWN_WITHOUT_EXCLUSION", "usable row needs a pitch category")
-            )
-
-        if is_usable_candidate:
-            required_fields = (
-                "source_url",
-                "source_title",
-                "published_at_utc",
-                "accessed_at_utc",
-                "coder_id",
-                "coder_confidence",
-                "short_paraphrased_note",
-            )
-            for field in required_fields:
-                if not str(row.get(field, "")).strip():
-                    row_issues.append(
-                        _issue(match_id, f"MISSING_{field.upper()}", f"{field} is required")
-                    )
-
-        published_text = str(row.get("published_at_utc", "")).strip()
-        if published_text:
-            try:
-                published_date = date.fromisoformat(published_text[:10])
-                match_date = date.fromisoformat(str(match["match_date"])[:10])
-                if published_date > match_date:
-                    row_issues.append(
-                        _issue(match_id, "SOURCE_NOT_PRE_MATCH", "publication date follows match date")
-                    )
-                match_start_text = str(match.get("match_start_utc", "")).strip()
-                if "T" in published_text and match_start_text:
-                    if _parse_datetime(published_text) >= _parse_datetime(match_start_text):
-                        row_issues.append(
-                            _issue(
-                                match_id,
-                                "SOURCE_NOT_PRE_MATCH",
-                                "publication timestamp is at or after match start",
-                            )
-                        )
-                elif published_date == match_date:
-                    row_issues.append(
-                        _issue(
-                            match_id,
-                            "SOURCE_TIME_UNRESOLVED",
-                            "same-date source lacks an independently comparable timestamp",
-                            severity="warning",
-                        )
-                    )
-            except ValueError:
-                row_issues.append(
-                    _issue(match_id, "INVALID_PUBLISHED_AT", f"published_at_utc={published_text!r}")
+            raise ValueError(f"{coding_set}: verified row is missing cricsheet_match_id")
+        if match_id in verified:
+            raise ValueError(f"{coding_set}: duplicate verified match ID {match_id}")
+        if not str(row.get("coder_id", "")).strip():
+            raise ValueError(f"{coding_set}: verified match {match_id} is missing coder_id")
+        for field in PITCH_FIELDS:
+            value = str(row.get(field, "")).strip()
+            if value not in ALLOWED_VALUES[field]:
+                raise ValueError(
+                    f"{coding_set}: verified match {match_id} has unsupported "
+                    f"{field} value {value!r}"
                 )
-
-        issues.extend(row_issues)
-        if is_usable_candidate and not any(
-            issue["severity"] == "error" for issue in row_issues
-        ):
-            usable.append(normalized)
-
-    return usable, issues
+        verified[match_id] = row
+    return len(materialized), verified
 
 
-def _selection_rank(seed: int, row: dict[str, Any]) -> tuple[str, str]:
-    match_id = str(row["match_id"])
-    digest = hashlib.sha256(f"{seed}:{match_id}".encode("utf-8")).hexdigest()
-    return str(row["match_date"]), digest
-
-
-def select_next_pitch_batch(
-    matches: Iterable[dict[str, Any]],
+def _categorical_agreement(
+    first: list[str],
+    second: list[str],
     *,
-    audited_ids: set[str],
-    quotas: dict[str, int],
-    seed: int,
-) -> list[dict[str, str]]:
-    """Select evenly spaced unaudited matches using pre-outcome metadata only."""
-
-    allowed_output_fields = (
-        "match_id",
-        "match_date",
-        "venue",
-        "competition_type",
-        "event_name",
-        "team_1",
-        "team_2",
-    )
-    unique_matches: dict[str, dict[str, str]] = {}
-    for raw in matches:
-        match_id = str(raw["match_id"])
-        if match_id in audited_ids or match_id in unique_matches:
-            continue
-        projected = {
-            "match_id": match_id,
-            "match_date": str(raw["match_date"]),
-            "venue": str(raw.get("venue", "")),
-            "competition_type": str(raw["competition_type"]),
-            "event_name": str(raw.get("event_name", "")),
-            "team_1": str(raw.get("team_1", raw.get("batting_team", ""))),
-            "team_2": str(raw.get("team_2", raw.get("opponent", ""))),
+    ordered_labels: tuple[str, ...] | None = None,
+) -> dict[str, int | float | str | None]:
+    comparable = [
+        (left, right) for left, right in zip(first, second, strict=True) if left and right
+    ]
+    n = len(comparable)
+    weighting = "linear" if ordered_labels else "unweighted"
+    if not n:
+        return {
+            "comparable_pairs": 0,
+            "agreement_count": 0,
+            "agreement_pct": None,
+            "cohen_kappa": None,
+            "cohen_kappa_weighting": weighting,
         }
-        unique_matches[match_id] = projected
 
-    grouped: dict[str, list[dict[str, str]]] = defaultdict(list)
-    for row in unique_matches.values():
-        grouped[row["competition_type"]].append(row)
+    agreements = sum(left == right for left, right in comparable)
+    first_counts = Counter(left for left, _ in comparable)
+    second_counts = Counter(right for _, right in comparable)
+    observed = agreements / n
+    if ordered_labels:
+        positions = {label: index for index, label in enumerate(ordered_labels)}
+        maximum_distance = len(ordered_labels) - 1
 
-    selected: list[dict[str, str]] = []
-    for competition_type, quota in quotas.items():
-        if quota < 0:
-            raise ValueError("Pitch batch quotas cannot be negative")
-        candidates = sorted(grouped.get(competition_type, []), key=lambda row: _selection_rank(seed, row))
-        take = min(quota, len(candidates))
-        if take == 0:
-            continue
-        positions = [min(len(candidates) - 1, int((index + 0.5) * len(candidates) / take)) for index in range(take)]
-        selected.extend(candidates[position] for position in positions)
+        def disagreement(left: str, right: str) -> float:
+            return abs(positions[left] - positions[right]) / maximum_distance
 
-    return [{field: row[field] for field in allowed_output_fields} for row in selected]
+        observed_disagreement = sum(disagreement(left, right) for left, right in comparable) / n
+        expected_disagreement = sum(
+            first_counts[left] * second_counts[right] * disagreement(left, right)
+            for left in first_counts
+            for right in second_counts
+        ) / (n * n)
+        kappa = (
+            None
+            if math.isclose(expected_disagreement, 0.0)
+            else 1.0 - observed_disagreement / expected_disagreement
+        )
+    else:
+        labels = first_counts.keys() | second_counts.keys()
+        expected = sum(first_counts[label] * second_counts[label] for label in labels) / (n * n)
+        kappa = None if math.isclose(expected, 1.0) else (observed - expected) / (1.0 - expected)
+    return {
+        "comparable_pairs": n,
+        "agreement_count": agreements,
+        "agreement_pct": round(100 * observed, 6),
+        "cohen_kappa": round(kappa, 6) if kappa is not None else None,
+        "cohen_kappa_weighting": weighting,
+    }
+
+
+def pitch_intercoder_reliability(
+    reference_rows: Iterable[dict[str, Any]],
+    recoded_rows: Iterable[dict[str, Any]],
+    *,
+    minimum_double_coded_fraction: float = 0.2,
+) -> dict[str, Any]:
+    """Compare independently coded verified rows without reading match outcomes."""
+
+    if not 0 < minimum_double_coded_fraction <= 1:
+        raise ValueError("minimum_double_coded_fraction must be in (0, 1]")
+
+    reference_received, reference = _verified_pitch_rows_by_match(
+        reference_rows,
+        coding_set="reference",
+    )
+    recoded_received, recoded = _verified_pitch_rows_by_match(
+        recoded_rows,
+        coding_set="recoded",
+    )
+    paired_ids = sorted(reference.keys() & recoded.keys())
+    for match_id in paired_ids:
+        reference_coder = str(reference[match_id].get("coder_id", "")).strip()
+        recoded_coder = str(recoded[match_id].get("coder_id", "")).strip()
+        if reference_coder == recoded_coder:
+            raise ValueError(
+                f"match {match_id} was not independently coded: coder_id is "
+                f"{reference_coder!r} in both sets"
+            )
+
+    field_metrics: dict[str, dict[str, int | float | str | None]] = {}
+    total_comparable = 0
+    total_agreements = 0
+    ordinal_fields = {"batting_ease", "pace_seam_support", "spin_support"}
+    for field in PITCH_FIELDS:
+        first = [str(reference[match_id].get(field, "")).strip() for match_id in paired_ids]
+        second = [str(recoded[match_id].get(field, "")).strip() for match_id in paired_ids]
+        metrics = _categorical_agreement(
+            first,
+            second,
+            ordered_labels=("0", "1", "2") if field in ordinal_fields else None,
+        )
+        comparable = int(metrics["comparable_pairs"])
+        field_metrics[field] = {
+            **metrics,
+            "paired_matches": len(paired_ids),
+            "missing_either": len(paired_ids) - comparable,
+            "completion_pct": (round(100 * comparable / len(paired_ids), 6) if paired_ids else 0.0),
+        }
+        total_comparable += comparable
+        total_agreements += int(metrics["agreement_count"])
+
+    reference_count = len(reference)
+    paired_count = len(paired_ids)
+    minimum_pairs = math.ceil(reference_count * minimum_double_coded_fraction)
+    paired_ids_sha256 = hashlib.sha256("\n".join(paired_ids).encode()).hexdigest()
+    return {
+        "reference_rows_received": reference_received,
+        "recoded_rows_received": recoded_received,
+        "reference_verified_matches": reference_count,
+        "recoded_verified_matches": len(recoded),
+        "paired_verified_matches": paired_count,
+        "unpaired_reference_matches": len(reference.keys() - recoded.keys()),
+        "orphan_recoded_matches": len(recoded.keys() - reference.keys()),
+        "paired_match_ids_sha256": paired_ids_sha256,
+        "minimum_double_coded_fraction": minimum_double_coded_fraction,
+        "minimum_double_coded_matches": minimum_pairs,
+        "double_coded_pct": (
+            round(100 * paired_count / reference_count, 6) if reference_count else 0.0
+        ),
+        "meets_minimum_double_coding_target": (
+            reference_count > 0 and paired_count >= minimum_pairs
+        ),
+        "overall_comparable_items": total_comparable,
+        "overall_agreement_count": total_agreements,
+        "overall_agreement_pct": (
+            round(100 * total_agreements / total_comparable, 6) if total_comparable else None
+        ),
+        "fields": field_metrics,
+    }
+
+
+def merge_pitch_conditions(
+    innings_rows: Iterable[dict[str, Any]],
+    pitch_rows: Iterable[dict[str, Any]],
+) -> list[dict[str, Any]]:
+    """Left-join verified pitch codes to innings without source prose or outcomes."""
+
+    pitch_by_match = {
+        str(row["cricsheet_match_id"]): row
+        for row in pitch_rows
+        if str(row.get("pre_match_verified", "")) == "1"
+    }
+    merged: list[dict[str, Any]] = []
+    for innings in innings_rows:
+        output = dict(innings)
+        pitch = pitch_by_match.get(str(innings["match_id"]))
+        output["pitch_available"] = int(pitch is not None)
+        for field in PITCH_FIELDS:
+            output[field] = pitch.get(field, "") if pitch else ""
+        merged.append(output)
+    return merged

@@ -6,8 +6,12 @@
 |---|---|---|
 | `cricsheet_matches` | one match | stable match metadata and result |
 | `powerplay_innings` | one regulation team-innings | first-10-over statistics and context |
-| `pitch_reports` | one match/source | pre-match prose provenance and human codes |
+| `pitch_reports_verified` | one verified match/source | minimized pre-match provenance and derived pitch codes |
+| `pitch_set_aside` | one reviewed match | outcome-blind follow-up list for attempts without eligible analysis |
+| `pitch_collection_status` | one eligible match | verified, reviewed set-aside, or unreviewed collection state |
+| `pitch_source_providers` | one normalized provider hostname | source share, category mix, and confidence mix |
 | `team_strength_pre` | one match/team | ratings calculated before the match date |
+| `venue_conditions_pre_match` | one match | rolling prior-match venue scoring environment |
 | `model_team_innings` | one team-innings | audited merged analysis table |
 | `model_match_paired` | one match | secondary difference-based analysis table |
 | `predictions` | one row/model/team-innings | held-out prediction and label |
@@ -65,18 +69,75 @@ These fields may be present in labeled data for training/evaluation but cannot b
 | `balls_per_over` | integer | Cricsheet expected balls per over |
 | `is_super_over` | binary | retained for audit; super-over innings are not emitted |
 
-## Pitch fields
+## Match-start verification fields
+
+`data/manual/match_start_times_template.csv` is outcome-blind and contains one row
+per primary-cohort match. `data/manual/match_start_times_verified.csv` is the
+tracked, minimized subset supporting published pitch codes. Any working or tracked
+copy is valid only after `audit_match_start_times.py` reports zero issues.
 
 | Variable | Type | Definition |
 |---|---|---|
+| `cricsheet_match_id` | string | exact primary-cohort match key |
+| `match_date` | ISO date | local scheduled match date copied from the cohort |
+| `event_name` | string | event or series identity used for manual reconciliation |
+| `competition_type` | category | outcome-blind cohort competition stratum |
+| `venue` | string | cohort venue used for identity reconciliation |
+| `city` | string | cohort city where available |
+| `team_1`, `team_2` | string | teams in innings order; used only to verify identity |
+| `source_search_query` | string | unfetched outcome-blind navigation query |
+| `source_url` | URL | cited schedule or match page supporting the start time |
+| `source_title` | string | title of the cited source |
+| `accessed_at_utc` | timestamp | offset-aware ISO-8601 collection timestamp |
+| `scheduled_start_local` | local datetime | scheduled local start without a UTC offset |
+| `timezone_name` | IANA timezone | location timezone, including historical daylight-saving rules |
+| `scheduled_start_utc` | UTC timestamp | local start converted to `Z` or `+00:00` |
+| `start_time_status` | category | `pending`, `verified`, `unavailable`, or `rejected` |
+| `verifier_id` | string | anonymized verifier label; AI-assisted provisional work is disclosed by its label |
+| `verification_note` | string/nullable | concise reconciliation note |
+| `exclusion_reason` | string/nullable | required when unavailable or rejected |
+
+The validator requires exact cohort identity, a valid HTTP(S) source, an
+offset-aware access timestamp, a real IANA timezone, a local date equal to
+`match_date`, and exact timezone conversion to UTC. Working files may contain only
+the matches with collected pitch reports; `--require-full-cohort` separately audits
+the generated 1,094-row template. Only `verified` timestamps are exposed to
+pitch-source timing validation; partially filled or pending rows are never used.
+No start-time, timezone, status, verifier, or source-provenance field is joined to
+the model table; all are also named in the prohibited-predictor guard.
+
+
+The tracked release contains 228 verified scheduled starts. No start-time,
+timezone, provenance, or verifier field is available to the fitted model.
+
+## Pitch fields
+
+`data/manual/pitch_reports_verified.csv` contains only rows that passed source,
+publication-time, match-start, cohort-identity, and code-value validation.
+`data/manual/pitch_set_aside.csv` contains no pitch codes or outcomes; it records
+the search query and reason a reviewed match needs later follow-up.
+`artifacts/tables/pitch_collection_status.csv` covers all 1,094 eligible matches
+with `verified`, `set_aside`, or `unreviewed` status.
+`artifacts/tables/pitch_source_providers.csv` groups verified rows by normalized
+source hostname and reports counts, shares, category counts, and confidence counts.
+
+
+| Variable | Type | Definition |
+|---|---|---|
+| `espn_match_id_candidate` | string/nullable | numeric Cricsheet ID copied as an unverified candidate; never assumed correct |
+| `espn_legacy_match_url_candidate` | URL/nullable | unfetched legacy ESPN navigation candidate generated from the probable ID |
+| `espn_match_id_verified` | string/nullable | actual numeric ESPN ID after human or licensed match-identity verification |
+| `espn_match_url_verified` | URL/nullable | current ESPNcricinfo match page confirmed against teams, date, event, and venue |
+| `espn_linkage_status` | category | `unverified_candidate`, `verified_match`, `not_espn_id`, `wrong_match`, or `not_available` |
+| `source_search_query` | string | outcome-blind pre-match pitch-report search query; not fetched by the pipeline |
 | `source_url` | string | direct eligible pre-match report URL |
 | `source_title` | string | source article title |
 | `published_at_utc` | timestamp/date | source publication time in UTC when shown; ISO date only when the publisher omits time and the date still proves the article preceded play |
 | `accessed_at_utc` | timestamp | collection time |
 | `pre_match_verified` | binary | publication verified before scheduled start |
-| `coder_id` | string | anonymized coder label |
+| `coder_id` | string | anonymized coder label; current AI-assisted provisional codes are explicitly labeled |
 | `coder_confidence` | ordered category | low, medium, high |
-| `pitch_primary_category` | category | batting-friendly, balanced, pace/seam, spin, slow/two-paced, unknown |
+| `pitch_primary_category` | category | `batting_friendly`, `balanced`, `pace_seam`, `spin`, `slow_two_paced`, or `unknown` |
 | `batting_ease` | ordinal 0–2 | difficult to easy/high-scoring |
 | `pace_seam_support` | ordinal 0–2 | little to strong pace/seam help |
 | `spin_support` | ordinal 0–2 | little to strong spin help |
@@ -94,28 +155,46 @@ These variables form the pre-match baseline adjustment block. They control for c
 
 | Variable | Type | Definition |
 |---|---|---|
-| `team_1_elo_pre` | float | first-innings batting team's Elo before any match on the same date is updated |
-| `team_2_elo_pre` | float | second-innings batting team's Elo before any match on the same date is updated |
-| `elo_difference_team_1` | float | `team_1_elo_pre - team_2_elo_pre` in the match-level strength table |
-| `team_1_prior_matches` | integer | number of earlier results retained in team 1's rolling window, from 0 to 20 |
-| `team_2_prior_matches` | integer | number of earlier results retained in team 2's rolling window, from 0 to 20 |
-| `team_1_rolling_win_rate` | float/nullable | team 1 wins divided by available prior matches; blank before its first appearance |
-| `team_2_rolling_win_rate` | float/nullable | team 2 wins divided by available prior matches; blank before its first appearance |
-| `team_elo_pre` | float | focal team rating before match date |
-| `opponent_elo_pre` | float | opposing team rating before match date |
-| `elo_difference` | float | team minus opponent pre-match Elo |
-| `team_prior20_win_rate` | float/nullable | wins among prior 20 decided ODIs |
-| `opponent_prior20_win_rate` | float/nullable | same for opponent |
+| `team_1_elo_pre` | float | innings-one batting team's rating before the match date |
+| `team_2_elo_pre` | float | innings-two batting team's rating before the match date |
+| `elo_difference_team_1` | float | team 1 minus team 2 pre-match Elo |
+| `team_1_prior_matches` | integer | all decided matches available before the match date |
+| `team_2_prior_matches` | integer | all decided matches available before the match date |
+| `team_1_prior20_win_rate` | float/nullable | wins in the prior 20 decided matches; blank at cold start |
+| `team_2_prior20_win_rate` | float/nullable | same for team 2 |
+| `team_elo_pre` | float | focal batting team's mapped pre-match rating |
+| `opponent_elo_pre` | float | focal opponent's mapped pre-match rating |
+| `elo_difference` | float | focal batting team minus opponent pre-match Elo |
+
+## Historical venue conditions
+
+These fields summarize at most 20 earlier matches at the exact recorded venue. All
+matches on the same date receive the state available before that date.
+
+| Variable | Type | Definition |
+|---|---|---|
+| `venue_history_available` | binary | 1 when at least one earlier-date match exists at the recorded venue |
+| `venue_prior_matches` | integer | number of earlier venue matches in the rolling window |
+| `venue_prior_innings` | integer | contributing regulation innings; retained for audit |
+| `venue_prior_pp_runs_mean` | float/nullable | prior-window powerplay runs per innings |
+| `venue_prior_pp_wickets_mean` | float/nullable | prior-window powerplay wickets per innings |
+| `venue_prior_boundary_pct` | float/nullable | prior-window boundary balls divided by legal balls × 100 |
+| `venue_prior_dot_ball_pct` | float/nullable | prior-window dot balls divided by legal balls × 100 |
 
 ## Merge and audit fields
 
 | Variable | Type | Definition |
 |---|---|---|
-| `pitch_join_status` | category | exact ID, composite verified, unmatched, ambiguous |
+| `pitch_available` | binary | 1 only when a validated, timing-eligible pre-match pitch row joined by exact match ID |
+| `split` | category | `development` through 2023, `validation` in 2024, or locked `locked_test` from 2025 onward |
 | `exclusion_reasons` | string/list | semicolon-delimited prespecified reason codes |
 | `analysis_eligible_primary` | binary | passes core cleaning and the 2015-forward men's ODI primary rules; no event restriction |
 | `source_snapshot_id` | string | hash/date identifier for raw-source manifest |
 
 ## Final-model anti-leakage allowlist
 
-The final training matrix may contain only approved powerplay, pre-match pitch, pre-match team strength, toss, innings order, venue/grouping, year, and competition-type features. Match ID is a grouping key, not a predictor. Outcome, winner, margin, result method, full innings total, later-match data, and generic hourly weather variables are prohibited.
+The final training matrix may contain only approved powerplay, pre-match pitch,
+historical venue, pre-match team strength, toss, innings order, venue/grouping,
+year, and competition-type features. Match ID is a grouping key, not a predictor.
+Outcome, winner, margin, result method, full innings total, later-match data, and
+generic hourly weather variables are prohibited.

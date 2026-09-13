@@ -8,12 +8,38 @@ Convert pre-match prose into auditable variables without reading the outcome. Co
 
 A source is eligible when:
 
-- it is a match-specific ESPNcricinfo preview, pitch/conditions report, or another clearly identified reputable pre-match source when ESPN has no eligible report;
+- it is a match-specific ICC, national-board, established news, or established specialist-cricket pre-match report; ESPN is eligible only through the separately documented human/licensed route;
 - its publication time can be shown to precede match start;
 - it discusses the specific match venue/surface, not only generic venue history;
 - it does not reveal any match event or result.
 
 If these conditions fail, set `pre_match_verified = 0` and record `exclusion_reason`. Store a short paraphrase, not a large copied passage.
+
+AI-assisted coding may produce a provisional first pass for eligible non-ESPN
+sources when the `coder_id` discloses that status. It does not satisfy the
+independent-human reliability requirement. ESPN source collection and linkage
+remain restricted to a human or licensed route under the reviewed terms.
+
+### ESPN match identity
+
+The queue's numeric Cricsheet ID and legacy ESPN URL are unverified navigation
+candidates. Before coding an ESPN source, compare teams, date, event, and venue;
+record the actual `espn_match_id_verified` and `espn_match_url_verified`; then set
+`espn_linkage_status = verified_match`. Use `wrong_match` or `not_espn_id` when the
+candidate fails. A candidate alone is never evidence and must not be bulk-opened by
+automation. An ESPN row cannot be `pre_match_verified = 1` until match linkage is
+human- or license-verified.
+
+### Match-start verification
+
+Create `data/manual/match_start_times.csv` from the tracked start-time template.
+Verify teams, local date, event, and venue against a cited schedule or match page;
+record the scheduled local datetime, the venue's IANA timezone, the converted UTC
+datetime, source provenance, and verifier. Set `start_time_status=verified` only
+after `audit_match_start_times.py` accepts the identity and conversion. Pending,
+unavailable, rejected, or structurally invalid timestamps are never passed to pitch
+validation. Keep this metadata-only task separate from pitch coding so scorecard or
+result information cannot influence the category.
 
 ## Primary category
 

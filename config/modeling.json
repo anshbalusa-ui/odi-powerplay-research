@@ -1,0 +1,40 @@
+{
+  "schema_version": 1,
+  "random_state": 20250905,
+  "logistic_regression": {
+    "penalty": "l2",
+    "C": 1.0,
+    "solver": "liblinear",
+    "max_iter": 2000
+  },
+  "random_forest": {
+    "n_estimators": 500,
+    "max_depth": 6,
+    "min_samples_leaf": 20,
+    "max_features": "sqrt",
+    "n_jobs": 1
+  },
+  "xgboost": {
+    "objective": "binary:logistic",
+    "eval_metric": "logloss",
+    "n_estimators": 400,
+    "max_depth": 3,
+    "learning_rate": 0.05,
+    "min_child_weight": 10,
+    "subsample": 0.8,
+    "colsample_bytree": 0.8,
+    "reg_lambda": 1.0,
+    "n_jobs": 1
+  },
+  "chronological_fit": {
+    "training_split": "development",
+    "selection_split": "validation",
+    "locked_test_split": "locked_test",
+    "locked_test_scoring_enabled": false
+  },
+  "evaluation": {
+    "bootstrap_repetitions": 2000,
+    "bootstrap_cluster": "match_id",
+    "calibration_bins": 10
+  }
+}

@@ -6,18 +6,36 @@ This file defines the required transformation trail. Each completed run should p
 |---|---|---|---|---|
 | 01 | Cricsheet ODI ZIP | download without modifying content; calculate SHA-256; safe extract | `data/raw/cricsheet/` + source manifest | URL, UTC retrieval time, archive hash, JSON count |
 | 02 | each match JSON | validate ODI; parse stable metadata/result | match table | unique `match_id`; two teams; valid date |
-| 03 | regulation innings | restrict delivery events to over indexes 0–9; compute documented measures | `powerplay_innings` | manually reconcile random matches; denominator tests |
+| 03 | regulation innings | restrict delivery events to over indexes 0–9; compute documented measures | `powerplay_innings` + metric audit + hand-audit worksheet | zero automated invariant issues; independently reconcile ≥20 sampled innings |
 | 04 | match table | apply core exclusions; select 2015-forward men's ODIs; classify competition type without event exclusion | cohort audit table | every exclusion has reason; count flow; all event types retained |
 | 05 | prior decided matches | calculate date-batched Elo and prior-20 win rates | `team_strength_pre` | no focal/future match in history |
-| 06 | eligible pre-match reports | paraphrase and code using frozen codebook | `pitch_reports` | source time precedes start; double-code ≥20% |
-| 07 | venue list + schedules | canonicalize venue names and verify local start time used for source eligibility | venue/start crosswalk | no ambiguous names; pitch source predates play |
-| 08 | match ID/date/venue | merge pitch and strength data into innings | merged audit table | join cardinality; unmatched and duplicate reports |
-| 09 | merged table | enforce leakage allowlist; create primary/secondary feature sets | `model_team_innings` | forbidden-column assertion; no generic weather fields |
-| 10 | model table | order by date; build grouped chronological development/test sets | split manifest | match IDs never cross partitions |
-| 11 | development folds | fit all preprocessing and tune models inside rolling folds | fitted candidates | test period untouched |
-| 12 | locked test | create probabilities once per frozen model | predictions | range [0,1]; one row/model/eligible row |
-| 13 | predictions | calculate metrics and match-cluster bootstrap CIs | metrics tables | fixed seed; failed bootstrap count |
-| 14 | fitted models + test data | calibration, marginal predictions, importance, SHAP | figures/tables | labels/units; no causal language |
+| 06 | prior matches at each venue | calculate date-batched prior-20 powerplay scoring summaries | `venue_conditions_pre_match` | exact match/date/venue join; no same-day or future performance in history |
+| 07 | outcome-blind eligible match queue | generate unfetched probable ESPN-ID links; review match-specific pre-match reports; code eligible non-ESPN evidence; defer ESPN to human/licensed collection; classify every match as verified, set aside, or unreviewed; audit provider mix | queue + ignored working file + tracked `pitch_reports_verified` + `pitch_set_aside` + collection-status/provider audits | no bulk ESPN extraction; candidate status explicit; source time precedes start; no result/powerplay fields in collection outputs; provider concentration reported; double-code ≥20% |
+| 08 | primary-cohort metadata + cited schedules | generate an outcome-blind start-time reference; verify match identity, scheduled local time, and IANA timezone only for matches with accepted pitch reports; convert to UTC | tracked template + `match_start_times_verified` + audit | rows are in cohort; every verified pitch report has timing evidence; template covers full cohort; exact IANA local-to-UTC conversion; timing fields prohibited from models |
+| 09 | innings + strength + venue history + validated pitch rows | join approved fields by exact match ID | `model_team_innings` | one row per input innings; invalid/unverified reports excluded; unmatched coverage reported |
+| 10 | merged table | enforce leakage allowlist; create primary/secondary feature sets | model feature table | forbidden-column assertion; no generic weather fields |
+| 11 | model table | order by date; build grouped chronological development/test sets | split manifest | match IDs never cross partitions |
+| 12 | development folds | fit all preprocessing and fixed models inside rolling folds | fitted candidates | test period untouched |
+| 13 | locked test | create probabilities once per frozen model | predictions | range [0,1]; one row/model/eligible row |
+| 14 | predictions | calculate metrics and match-cluster bootstrap CIs | metrics tables | fixed seed; failed bootstrap count |
+| 15 | fitted models + evaluation data | calibration and prespecified figures | figures/tables | labels/units; no causal language |
+
+## Current preliminary model run
+
+The September 2026 reproducible run fits one intercept baseline, six fixed logistic
+specifications, constrained Random Forest, and shallow XGBoost on 2015–2023 development
+rows and evaluates only the 2024 validation rows. Expanding rolling-origin folds
+validate on 2021, 2022, and 2023 with preprocessing refit inside each fold. The
+pipeline saves model binaries and hashes, one validation prediction per
+model/team-innings, fixed-width calibration tables with whole-match uncertainty,
+calibration intercept/slope, and 2,000 whole-match cluster-bootstrap intervals
+using study seed `20250905`. It does not score or inspect outcomes from the
+2025–2026 locked-test partition. A separate 228-match complete-case pitch smoke test
+uses 2022 and 2023 rolling-origin folds because 2021 has no verified-pitch match,
+then evaluates only ten 2024 match clusters; its values are not substantive results.
+No hyperparameter search has been conducted; the current settings are
+prespecified. See `docs/modeling_status.md` for exact specifications and
+preliminary results.
 
 ## Standard exclusion codes
 
@@ -64,9 +82,9 @@ For publication tables, remove machine-specific file paths but retain hashes and
 
 ## Completed validation runs
 
-### 2026-09-09 — deterministic extraction audit
+### 2026-09-13 — deterministic extraction audit
 
-- Selection frame: 1,093 primary-cohort matches from the fixed Cricsheet snapshot.
+- Selection frame: 1,094 primary-cohort matches from the fixed Cricsheet snapshot.
 - Selection method: SHA-256-ranked, seeded round-robin sampling across match years; seed `20250905`.
 - Audited sample: 20 matches and both regulation innings from each match.
 - Comparisons: 1,120 field-level checks covering match metadata, toss, innings order, result label, runs, wickets, legal balls, delivery events, run rate, boundary count/percentage, dot count/percentage, and powerplay completeness.

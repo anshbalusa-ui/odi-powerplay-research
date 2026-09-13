@@ -25,9 +25,9 @@ Recheck the page immediately before submission in case instructions change.
 
 Avoid framing the study as only another match-winner classifier. The stronger applied question is:
 
-> How much does the value of an ODI powerplay start change after accounting for wickets, opposition strength, innings order, and pre-match pitch behavior?
+> What makes a successful ODI powerplay after accounting for opposition strength and match context, and—among matches with verified pre-match reports—when does pitch type change the best balance of aggression and wicket preservation?
 
-The practical output is a pitch-adjusted benchmark that estimates whether a start was stronger or weaker than its raw score suggests. This gives broadcasters, analysts, and teams a more useful interpretation than a universal rule such as “50/1 is a good powerplay.”
+The practical output is one coherent framework rather than two unrelated findings: a full-cohort description of successful powerplay profiles and a prespecified pitch-subgroup effect-modification analysis showing when the profile changes.
 
 ## Minimum viable SSAC analysis
 
@@ -57,6 +57,25 @@ The practical output is a pitch-adjusted benchmark that estimates whether a star
 - full manuscript prose and extensive appendices.
 
 Deferral means sequencing, not abandonment.
+
+## Current readiness gate
+
+As of the reproducible September 2026 run, the Cricsheet cohort, automated metric
+audit, pre-match team strength, prior-20 venue histories covering 997 of 1,094
+matches, chronological splits, six logistic specifications, two constrained
+nonlinear challengers, rolling-origin diagnostics, 2024 validation, clustered
+uncertainty, calibration, and preliminary figures are complete. The venue-history
+sensitivity did not improve M1's 2024 AUC or proper scores by point estimate. The
+current numeric narrative is in `docs/results.md`.
+
+The 200-match pitch source-coverage target is exceeded: 228 of 1,094 matches have
+timing-verified AI-assisted first-pass codes, 347 of 575 reviewed matches are set
+aside, and 519 remain unreviewed. The pitch reliability requirement is **not met**
+because independent double coding has not occurred. The hand-audit worksheet is
+generated but still needs external scorecard reconciliation. The 2025–2026 locked
+test remains correctly unscored.
+
+Go/no-go decision: the full-cohort powerplay result and verified-pitch subgroup must remain visibly nested under one research question. Do not submit a pitch effect-modification estimate until independent reliability passes and the ten-match 2024 pitch-validation sample is judged adequate or replaced by a prespecified alternative. Until then, retain the full-cohort result as Finding 1 and label the pitch fit provisional rather than implying that most matches had pitch adjustment. Never manufacture pitch labels from live/post-match commentary or unlock test outcomes to compensate for missing pitch data.
 
 ## September 5–October 1 sprint
 
@@ -95,11 +114,13 @@ State the cohort and sources, unit of analysis, leakage cutoff, conditions/conte
 
 ### Results
 
-Report sample size, the main adjusted relationship or interaction with uncertainty, final held-out metrics versus baseline, and one calibration result. Do not fill this section until outputs are frozen.
+Report sample size, the main 2024 validation association with uncertainty, and one
+calibration result. Replace these with locked-test values only after every freeze
+gate passes; never label validation estimates as final held-out performance.
 
 ### Conclusion
 
-State the pitch-adjusted cricket insight, the practical application, and the observational limitation.
+State the full-cohort powerplay finding first. Add the verified-pitch effect-modification finding only if coverage and reliability gates pass; otherwise identify it as the prespecified incomplete subgroup analysis rather than reframing the paper as pitch-adjusted.
 
 ## Submission-day checklist
 

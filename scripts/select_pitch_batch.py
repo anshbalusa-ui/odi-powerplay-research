@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Select the next outcome-blind pitch-report collection batch."""
+"""Select an outcome-blind batch for manual pitch-source coding."""
 
 from __future__ import annotations
 
@@ -7,85 +7,105 @@ import argparse
 import csv
 import json
 import sys
+from collections import Counter
 from pathlib import Path
 
-PROJECT_ROOT = Path(__file__).resolve().parents[1]
-sys.path.insert(0, str(PROJECT_ROOT / "src"))
+ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT / "src"))
 
 from odi_powerplay.pitch import select_next_pitch_batch  # noqa: E402
 
-
-DEFAULT_QUOTAS = {
-    "bilateral_series": 3,
-    "qualification_pathway": 3,
-    "multi_team_series": 2,
-    "world_cup": 1,
-    "champions_trophy": 1,
-    "continental_cup": 1,
-    "other_odi": 1,
+FORBIDDEN_COLUMNS = {
+    "batting_team_won",
+    "winner",
+    "pp_runs",
+    "pp_wickets",
+    "pp_boundary_pct",
+    "pp_dot_ball_pct",
 }
 
 
 def read_csv(path: Path) -> list[dict[str, str]]:
-    with path.open("r", encoding="utf-8", newline="") as handle:
+    with path.open(encoding="utf-8", newline="") as handle:
         return list(csv.DictReader(handle))
 
 
-def main() -> None:
+def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument(
-        "--matches",
+        "--queue",
         type=Path,
-        default=PROJECT_ROOT / "data/processed/powerplay_innings_primary.csv",
+        default=ROOT / "data/manual/pitch_collection_queue_template.csv",
     )
     parser.add_argument(
-        "--pitch-registry",
+        "--completed",
         type=Path,
-        default=PROJECT_ROOT / "data/manual/pitch_reports.csv",
+        default=ROOT / "data/manual/pitch_reports.csv",
+        help="Optional ignored working file; rows marked 0 or 1 are skipped.",
+    )
+    parser.add_argument(
+        "--ignore-completed",
+        action="store_true",
+        help="Ignore any local working file when regenerating a fixed template.",
+    )
+    parser.add_argument("--n", type=int, default=25)
+    parser.add_argument("--seed", type=int, default=20250905)
+    parser.add_argument(
+        "--newest-first",
+        action="store_true",
+        help="Select the newest unreviewed matches instead of balancing year strata.",
     )
     parser.add_argument(
         "--output",
         type=Path,
-        default=PROJECT_ROOT / "data/manual/pitch_batch_002.csv",
+        default=ROOT / "data/manual/pitch_batch_001_template.csv",
     )
-    parser.add_argument("--seed", type=int, default=20250905)
     args = parser.parse_args()
 
-    primary_rows = [
-        row for row in read_csv(args.matches) if int(row["innings_number"]) == 1
-    ]
-    pitch_rows = read_csv(args.pitch_registry) if args.pitch_registry.exists() else []
-    audited_ids = {row["cricsheet_match_id"] for row in pitch_rows}
-    selected = select_next_pitch_batch(
-        primary_rows,
-        audited_ids=audited_ids,
-        quotas=DEFAULT_QUOTAS,
+    queue = read_csv(args.queue)
+    completed_ids: set[str] = set()
+    if not args.ignore_completed and args.completed.is_file():
+        completed_ids = {
+            str(row["cricsheet_match_id"])
+            for row in read_csv(args.completed)
+            if str(row.get("pre_match_verified", "")).strip() in {"0", "1"}
+        }
+    batch = select_next_pitch_batch(
+        queue,
+        completed_match_ids=completed_ids,
+        n=args.n,
         seed=args.seed,
+        newest_first=args.newest_first,
     )
+    if not batch:
+        raise ValueError("No uncompleted pitch-source rows remain")
+    leaked = sorted(set(batch[0]) & FORBIDDEN_COLUMNS)
+    if leaked:
+        raise ValueError(f"Outcome-bearing columns entered the batch: {', '.join(leaked)}")
 
     args.output.parent.mkdir(parents=True, exist_ok=True)
     with args.output.open("w", encoding="utf-8", newline="") as handle:
-        writer = csv.DictWriter(handle, fieldnames=list(selected[0]))
+        writer = csv.DictWriter(handle, fieldnames=list(batch[0]), lineterminator="\n")
         writer.writeheader()
-        writer.writerows(selected)
+        writer.writerows(batch)
 
-    print(
-        json.dumps(
-            {
-                "selected_matches": len(selected),
-                "already_audited_matches": len(audited_ids),
-                "competition_counts": {
-                    competition: sum(
-                        row["competition_type"] == competition for row in selected
-                    )
-                    for competition in DEFAULT_QUOTAS
-                },
-                "output": str(args.output.relative_to(PROJECT_ROOT)),
-            },
-            indent=2,
-        )
-    )
+    summary = {
+        "selected_matches": len(batch),
+        "completed_matches_skipped": len(completed_ids),
+        "seed": args.seed,
+        "selection_strategy": "newest_first" if args.newest_first else "balanced",
+        "match_date_range": [batch[-1]["match_date"], batch[0]["match_date"]]
+        if args.newest_first
+        else [min(row["match_date"] for row in batch), max(row["match_date"] for row in batch)],
+        "years": dict(sorted(Counter(row["match_date"][:4] for row in batch).items())),
+        "competition_types": dict(
+            sorted(Counter(row["competition_type"] for row in batch).items())
+        ),
+        "output": str(args.output),
+    }
+    print(json.dumps(summary, indent=2, sort_keys=True))
+    return 0
 
 
 if __name__ == "__main__":
-    main()
+    raise SystemExit(main())
