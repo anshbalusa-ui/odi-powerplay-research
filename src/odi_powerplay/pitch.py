@@ -829,6 +829,35 @@ def apply_pitch_reaudit(
             output[field] = str(audit[f"reaudited_{field}"]).strip()
         compliant.append(output)
     return compliant
+def build_compliant_pitch_release(
+    pitch_rows: Iterable[dict[str, Any]],
+    registry_rows: Iterable[dict[str, Any]],
+    *,
+    legacy_count: int = 228,
+) -> list[dict[str, Any]]:
+    """Return the release only after every legacy row has a reviewed status."""
+
+    sources = list(pitch_rows)
+    registry = list(registry_rows)
+    issues = validate_pitch_reaudit_registry(registry, sources, legacy_count=legacy_count)
+    if issues:
+        first = issues[0]
+        raise ValueError(
+            f"Invalid pitch re-audit registry for {first['cricsheet_match_id']}: "
+            f"{first['field']} {first['message']}"
+        )
+    pending = [
+        row
+        for row in registry
+        if str(row.get("reaudit_status", "")).strip() == "pending"
+        and str(row.get("legacy_sequence", "")).strip()
+    ]
+    if pending:
+        raise ValueError(
+            f"Cannot build compliant pitch release with {len(pending)} pending legacy rows"
+        )
+    return apply_pitch_reaudit(sources, registry, legacy_count=legacy_count)
+
 
 
 

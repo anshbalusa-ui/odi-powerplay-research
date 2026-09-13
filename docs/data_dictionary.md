@@ -6,14 +6,15 @@
 |---|---|---|
 | `cricsheet_matches` | one match | stable match metadata and result |
 | `powerplay_innings` | one regulation team-innings | first-10-over statistics and context |
-| `pitch_reports_verified` | one verified match/source | minimized pre-match provenance plus mixed-status provisional codes: 228 legacy rows pending re-audit and 15 current-rule rows |
+| `pitch_reports_verified` | one verified match/source | auditable 243-row pre-match provenance input release with original/re-audit status fields |
+| `pitch_reports_compliant` | one compliant match/source | strict explicit-source-only pitch-effect release used for analytical merging; excludes source-unavailable rows |
 | `pitch_code_reaudit` | one verified match/source | original codes, strict-codebook review status, separate re-audited codes, and concise review provenance |
 | `pitch_set_aside` | one reviewed match | outcome-blind follow-up list for attempts without eligible analysis |
 | `pitch_collection_status` | one eligible match | verified source/timing, reviewed set-aside, or unreviewed collection state |
-| `pitch_source_providers` | one normalized provider hostname | source share, category mix, and confidence mix for the current provisional release |
+| `pitch_source_providers` | one normalized provider hostname | source share, category mix, and confidence mix for the 243-row auditable input release |
 | `team_strength_pre` | one match/team | ratings calculated before the match date |
 | `venue_conditions_pre_match` | one match | rolling prior-match venue scoring environment |
-| `model_team_innings` | one team-innings | audited merged analysis table |
+| `model_team_innings` | one team-innings | audited merged analysis table using the compliant pitch release when pitch fields are present |
 | `model_match_paired` | one match | secondary difference-based analysis table |
 | `predictions` | one row/model/team-innings | held-out prediction and label |
 
@@ -75,8 +76,8 @@ These fields may be present in labeled data for training/evaluation but cannot b
 `data/manual/match_start_times_template.csv` is outcome-blind and contains one row
 per primary-cohort match. `data/manual/match_start_times_verified.csv` is the
 tracked, minimized subset supporting the 243 source/timing-verified pre-match
-reports. It verifies timing eligibility; it does **not** certify that the first 228
-legacy pitch codes already satisfy the current explicit-source-only coding rule.
+reports. It verifies timing eligibility; analytical compliance is established by
+`pitch_code_reaudit.csv` and materialized in the 229-row compliant derivative.
 
 | Variable | Type | Definition |
 |---|---|---|
@@ -110,11 +111,15 @@ The tracked release contains 243 verified scheduled starts.
 ## Pre-match pitch-report fields
 
 `data/manual/pitch_reports_verified.csv` contains 243 rows that passed source,
-publication-time, match-start, cohort-identity, and structural code-value
-validation. The first 228 rows were produced under the earlier codebook; their
-source/timing verification remains valid, but their analytical codes are
-provisional until an explicit-source-only re-audit passes. The 15 batch-24 rows
-were coded under the current rule.
+publication-time, match-start, cohort-identity, and structural validation. The
+first 228 were produced under the earlier codebook and the 15 batch-24 rows under
+the current rule. Their strict analytical dispositions are recorded separately
+in `data/manual/pitch_code_reaudit.csv`.
+
+`data/processed/pitch_reports_compliant.csv` contains the 229 rows currently
+eligible for strict pitch-effect modeling: 214 accepted legacy rows and all 15
+current-standard rows. Fourteen source-unavailable legacy rows are excluded by
+the release builder.
 
 `data/manual/pitch_set_aside.csv` contains no pitch codes or outcomes; it records
 the search query and reason a reviewed match needs later follow-up.
@@ -132,11 +137,13 @@ Physical descriptions such as `dry`, `dusty`, `grassy`, `green`, `moist`, `hard`
 they are never converted by analyst judgment into `spin`, `pace_seam`,
 `batting_ease`, `bounce_profile`, or `two_paced_expected` values. If the source
 does not state an expected playing effect, the corresponding field remains blank
-or `unknown`.
+or `unknown`. The re-audited compliant release applies this rule to every
+retained legacy row; source-unavailable rows are excluded.
 
-Before final pitch-effect modeling, every retained legacy nonblank value below must
-be re-audited against the source; unsupported inferred values must be blanked or
-removed.
+The explicit-source-only re-audit is complete for all legacy rows. Retained
+nonblank values in the compliant release have source evidence; unsupported
+values were blanked or removed. Fourteen rows whose source could not be
+re-opened are excluded from that release.
 
 | Variable | Type | Definition under current rule |
 |---|---|---|
@@ -169,9 +176,9 @@ explicitly states that effect.
 
 ## Pitch-code re-audit fields
 
-`data/manual/pitch_code_reaudit.csv` covers the full verified report release. The
-first 228 rows start as `legacy_pre_explicit_source_only` / `pending`; the 15
-batch-24 rows are `explicit_source_only_v1` / `current_standard`.
+`data/manual/pitch_code_reaudit.csv` covers the full 243-row verified report
+release. The 228 legacy rows now have completed dispositions; the 15 batch-24
+rows are `explicit_source_only_v1` / `current_standard`.
 
 | Variable | Type | Definition |
 |---|---|---|
@@ -188,8 +195,9 @@ batch-24 rows are `explicit_source_only_v1` / `current_standard`.
 `scripts/audit_pitch_reaudit.py` requires exact source identity and original-code
 agreement, valid status transitions, review provenance for completed rows, exact
 code equality for `passed_unchanged`, and at least one changed field for
-`passed_revised`. `pending` and `source_unavailable` rows cannot enter the
-compliant pitch release.
+`passed_revised`. The final registry has no `pending` rows and no validation
+issues. `source_unavailable` rows are deliberately excluded from
+`data/processed/pitch_reports_compliant.csv`.
 
 ## Team strength
 
@@ -231,7 +239,7 @@ source-stated pitch effects.
 
 | Variable | Type | Definition |
 |---|---|---|
-| `pitch_available` | binary | current file: a source/timing-eligible provisional pitch row joined by exact match ID; final analysis requires every included row to pass the explicit-source-only rule |
+| `pitch_available` | binary | source/timing-eligible row from the strict compliant release joined by exact match ID; every included row has passed the explicit-source-only re-audit |
 | `split` | category | `development` through 2023, `validation` in 2024, or locked `locked_test` from 2025 onward |
 | `exclusion_reasons` | string/list | semicolon-delimited prespecified reason codes |
 | `analysis_eligible_primary` | binary | passes core cleaning and the 2015-forward men's ODI primary rules; no event restriction |

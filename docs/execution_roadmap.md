@@ -121,7 +121,11 @@ For the accelerated SSAC27 milestone, follow `docs/ssac27_submission_plan.md` wh
 
 ## What to build next
 
-The current repository has already progressed beyond the original Gate 2 starting point. The next high-value work is to finish the independent reliability gate for the 228 verified reports, continue outcome-blind source collection where useful, and then freeze the source-stated pitch-effect handling before the locked test is scored.
+The legacy explicit-source-only re-audit and compliant release are complete. The
+next high-value work is the independent reliability gate for at least 20% of the
+229-row compliant reference set, reconciliation/reporting, and any additional
+outcome-blind source collection. Keep the 2025–2026 locked test unscored until
+reliability and model choices are frozen.
 
 ## Definition of a strong student paper
 

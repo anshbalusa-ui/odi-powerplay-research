@@ -29,7 +29,7 @@ def main() -> int:
     parser.add_argument(
         "--input",
         type=Path,
-        default=ROOT / "data/manual/pitch_reports_verified.csv",
+        default=ROOT / "data/processed/pitch_reports_compliant.csv",
     )
     parser.add_argument("--sample-fraction", type=float, default=0.2)
     parser.add_argument("--seed", type=int, default=20250905)

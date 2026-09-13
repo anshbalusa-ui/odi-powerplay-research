@@ -11,6 +11,7 @@ sys.path.insert(0, str(ROOT / "src"))
 from odi_powerplay.pitch import (
     PITCH_QUEUE_FIELDS,
     PITCH_SET_ASIDE_FIELDS,
+    build_compliant_pitch_release,
     apply_pitch_reaudit,
     build_blinded_pitch_reliability_sample,
     build_pitch_reaudit_registry,
@@ -572,6 +573,13 @@ class PitchPipelineTests(unittest.TestCase):
         )
         self.assertEqual(compliant[0]["pitch_primary_category"], "batting_friendly")
         self.assertEqual(compliant[0]["pace_seam_support"], "")
+
+    def test_compliant_release_requires_all_legacy_rows_reviewed(self) -> None:
+        source = self.verified_pitch_row()
+        registry = build_pitch_reaudit_registry([source], legacy_count=1)
+
+        with self.assertRaisesRegex(ValueError, "pending"):
+            build_compliant_pitch_release([source], registry, legacy_count=1)
 
     def test_reliability_sample_is_deterministic_and_blinds_first_coder(self) -> None:
         rows = []

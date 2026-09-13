@@ -3,11 +3,11 @@
 ## Current evidence boundary
 
 The implemented analysis is results-complete for a full-cohort 2024 temporal
-validation that includes a historical venue-scoring proxy but not the final
-source-stated match-specific pre-match pitch-effect analysis. It is not a final
-pitch-report-subgroup result, not locked-test performance, and not causal evidence.
-The 2025–2026 outcome lock must remain closed until the compliant source-stated
-pitch-effect dataset and final model choices are frozen.
+validation that includes a historical venue-scoring proxy and a separate
+re-audited 229-match pitch subgroup checkpoint. It is not a reliability-cleared
+final pitch-report result, not locked-test performance, and not causal evidence.
+The 2025–2026 outcome lock must remain closed until the independent reliability
+gate and final model choices are frozen.
 
 ## Match-data coverage and selection
 
@@ -70,48 +70,51 @@ not be treated as stable league tables.
 
 Current reproducible source/timing coverage is **243 of 1,094 primary matches
 (22.212066%)**. All 243 are non-ESPN, match-specific pre-match reports with
-verified publication timing. The first 228 analytical pitch codes are
-**provisional legacy codes created under an earlier codebook** and have not yet
-passed the current explicit-source-only re-audit. The 15 batch-24 rows were coded
-under the current rule. No row has passed the independent-human reliability gate.
+verified publication timing. The strict re-audited analytical release contains
+229 rows; 14 legacy rows whose sources could not be re-opened are excluded.
+No row has passed the independent-human reliability gate.
 
 ### Strict measurement boundary
 
-The final project performs **no independent pitch diagnosis**. Final analytical
-pitch variables may represent only expected playing effects explicitly stated by
+The project performs **no independent pitch diagnosis**. Final analytical pitch
+variables may represent only expected playing effects explicitly stated by
 eligible pre-match sources. Physical descriptions such as dry, dusty, grassy,
 green, moist, hard, cracked, worn, tacky, or used may be preserved in a short
-paraphrase for provenance, but they cannot be converted by researcher judgment into
-`spin`, `pace_seam`, `batting_ease`, `bounce_profile`, or `two_paced_expected`
-values.
+paraphrase for provenance, but they cannot be converted by researcher judgment
+into `spin`, `pace_seam`, `batting_ease`, `bounce_profile`, or
+`two_paced_expected` values.
 
-For example, a dry surface is not coded as spin-supportive unless the source itself
-states expected spin/turn/grip assistance. A grassy surface is not coded as
-pace/seam-supportive unless the source itself states the expected pace/seam effect.
-If the source does not state a playing effect, that effect remains blank or
-`unknown`.
+For example, a dry surface is not coded as spin-supportive unless the source
+itself states expected spin/turn/grip assistance. A grassy surface is not coded
+as pace/seam-supportive unless the source itself states the expected pace/seam
+effect. If the source does not state a playing effect, that effect remains
+blank or `unknown`.
 
-Because the first 228 codes predate this stricter rule, every retained nonblank
-pitch-effect value in those rows must be checked back against its eligible source.
-Any value based only on a physical descriptor or analyst cricket knowledge must be
-blanked or removed. Only after that re-audit may the project describe the compliant
-legacy values as source-stated pitch effects.
+The first 228 codes were re-audited against their eligible sources. The registry
+records 169 `passed_revised`, 45 `passed_unchanged`, and 14
+`source_unavailable` legacy rows; the 15 current-standard rows remain
+`current_standard`. Unsupported inferred effects were blanked or removed.
+Source-unavailable rows are not silently treated as `unknown` and do not enter
+the compliant model table.
 
 Therefore:
 
-- the existing mixed-status 243-code complete-case model fit is a pipeline smoke test only;
-- its runs × pitch and wickets × pitch interactions cannot support a research claim;
-- no fitted provisional-code model can be called reliably adjusted for source-stated
-  pitch effects;
-- no source-stated match-day pitch-effect conclusion should appear in an abstract or
-  paper result until the re-audit, reliability, and sample-size gates pass.
+- the strict 229-row release and its 458-row model table are reproducible
+  source-stated-effect analysis inputs;
+- the 2024 pitch validation has only ten match clusters and is a sample-size
+  checkpoint, not a definitive interaction finding;
+- its locked 2025–2026 partition remains reserved and unscored;
+- no fitted pitch model is a reliability-cleared final claim until an
+  independent second coder codes the prespecified sample and agreement is
+  reconciled and reported.
 
-ESPNcricinfo's reviewed terms prohibit the automated extraction approach originally
-contemplated for data mining. The project therefore does not bulk scrape ESPN text.
-Live commentary and post-match reports are also analytically ineligible because they
-contain information observed after the pre-match prediction timestamp. Eligible ESPN
-material is limited to individually cited pre-match previews or pitch reports that
-can be collected manually or through licensed access.
+ESPNcricinfo's reviewed terms prohibit the automated extraction approach
+originally contemplated for data mining. The project therefore does not bulk
+scrape ESPN text. Live commentary and post-match reports are also analytically
+ineligible because they contain information observed after the pre-match
+prediction timestamp. Eligible ESPN material can be collected manually or
+through licensed access.
+
 
 Cricsheet documents its numeric IDs as generally, but not invariably, matching
 Cricinfo IDs. The 1,094 generated ESPN links are therefore unfetched navigation
@@ -134,23 +137,23 @@ subset covers 22.212066% of the cohort. Its 40.5% yield among reviewed matches i
 not representative of the full cohort; source discoverability and publication
 practices vary by competition, era, and team.
 
-Completing the final pitch-effect layer still requires:
+The compliant release is complete for the legacy re-audit gate. Remaining
+requirements for a final pitch-effect result are:
 
-1. an explicit-source-only re-audit of all retained legacy codes;
-2. removal/blanking of any value based only on physical descriptors or analyst inference;
-3. human collection or a licensed source-access route for any ESPN material added later;
-4. a direct eligible pre-match URL and publication timestamp for each coded match;
-5. a verified scheduled match-start UTC timestamp;
-6. short original paraphrases rather than copied report prose;
-7. a second independent coder for at least 20% of the compliant reference set;
-8. reconciliation and reliability reporting before final outcome modeling.
+1. human collection or a licensed source-access route for any ESPN material added later;
+2. a direct eligible pre-match URL and publication timestamp for each coded match;
+3. a verified scheduled match-start UTC timestamp;
+4. short original paraphrases rather than copied report prose;
+5. a second independent coder for at least 20% of the 229-row compliant reference set;
+6. reconciliation and reliability reporting before treating pitch interactions as
+   final research claims.
 
 The accepted reports span 35 normalized provider hostnames, but the source mix is
 not uniform: the largest provider contributes 24.3% and the top three contribute
 50.2%. The provider HHI is 1,131. Provider-level category and confidence counts
-from the provisional mixed-status release remain useful for source-distribution
-auditing but should not be interpreted as final source-stated category counts until
-the re-audit is complete.
+for the 243-row auditable input release are descriptive provenance summaries;
+the compliant category counts are reported separately because 14
+source-unavailable rows are excluded.
 
 Pitch-report availability is likely nonrandom across teams, venues, competitions,
 years, and publishers. Complete-case pitch-report models may therefore be

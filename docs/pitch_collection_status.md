@@ -23,31 +23,36 @@ The intended analytical layer is **standardized source-stated pre-match pitch ef
 
 This rule applies to first-pass coding, independent recoding, reliability analysis, and every model table built from these reports.
 
-## Legacy 228-code re-audit gate
+## Legacy 228-code re-audit gate: completed
 
-The first 228 currently tracked pitch codes were produced under an earlier
-codebook. Their source URLs and timing evidence remain useful, but those analytical
-codes are **provisional legacy codes** until re-audited against the current
-explicit-source-only rule. The 15 batch-24 rows were coded under the current rule.
+The first 228 tracked pitch codes were produced under an earlier codebook. Their
+source URLs and timing evidence remain useful, but their analytical fields were
+reviewed again against the current explicit-source-only rule. The 15 batch-24
+rows were already coded under that rule.
 
-Before any final source-stated pitch-effect model or paper claim:
+The completed re-audit:
 
-1. revisit each retained eligible pre-match source in the first 228 rows;
-2. confirm that every nonblank pitch-effect code is directly supported by an explicit source statement;
-3. blank/remove any value based only on physical descriptors or researcher/agent cricket knowledge;
-4. record the re-audit status reproducibly;
-5. rebuild the pitch-report model table from the compliant rows;
-6. then complete the independent 20% double-coding reliability gate using the same strict rule.
+1. re-opened the eligible pre-match evidence for every legacy row;
+2. retained only playing effects explicitly stated by the source;
+3. blanked values supported only by physical descriptors or analyst cricket knowledge;
+4. recorded each disposition in `data/manual/pitch_code_reaudit.csv`; and
+5. materialized the reduced compliant release without source-unavailable rows.
 
-Until that re-audit passes, do **not** describe the first 228 analytical codes as
-fully source-stated or final. The total source/timing coverage count is 243.
+The registry contains 228 reviewed legacy rows: 169 `passed_revised`, 45
+`passed_unchanged`, and 14 `source_unavailable`, plus 15
+`current_standard` rows. It has zero validation issues. The 229-row compliant
+release therefore contains 214 accepted legacy rows and all 15 current-standard
+rows; the 14 source-unavailable rows are excluded rather than assigned codes.
 
-The tracked `data/manual/pitch_code_reaudit.csv` makes this gate machine-auditable.
-It preserves the original values, holds separate strict-rule replacements, and
-records the review status and concise evidence provenance for every report. The
-current audited state is 228 `pending` legacy rows and 15 `current_standard` rows;
-`scripts/audit_pitch_reaudit.py` reports 15 currently compliant rows and zero
-registry-validation issues.
+Run `.venv/bin/python scripts/audit_pitch_reaudit.py` to reproduce the registry
+audit. Run `.venv/bin/python scripts/build_compliant_pitch_release.py` to
+materialize `data/processed/pitch_reports_compliant.csv` and
+`artifacts/tables/pitch_compliant_release.json`. The compliant model table is
+built from that release, never from the mixed-status manual input.
+
+Independent 20% double-coding remains a separate human reliability gate. Until
+that gate passes, pitch-effect estimates remain prespecified/reproducible
+analysis outputs rather than a final reliability-cleared claim.
 
 ## Current reproducible coverage
 
@@ -58,15 +63,19 @@ registry-validation issues.
 | Timing-verified pre-match reports | 243 |
 | Reviewed matches set aside | 357 |
 | Unreviewed matches | 494 |
-| Current provisional model-table merge | 243 |
+| Compliant pitch release | 229 |
+| Compliant pitch model-table merge | 229 |
 | Source/timing coverage | 22.212066% |
 
+
 The tracked `data/manual/pitch_reports_verified.csv` and
-`data/manual/match_start_times_verified.csv` files contain the 243 verified-source/timing rows.
-They contain source provenance, source-publication time, collection time
-(`accessed_at_utc`), provisional codes, and short original paraphrases—not copied
-article text. `data/manual/pitch_set_aside.csv` records the 357 reviewed matches
-without currently eligible analysis. `artifacts/tables/pitch_collection_status.csv`
+`data/manual/match_start_times_verified.csv` files contain the 243
+source/timing-verified rows used as the auditable input release. They retain
+source provenance, source-publication time, collection time (`accessed_at_utc`),
+original codes, and short original paraphrases—not copied article text.
+`data/processed/pitch_reports_compliant.csv` is the strict 229-row analytical
+release after re-audit. `data/manual/pitch_set_aside.csv` records the 357 reviewed
+matches without currently eligible analysis. `artifacts/tables/pitch_collection_status.csv`
 records all 1,094 cohort matches as 243 `verified`, 357 `set_aside`, or 494
 `unreviewed`; it contains no outcome or powerplay field.
 
@@ -83,10 +92,10 @@ explicitly stated by the source, and mark unsupported matches explicitly.
 
 The usable pitch-report subset target was 200 matches (400 paired team-innings) from the
 modern 2015-forward ODI cohort. The statistical sampling unit remains the match:
-the two innings are paired observations, not independent games. The 243-report
-release exceeds that source- and timing-verified target. Whether all 243 remain
-analytically usable depends on re-auditing the first 228 rows, category strata,
-missingness, source selection, and independent coding reliability.
+the two innings are paired observations, not independent games. The 229-row
+compliant release exceeds that source- and timing-verified target after 14
+source-unavailable rows were excluded. Its final analytical use remains subject
+to missingness, source selection, and the independent coding reliability gate.
 
 ## Match-start verification gate
 
@@ -135,7 +144,9 @@ This is intentionally a multi-source reported-expectation measurement layer atta
 single-source Cricsheet ball-by-ball outcome dataset. Provider diversity improves
 traceability and reduces dependence on one publisher, but it does not make
 editorial descriptions exchangeable. Outlet-specific wording, match selection,
-and article availability remain measurement and selection risks; the explicit-source-only re-audit and independent double-coding gates are therefore required.
+and article availability remain measurement and selection risks; independent
+double-coding remains the required reliability gate after the completed
+explicit-source-only re-audit.
 
 ## Contributor batch workflow
 
@@ -160,15 +171,16 @@ For all new coding, use the current codebook immediately. New rows must satisfy 
 
 `scripts/build_pitch_reliability_sample.py` selects a deterministic 20% assignment
 without inspecting outcomes or first-coder values. The tracked
-`data/manual/pitch_reliability_sample_template.csv` currently contains 49 rows,
-spans all represented years and competition types, retains the same eligible
-pre-match source documents and match identity, and blanks every first-coder pitch
-judgment.
+`data/manual/pitch_reliability_sample_template.csv` currently contains 46 rows
+from the 229-row compliant reference set, spans all represented years and
+competition types, retains the same eligible pre-match source documents and match
+identity, and blanks every first-coder pitch judgment.
 
 The second coder must follow the same explicit-source-only rule: standardize only
 playing effects stated by the source and never infer an effect from physical pitch
-wording or cricket knowledge. The reliability sample should be regenerated from the
-re-audited compliant reference set if that set changes materially.
+wording or cricket knowledge. The reproduction pipeline passes
+`data/processed/pitch_reports_compliant.csv` explicitly so the assignment cannot
+silently revert to the 243-row mixed-status input.
 
 The reliability audit reports comparable item counts and raw agreement. Cohen's
 kappa is linearly weighted for the three ordinal support/ease fields and unweighted

@@ -30,11 +30,13 @@ pipeline saves model binaries and hashes, one validation prediction per
 model/team-innings, fixed-width calibration tables with whole-match uncertainty,
 calibration intercept/slope, and 2,000 whole-match cluster-bootstrap intervals
 using study seed `20250905`. It does not score or inspect outcomes from the
-2025–2026 locked-test partition. A separate 243-match complete-case pitch-report
-smoke test uses 2022 and 2023 rolling-origin folds because 2021 has no
-verified-pitch-report match, then evaluates only ten 2024 match clusters; its
-values are not substantive results. The first 228 codes are provisional legacy
-values pending explicit-source-only re-audit; 15 batch-24 rows use the current rule.
+2025–2026 locked-test partition. A separate 229-match compliant pitch-report fit
+uses 2022 and 2023 rolling-origin folds because 2021 has no verified-pitch-report
+match, then evaluates only ten 2024 match clusters; its values are reproducibility
+checkpoints rather than substantive findings. The first 228 codes have completed
+explicit-source-only re-audit: 169 passed revised, 45 passed unchanged, and 14
+source-unavailable; 15 batch-24 rows use the current rule. Independent double
+coding remains outstanding.
 No hyperparameter search has been conducted; the current settings are
 prespecified. See `docs/modeling_status.md` for exact specifications and
 preliminary results.

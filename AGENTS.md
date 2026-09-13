@@ -48,17 +48,24 @@ If an eligible source describes the physical surface but does not state the play
 
 ## Existing 228-match release
 
-The 228-match pitch-code release predates this stricter explicit-source-only rule. Treat all 228 first-pass codes as **provisional legacy codes** until they are re-audited against the current codebook.
+The 228-match pitch-code input release predates this stricter
+explicit-source-only rule, so its original fields remain labeled as legacy
+provenance rather than final analytical codes. The completed re-audit is recorded
+in `data/manual/pitch_code_reaudit.csv`: 169 rows passed revised, 45 passed
+unchanged, and 14 are source-unavailable. The strict analytical derivative
+excludes those 14 unavailable rows and applies only the re-audited fields.
 
-Before any final pitch-effect modeling or paper claim:
+For any final pitch-effect paper claim:
 
-1. revisit the eligible pre-match source for each retained legacy code;
-2. confirm that every nonblank analytical pitch-effect value is explicitly supported by the source;
-3. remove or blank any value that came only from researcher/agent interpretation of a physical descriptor;
-4. record the re-audit status reproducibly;
-5. then run the independent double-coding reliability sample using the same strict rule.
+1. use the compliant derivative, never the mixed-status input;
+2. confirm that every nonblank analytical pitch-effect value is explicitly
+   supported by the source;
+3. retain source-unavailable rows as excluded rather than inferred `unknown`;
+4. run the independent double-coding reliability sample using the same strict rule;
+5. reconcile and report reliability before presenting a final pitch interaction.
 
-Do not describe the 228 rows as fully compliant source-stated effects until this re-audit has passed.
+Do not describe the 228 original fields as fully compliant source-stated effects;
+describe the re-audited derivative and its exclusions precisely.
 
 ## Pitch provenance and reliability
 

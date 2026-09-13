@@ -4,20 +4,22 @@
 
 This is a full-cohort preliminary analysis with a leakage-safe historical venue
 proxy. The main fitted models exclude final source-stated match-specific pre-match
-pitch effects. The audited merge recognizes 243 source- and timing-verified
-pitch-report matches: the first 228 analytical codes are **provisional legacy
-codes created under an earlier codebook**, while 15 batch-24 rows use the current
-strict rule. The legacy codes require an explicit-source-only re-audit, independent
-double-coding has not passed, and only ten of the 243 matches fall in the 2024
-validation year. The mixed-status interaction run is therefore a pipeline smoke
-test, not a published research result.
+pitch effects. The audited input recognizes 243 source- and timing-verified
+pitch-report matches; the strict re-audited analytical release contains 229
+matches and excludes 14 source-unavailable legacy rows. The 228 legacy rows have
+completed dispositions: 169 `passed_revised`, 45 `passed_unchanged`, and 14
+`source_unavailable`; 15 batch-24 rows use the current strict rule. Independent
+double-coding has not passed, and only ten compliant matches fall in the 2024
+validation year. The pitch interaction run is therefore a reproducibility and
+sample-size checkpoint, not a reliability-cleared published result.
 
 **Current measurement rule:** final pitch-report variables may standardize only
 expected playing effects explicitly stated by eligible pre-match sources. The
 researchers do not independently diagnose the surface and do not infer spin from
 dryness, pace/seam from grass or moisture, batting ease from hardness/flatness, or
 slow/two-paced behavior from wear/usage unless the source itself states that effect.
-The first 228 codes must be re-audited to this rule before final pitch modeling.
+The compliant release applies this rule to all retained legacy rows; source-
+unavailable rows are excluded.
 
 The fixed Cricsheet snapshot contributes 1,094 primary matches and 2,188 team-innings:
 
@@ -27,11 +29,15 @@ The fixed Cricsheet snapshot contributes 1,094 primary matches and 2,188 team-in
 | validation | 2024-01-01–2024-12-31 | 71 | 142 | preliminary temporal evaluation |
 | locked test | 2025-01-01–snapshot cutoff | 152 | 304 | untouched; not scored |
 
-Both innings from each match remain in the same split. The current provisional
-243-report merged model-table SHA-256 is
-`c6257f33f4814b05f96c373e9f7e11b7af5db18c565fa8be557bc44bf344a1b6`.
-It is retained for reproducibility of the smoke test and must not be treated as the
-final source-stated pitch-effect table.
+Both innings from each match remain in the same split. The full merged model-table
+SHA-256 is
+`ea84ac198fde324c9e388d15ef57f253e055dc83de9307f53db5404d25e8e1b9`. The strict
+229-match pitch model-table SHA-256 is
+`193e64a1b5a80c58949dc8a32f9ad9cf01c2c9999a99f67d7c42e7ff0542db26`.
+The compliant pitch table contains 458 paired team-innings: 336 development,
+20 validation, and 102 locked-test rows. It is built by
+`scripts/build_compliant_pitch_release.py`; the mixed-status 243-row manual
+input is not passed directly to the model builder.
 
 ## Specifications
 
@@ -72,32 +78,35 @@ separately on 2021, 2022, and 2023. Every fold refits imputation, scaling, and
 encoding using only its training years. No hyperparameter search was performed;
 the declared settings are prespecified rather than selected on 2024.
 
-## Provisional mixed-status pitch-code subset
+## Compliant source-stated pitch-effect subset
 
-The current pitch merge contains 486 paired team-innings from 243 matches:
-364 development rows from 182 matches, 20 validation rows from ten 2024 matches,
-and 102 unscored locked-test rows from 51 matches. A separate smoke-test fit used
-this complete-case subset and activated the earlier pitch-code main fields and
-powerplay × pitch-code interactions. Because there are no matched rows in 2021,
+The compliant pitch merge contains 458 paired team-innings from 229 matches:
+336 development rows from 168 matches, 20 validation rows from ten 2024 matches,
+and 102 reserved locked-test rows from 51 matches. A separate fit uses this
+complete-case subset and activates the compliant pitch main fields and
+powerplay × pitch-effect interactions. Because there are no matched rows in 2021,
 its explicitly requested rolling-origin diagnostics use 2022 and 2023 only; the
 missing year is not silently represented as a fold.
 
-On the ten-match 2024 subset, the runs-and-wickets benchmark had ROC-AUC 0.69,
-log loss 0.6338, and Brier score 0.2220. M1 with context, provisional pitch main
-effects, and powerplay had ROC-AUC 0.49, log loss 0.7890, and Brier score 0.2958.
-M2 with the provisional pitch interactions had ROC-AUC 0.59, log loss 0.7173, and
-Brier score 0.2701.
+On the ten-match 2024 subset, the point estimates and 2,000 whole-match
+cluster-bootstrap intervals are:
 
-These values are too unstable for substantive interpretation and **are not evidence
-about the final source-stated pitch-effect model**. The validation set has only ten
-independent match clusters, source coverage is selected, the first 228 codes have
-not passed the new explicit-source-only re-audit, and no independent double-coding
-exists. The locked 2025–2026 outcomes remain untouched.
+| Model | ROC-AUC (95% CI) | Log loss (95% CI) | Brier score (95% CI) |
+|---|---:|---:|---:|
+| powerplay benchmark | 0.670 (0.360–0.910) | 0.641 (0.459–0.835) | 0.225 (0.143–0.315) |
+| M0 pre-match | 0.420 (0.040–0.760) | 0.906 (0.584–1.226) | 0.348 (0.209–0.487) |
+| M1 context + powerplay | 0.540 (0.180–0.850) | 0.774 (0.487–1.054) | 0.288 (0.168–0.406) |
+| M2 interactions | 0.580 (0.230–0.860) | 0.730 (0.479–0.980) | 0.275 (0.168–0.386) |
 
-Only 29 of 182 development matches have an observed `dew_expected` code, so any
-dew coefficient remains sparse and uninterpretable. Generated smoke-test artifacts
-use separate `pitch_` paths and do not replace the full-cohort validation
-artifacts.
+All 2,000 bootstrap repetitions were valid. These intervals are intentionally
+wide because there are only ten independent validation matches. The values are
+reproducible checkpoint outputs, not evidence that a source-stated pitch effect
+improves prediction. The locked 2025–2026 outcomes remain untouched.
+
+Only 30 of 168 compliant development matches have an observed `dew_expected`
+code, so any dew coefficient remains sparse and uninterpretable. Generated pitch
+artifacts use separate `pitch_` paths and do not replace the full-cohort
+validation artifacts.
 
 ## 2024 temporal-validation results
 
@@ -134,21 +143,32 @@ interpreted as pitch evidence.
 python3.11 -m venv .venv
 .venv/bin/python -m pip install -e '.[dev]'
 # macOS only: brew install libomp
-.venv/bin/python scripts/build_team_strength.py
-.venv/bin/python scripts/build_venue_conditions.py
-.venv/bin/python scripts/build_model_table.py
+.venv/bin/python scripts/build_compliant_pitch_release.py
+.venv/bin/python scripts/build_model_table.py \
+  --pitch-input data/processed/pitch_reports_compliant.csv \
+  --match-start-input data/manual/match_start_times_verified.csv
 .venv/bin/python scripts/train_models.py --fit-without-locked-test
 .venv/bin/python scripts/evaluate_models.py
 .venv/bin/python scripts/make_figures.py
+.venv/bin/python scripts/train_models.py \
+  --fit-without-locked-test \
+  --input data/processed/model_team_innings_pitch.csv \
+  --model-dir artifacts/models/pitch_validation_frozen \
+  --predictions-output artifacts/tables/pitch_validation_predictions.csv \
+  --manifest-output artifacts/models/pitch_validation_frozen/manifest.json \
+  --rolling-origin-output artifacts/tables/pitch_rolling_origin_metrics.json \
+  --rolling-validation-years 2022 2023
+.venv/bin/python scripts/evaluate_models.py \
+  --input artifacts/tables/pitch_validation_predictions.csv \
+  --metrics-output artifacts/tables/pitch_validation_metrics.json \
+  --calibration-output artifacts/tables/pitch_validation_calibration.csv
 .venv/bin/python scripts/reproduce.py --skip-download
 ```
 
-The mixed-status 243-report pitch-subset smoke test can be reproduced from the
-current artifacts for audit purposes, but it is not the final pitch-effect analysis.
-A new pitch-report model table must be rebuilt after the first 228 rows complete
-explicit-source-only re-audit and the reliability gate passes.
-
-Generated model binaries, hashes, validation predictions, calibration bins, and
-metric JSON remain under `artifacts/` and are ignored by Git under the project's
-rights/release policy. Do not score the 2025–2026 locked test until model choices,
-the compliant source-stated pitch-effect dataset, and the analysis plan are frozen.
+The compliant pitch subset is now the reproducible analytical release. The
+independent 20% reliability sample is generated from its 229 rows, but the
+second-coder/reconciliation gate remains open. Generated model binaries, hashes,
+validation predictions, calibration bins, and metric JSON remain under
+`artifacts/` and are ignored by Git under the project's rights/release policy.
+Do not score the 2025–2026 locked test until the independent reliability gate and
+analysis plan are complete.

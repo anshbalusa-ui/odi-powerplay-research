@@ -57,8 +57,11 @@ One row represents one batting-team innings in one match. The outcome is `battin
 - A 1,094-match outcome-blind scheduled-start template with IANA-timezone,
   cohort-identity, provenance, and UTC-conversion validation.
 - An expanded release of 243 timing-verified pre-match reports, 357 reviewed
-  set-asides, and 494 explicitly unreviewed matches. The first 228 analytical codes
-  remain provisional legacy codes; the 15 batch-24 rows use the current strict rule.
+  set-asides, and 494 explicitly unreviewed matches, with a completed
+  explicit-source-only re-audit registry.
+- A strict 229-row compliant pitch release excluding 14 source-unavailable rows,
+  a 458-row pitch model table, and a deterministic blinded 46-match reliability
+  sample template.
 - Pitch/source-timing templates, research design, data dictionary, pitch-effect codebook,
   transformation log, paper outline, and execution roadmap.
 
@@ -94,7 +97,10 @@ python scripts/extract_cricsheet.py \
 python scripts/build_clean_dataset.py
 python scripts/build_team_strength.py
 python scripts/build_venue_conditions.py
-python scripts/build_model_table.py
+python scripts/build_compliant_pitch_release.py
+python scripts/build_model_table.py \
+  --pitch-input data/processed/pitch_reports_compliant.csv \
+  --match-start-input data/manual/match_start_times_verified.csv
 python scripts/audit_powerplay_metrics.py
 python scripts/audit_extraction.py
 python scripts/build_hand_audit_sample.py
@@ -102,8 +108,10 @@ python scripts/build_pitch_collection_queue.py
 python scripts/build_match_start_queue.py
 python scripts/audit_match_start_times.py
 python scripts/audit_espn_linkage.py
+python scripts/audit_pitch_reaudit.py
 python scripts/select_pitch_batch.py --output data/manual/pitch_batch_working.csv
-python scripts/build_pitch_reliability_sample.py
+python scripts/build_pitch_reliability_sample.py \
+  --input data/processed/pitch_reports_compliant.csv
 .venv/bin/python scripts/train_models.py --fit-without-locked-test
 .venv/bin/python scripts/evaluate_models.py
 .venv/bin/python scripts/make_figures.py
@@ -120,64 +128,64 @@ The **current rule** is strict: each accepted pre-match report may populate anal
 
 **The project performs zero independent pitch diagnosis.** Physical descriptions such as dry, dusty, grassy, green, moist, hard, cracked, worn, tacky, or used may be retained in the short provenance paraphrase, but they are never converted by the researcher into pitch-effect variables. For example, `dry` does not become `spin`, and `grass` does not become `pace_seam`, unless the eligible pre-match source itself explicitly states that expected playing effect. If the source does not state the effect, the corresponding field remains blank or `unknown`.
 
-### Expanded 243-report release: 228 legacy rows require re-audit
+### Expanded 243-report release: re-audit complete
 
-The expanded file contains 243 source- and timing-verified reports. The first 228
-were coded under an earlier codebook and therefore **must not automatically be
-treated as compliant with the stricter source-stated rule**. The 15 batch-24 rows
-were coded under the current rule. Aggregate provisional category counts are 104
-batting-friendly, 43 balanced, 38 spin, 27 pace/seam, 28 slow/two-paced, and three
-unknown, but the first 228 rows remain provisional until every retained code is
-checked against the eligible source and any analyst-inferred value is removed or
-blanked.
+The auditable input file contains 243 source- and timing-verified reports. The
+first 228 were coded under an earlier codebook; the 15 batch-24 rows were coded
+under the current rule. Every legacy row now has a recorded disposition in
+`data/manual/pitch_code_reaudit.csv`: 169 `passed_revised`, 45
+`passed_unchanged`, and 14 `source_unavailable`, alongside 15
+`current_standard` rows. The registry has zero validation issues.
 
-Before final pitch-effect modeling, the project must:
+The strict analytical release is
+`data/processed/pitch_reports_compliant.csv`. It contains 229 rows: 214 accepted
+legacy rows plus all 15 current-standard rows. The 14 source-unavailable rows
+are omitted, not assigned replacement codes. Its compliant primary-category
+counts are 104 `batting_friendly`, 33 `spin`, 29 `balanced`, 23 `unknown`, 22
+`pace_seam`, and 18 `slow_two_paced`. The release summary and input/output
+hashes are in `artifacts/tables/pitch_compliant_release.json`.
 
-1. re-open the eligible pre-match evidence for all retained legacy rows;
-2. verify that each nonblank pitch-effect value is explicitly supported by the source;
-3. remove/blank values supported only by physical descriptors or analyst cricket knowledge;
-4. record the re-audit status reproducibly;
-5. then perform the independent 20% double-coding reliability check using the same explicit-source-only rule.
+The release builder enforces the cutover: it validates the full registry and
+refuses to build while any legacy row is `pending`. It retains only
+source-stated expected playing effects. Physical descriptions such as dry,
+dusty, grassy, green, moist, hard, cracked, worn, tacky, or used remain
+provenance only; they are never converted by the researcher into pitch-effect
+variables.
 
-The tracked `data/manual/pitch_code_reaudit.csv` is the row-level review registry.
-It currently records 228 `pending` legacy rows and 15 `current_standard` rows,
-retains the original codes, and provides separate re-audited fields plus reviewer,
-timestamp, evidence-note, and review-note columns. Run
-`.venv/bin/python scripts/audit_pitch_reaudit.py` after every review batch; pending
-or unavailable legacy rows are excluded by the compliant-release builder rather
-than silently entering a final model.
+The compliant pitch model table contains 458 paired team-innings from 229
+matches: 336 development rows (168 matches), 20 validation rows (10 2024
+matches), and 102 locked-test rows (51 matches). The locked partition is
+reserved and unscored. The 2024 pitch-model output is a reproducibility and
+sample-size checkpoint, not a reliability-cleared substantive claim.
 
-The current mixed-status pitch-report model table contains 486 paired team-innings:
-364 development rows from 182 matches, 20 validation rows from ten 2024 matches,
-and 102 locked-test rows from 51 matches. The 2024 pitch-model run is deliberately
-a pipeline smoke test, not a substantive pitch finding. Ten validation matches,
-legacy-code re-audit still pending, and no independent double-coding are
-insufficient for a substantive source-stated pitch-effect claim. Exact
-specifications and metrics are in `docs/modeling_status.md` and `docs/results.md`.
+Twenty-four outcome-blind pitch batches cover 600 reviewed matches: 243
+non-ESPN pre-match reports passed source and timing validation, 357 reviewed
+matches are listed in `data/manual/pitch_set_aside.csv`, and 494 remain
+explicitly unreviewed. Verified source/timing coverage is 243/1,094
+(22.212066%); the compliant analytical release is 229/1,094.
 
-Twenty-four outcome-blind pitch batches cover 600 reviewed matches: 243 non-ESPN
-pre-match reports passed source and timing validation, 357 reviewed matches are
-listed in `data/manual/pitch_set_aside.csv`, and 494 remain explicitly unreviewed.
-Verified source/timing coverage is 243/1,094 (22.212066%). The prespecified
-200-match collection target is exceeded, but final analytical eligibility still
-requires re-auditing the first 228 rows and passing the independent reliability gate.
+The current blinded assignment is the 46-row
+`data/manual/pitch_reliability_sample_template.csv`, a deterministic 20% sample
+of the 229-row compliant reference set. It retains source documents and match
+identity but omits every first-coder pitch judgment. A genuinely independent
+human second coder, reconciliation, and reliability report remain outstanding;
+the repository tracks that blocker in issue #3.
 
-The current blinded 49-row assignment is
-`data/manual/pitch_reliability_sample_template.csv`; it retains source documents and
-match identity but omits every first-coder pitch judgment. Regenerate it after the
-legacy re-audit freezes the compliant reference set. The minimized tracked releases
-are `data/manual/pitch_reports_verified.csv` and
-`data/manual/match_start_times_verified.csv`; they contain provenance, factual
-timestamps, mixed-status provisional codes, and short original paraphrases, not
-copied article text.
+The minimized tracked releases are `data/manual/pitch_reports_verified.csv`,
+`data/manual/pitch_code_reaudit.csv`, and
+`data/manual/match_start_times_verified.csv`. They contain provenance, factual
+timestamps, original/re-audit codes, and short original paraphrases, not copied
+article text. The derived compliant release is rebuilt from those inputs.
 
-The 243 accepted reports span 35 normalized provider hostnames. MyKhel contributes
-59 matches (24.3%), ICC 36 (14.8%), and Business Standard 27 (11.1%); the top
-three account for 50.2%, and the provider HHI is 1,131. This documents a
-multi-source measurement design rather than implying that all pitch data came from
-ESPN or any single publisher. Provider diversity does not remove source-specific
-wording or selection bias, so `artifacts/tables/pitch_source_providers.csv` reports
-each provider's category and confidence mix.
+The 243 accepted reports span 35 normalized provider hostnames. MyKhel
+contributes 59 matches (24.3%), ICC 36 (14.8%), and Business Standard 27
+(11.1%); the three largest providers account for 50.2%, and the provider HHI is
+1,131. This documents a multi-source measurement design rather than implying
+that all pitch data came from ESPN or any single publisher. Provider diversity
+does not remove source-specific wording or selection bias, so
+`artifacts/tables/pitch_source_providers.csv` reports each provider's category
+and confidence mix.
+
 
 For continued coding, start with the tracked contributor template or select another
 balanced batch, then copy completed rows into the ignored local
@@ -191,7 +199,10 @@ predated play. Start-time and source-provenance fields are audit metadata only:
 they are never joined into the model table and are explicitly prohibited as
 predictors.
 
-The final source-stated pitch-effect analysis remains provisional until the first 228 rows complete legacy-code re-audit and independent double-coding is complete. The 2025–2026 locked-test outcomes remain unscored.
+The strict source-stated pitch-effect analysis is now materialized from the
+229-row compliant release; its 14 source-unavailable legacy rows are excluded.
+Independent double-coding and reconciliation remain incomplete. The
+2025–2026 locked-test outcomes remain unscored.
 
 Do not automate bulk collection from ESPNcricinfo under the terms reviewed for
 this project. ESPN live commentary and post-match reporting are ineligible because
@@ -204,7 +215,8 @@ and report source coverage across years, venues, competition types, and outcomes
 - Never modify raw files after download; use dated/checksummed source manifests.
 - Keep original pitch-report URLs and short paraphrased notes alongside effect codes.
 - Never infer a pitch effect from a physical surface descriptor that the source did not explicitly connect to that effect.
-- Treat the first 228 codes as provisional until the explicit-source-only re-audit is complete; new rows must follow the current rule immediately.
+- The completed legacy re-audit is recorded in `data/manual/pitch_code_reaudit.csv`;
+  source-unavailable rows stay excluded and any future rows must follow the current rule.
 - Version the pitch-effect codebook before double-coding begins.
 - Derive team strength using only matches before the focal match date.
 - Keep both rows from a match in the same split/fold.
@@ -230,7 +242,15 @@ and report source coverage across years, venues, competition types, and outcomes
 
 ## Data-source attribution
 
-Match data: one fixed, checksummed Cricsheet JSON archive. The pitch-report layer contains 243 individually cited non-ESPN pre-match reports from 35 normalized provider hostnames. The first 228 analytical codes remain provisional legacy codes pending re-audit; 15 batch-24 rows were coded under the current source-stated-only rule. Final pitch-effect variables will standardize only effects explicitly stated in eligible sources and will not independently infer pitch behavior from physical surface descriptions. ESPN candidates are retained only for human/licensed follow-up; no ESPN page text or live/post-match commentary is in the released pitch codes. Generic hourly weather variables are not part of the primary design. Follow each source's licence/terms and include a source statement in the final paper.
+Match data: one fixed, checksummed Cricsheet JSON archive. The auditable pitch
+input contains 243 individually cited non-ESPN pre-match reports from 35
+normalized provider hostnames. Its strict derivative contains 229 rows after
+excluding 14 source-unavailable legacy reports; every retained effect is
+explicitly stated by an eligible source. ESPN candidates are retained only for
+human/licensed follow-up; no ESPN page text or live/post-match commentary is in
+the released pitch codes. Generic hourly weather variables are not part of the
+primary design. Follow each source's licence/terms and inspect
+`artifacts/tables/pitch_compliant_release.json` for release hashes.
 
 ## Licence
 

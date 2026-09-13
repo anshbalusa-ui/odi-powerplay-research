@@ -52,9 +52,13 @@ def main() -> int:
             [sys.executable, "scripts/build_venue_conditions.py"],
             [
                 sys.executable,
+                "scripts/build_compliant_pitch_release.py",
+            ],
+            [
+                sys.executable,
                 "scripts/build_model_table.py",
                 "--pitch-input",
-                "data/manual/pitch_reports_verified.csv",
+                "data/processed/pitch_reports_compliant.csv",
                 "--match-start-input",
                 "data/manual/match_start_times_verified.csv",
             ],
@@ -84,7 +88,12 @@ def main() -> int:
             ],
             [sys.executable, "scripts/audit_pitch_reaudit.py"],
             [sys.executable, "scripts/audit_pitch_sources.py"],
-            [sys.executable, "scripts/build_pitch_reliability_sample.py"],
+            [
+                sys.executable,
+                "scripts/build_pitch_reliability_sample.py",
+                "--input",
+                "data/processed/pitch_reports_compliant.csv",
+            ],
             [sys.executable, "scripts/audit_espn_linkage.py"],
             [
                 sys.executable,
@@ -140,6 +149,8 @@ def main() -> int:
         ROOT / "data/processed/dataset_summary.json",
         ROOT / "artifacts/tables/team_strength_audit.json",
         ROOT / "artifacts/tables/venue_conditions_audit.json",
+        ROOT / "artifacts/tables/pitch_compliant_release.json",
+        ROOT / "data/processed/pitch_reports_compliant.csv",
         ROOT / "data/processed/model_table_manifest.json",
         ROOT / "artifacts/tables/powerplay_metric_audit.json",
         ROOT / "artifacts/tables/extraction_audit.csv",

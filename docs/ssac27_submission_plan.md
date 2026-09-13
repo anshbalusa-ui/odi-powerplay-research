@@ -73,21 +73,27 @@ current numeric narrative is in `docs/results.md`.
 
 The 200-match **source/timing coverage** target is exceeded: 243 of 1,094 matches
 have eligible non-ESPN pre-match reports and verified scheduled starts, 357 of 600
-reviewed matches are set aside, and 494 remain unreviewed. The first 228 analytical
-pitch codes were produced under an earlier codebook and are now treated as
-**provisional legacy codes**; 15 batch-24 rows use the current rule. The first 228
-must be re-audited before they can support a final source-stated pitch-effect
-analysis. Independent double coding also remains incomplete. The 2025–2026 locked
-test remains correctly unscored.
+reviewed matches are set aside, and 494 remain unreviewed. The explicit-source-only
+re-audit is complete: 169 legacy rows are `passed_revised`, 45 are
+`passed_unchanged`, and 14 are `source_unavailable`; 15 batch-24 rows are
+`current_standard`. The strict analytical release contains 229 matches.
+Independent double coding remains incomplete. The 2025–2026 locked test remains
+correctly unscored.
 
-Go/no-go decision: the full-cohort powerplay result and verified-pitch-report subgroup must remain visibly nested under one research question. Do not submit an interaction estimate involving source-stated pitch effects until:
+Go/no-go decision: the full-cohort powerplay result and verified-pitch-report
+subgroup must remain visibly nested under one research question. Do not submit an
+interaction estimate as a final reliability-cleared finding until:
 
-1. all pitch codes used in that analysis pass the explicit-source-only re-audit;
-2. unsupported analyst-inferred codes are removed/blanked;
-3. independent reliability passes on the compliant reference set; and
-4. the pitch-subgroup validation design is judged adequate or replaced by a prespecified alternative.
+1. the compliant source-stated reference set is frozen;
+2. independent reliability passes on at least 20% of that set;
+3. coder reconciliation and agreement reporting are complete; and
+4. the ten-match pitch-subgroup validation design is judged adequate or replaced by
+   a prespecified alternative.
 
-Until then, retain the full-cohort result as Finding 1 and label the existing legacy pitch fit as a pipeline smoke test. Never manufacture a pitch effect from physical surface wording, venue reputation, live/post-match commentary, or later outcomes, and never unlock test outcomes to compensate for missing pitch data.
+Until then, retain the full-cohort result as Finding 1 and label the compliant
+pitch fit as a reproducible checkpoint. Never manufacture a pitch effect from
+physical surface wording, venue reputation, live/post-match commentary, or later
+outcomes, and never unlock test outcomes to compensate for missing pitch data.
 
 ## September 5–October 1 sprint
 
@@ -95,8 +101,7 @@ Until then, retain the full-cohort result as Finding 1 and label the existing le
 |---|---|---|
 | Sep 5–8 | download/extract Cricsheet; freeze broad modern-ODI cohort; hand-audit powerplays | no unresolved extraction discrepancies |
 | Sep 9–13 | Elo, venue crosswalk, source-timing audit, pitch-report collection | no future information in feature audit |
-| Sep 14–18 | explicit-source-only re-audit + independent reliability coding | compliant pitch-effect reference set frozen or documented reduced pitch scope |
-| Sep 19–22 | rebuild merge, missingness report, descriptive analysis, frozen split | 2025–snapshot test IDs locked and untouched |
+| Sep 14–18 | independent reliability coding + reconciliation | compliant pitch reference set frozen and reliability reported |
 | Sep 23–25 | logistic model, selected interactions, marginal predictions | interpretable and calibrated baseline comparison |
 | Sep 26–27 | nonlinear challenger, bootstrap confidence intervals, final figures | identical held-out rows across models |
 | Sep 28 | freeze results and repository snapshot | results reproduce from a clean run |
@@ -126,11 +131,17 @@ State the cohort and sources, unit of analysis, leakage cutoff, contextual varia
 
 ### Results
 
-Report sample size, the main validated association with uncertainty, and one calibration result. Include a pitch-subgroup result only if the re-audit/reliability gates pass. Never present the legacy 228-code smoke-test metrics as a final pitch result.
+Report a pitch-subgroup result only as a reproducibility checkpoint unless the
+independent reliability gate, reconciliation, and sample-size review pass. Never
+present the legacy 228-code smoke-test metrics as a final pitch result.
 
 ### Conclusion
 
-State the full-cohort powerplay finding first. Add the verified-pitch-report interaction finding only if the compliant source-stated dataset and reliability gates pass; otherwise identify it as the prespecified incomplete subgroup analysis rather than reframing the paper as pitch-adjusted.
+State the full-cohort powerplay finding first. Add the verified-pitch-report
+interaction finding only if the compliant source-stated dataset, independent
+reliability, reconciliation, and sample-size gates pass; otherwise identify it as
+the prespecified incomplete subgroup analysis rather than reframing the paper as
+pitch-adjusted.
 
 ## Submission-day checklist
 
@@ -140,6 +151,7 @@ State the full-cohort powerplay finding first. Add the verified-pitch-report int
 - no causal claim from observational evidence;
 - pitch variables used in results have passed explicit-source-only re-audit;
 - pitch variables are described as standardized source statements, not researcher pitch diagnosis;
+- no pitch interaction is presented as final before independent reliability and reconciliation;
 - no more than two combined figures/tables;
 - numbers match frozen repository outputs;
 - repository is public and opens without authentication;

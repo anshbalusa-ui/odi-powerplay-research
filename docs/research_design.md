@@ -128,6 +128,11 @@ The pitch representation has two analytical layers:
 2. a lean set of **source-stated model fields**: batting ease, pace/seam support, spin support, bounce profile, and expected two-paced behavior.
 
 Physical surface descriptions may be retained in `short_paraphrased_note` for source transparency, but they are not separate predictors and are never converted into playing-effect fields through cricket knowledge or analyst judgment.
+The current auditable input has 243 source/timing-verified rows. The completed
+legacy re-audit yields a 229-row compliant derivative after excluding 14
+source-unavailable rows; `scripts/build_model_table.py` receives that derivative
+explicitly. The independent 20% second-coder sample is generated from the
+compliant derivative but has not yet been coded by a genuinely independent human.
 
 At least 20% of reports should be independently coded twice. Report raw agreement and weighted Cohen's kappa for ordinal dimensions. Resolve disagreements without inspecting match outcomes.
 

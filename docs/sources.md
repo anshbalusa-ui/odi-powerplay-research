@@ -164,10 +164,12 @@ prohibited by the source protocol; one additional preview contained inconsistent
 venue attribution. The remaining set-aside reasons identify inaccessible,
 ESPN-only, or absent match-specific evidence.
 
-The tracked `pitch_reports_verified.csv` contains only source URLs, publication and
-access timestamps, derived categorical codes, and short original paraphrases.
-These AI-assisted primary codes remain provisional until the independent human
-reliability gate is satisfied.
+The tracked `pitch_reports_verified.csv` contains the 243-row auditable
+source/timing input release: source URLs, publication and access timestamps,
+original codes, re-audit status fields, and short original paraphrases. The
+strict analytical derivative is `data/processed/pitch_reports_compliant.csv`,
+which contains 229 rows after excluding 14 source-unavailable legacy reports.
+Independent human double-coding of the compliant reference set remains open.
 
 ## Third-batch source release
 
@@ -521,9 +523,13 @@ linkage, code, confidence, and original short paraphrase is retained in
 
 Across all 24 batches, 243 of 600 reviewed matches have eligible, timing-verified
 pre-match reports; 357 are explicitly set aside and 494 remain unreviewed. The
-first 228 analytical codes remain provisional legacy values pending re-audit.
-The reports span 35 normalized provider hostnames. MyKhel contributes 59 matches
-(24.3%), ICC 36 (14.8%), and Business Standard 27 (11.1%); the top three contribute
-50.2%, and the provider HHI is 1,131. Provider concentration and category counts are
-reproduced in `artifacts/tables/pitch_source_providers.csv` and
+first 228 analytical codes have completed explicit-source-only re-audit:
+169 are `passed_revised`, 45 `passed_unchanged`, and 14
+`source_unavailable`; the 15 batch-24 rows are `current_standard`. The strict
+compliant derivative contains 229 accepted rows and is the only pitch release
+passed to the analytical model-table builder. The reports span 35 normalized
+provider hostnames. MyKhel contributes 59 matches (24.3%), ICC 36 (14.8%), and
+Business Standard 27 (11.1%); the top three contribute 50.2%, and provider HHI
+is 1,131. Provider distributions are reproduced in
+`artifacts/tables/pitch_source_providers.csv` and
 `artifacts/tables/pitch_source_provider_audit.json`.
