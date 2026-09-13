@@ -56,9 +56,9 @@ One row represents one batting-team innings in one match. The outcome is `battin
   human-verification fields and a zero-network structural audit.
 - A 1,094-match outcome-blind scheduled-start template with IANA-timezone,
   cohort-identity, provenance, and UTC-conversion validation.
-- An expanded release of 228 timing-verified **provisional legacy pitch codes**, 347
-  reviewed set-asides, and 519 explicitly unreviewed matches. The 228 codes must be
-  re-audited under the current explicit-source-only rule before final pitch-effect modeling.
+- An expanded release of 243 timing-verified pre-match reports, 357 reviewed
+  set-asides, and 494 explicitly unreviewed matches. The first 228 analytical codes
+  remain provisional legacy codes; the 15 batch-24 rows use the current strict rule.
 - Pitch/source-timing templates, research design, data dictionary, pitch-effect codebook,
   transformation log, paper outline, and execution roadmap.
 
@@ -120,9 +120,16 @@ The **current rule** is strict: each accepted pre-match report may populate anal
 
 **The project performs zero independent pitch diagnosis.** Physical descriptions such as dry, dusty, grassy, green, moist, hard, cracked, worn, tacky, or used may be retained in the short provenance paraphrase, but they are never converted by the researcher into pitch-effect variables. For example, `dry` does not become `spin`, and `grass` does not become `pace_seam`, unless the eligible pre-match source itself explicitly states that expected playing effect. If the source does not state the effect, the corresponding field remains blank or `unknown`.
 
-### Legacy 228-match release requires re-audit
+### Expanded 243-report release: 228 legacy rows require re-audit
 
-The existing 228-match release was coded under an earlier codebook and therefore **must not automatically be treated as compliant with the stricter source-stated rule**. Its current category counts are 96 batting-friendly, 39 balanced, 36 spin, 27 pace/seam, 27 slow/two-paced, and three unknown, but those counts are provisional until every retained code is checked against the eligible source and any analyst-inferred value is removed/blanked.
+The expanded file contains 243 source- and timing-verified reports. The first 228
+were coded under an earlier codebook and therefore **must not automatically be
+treated as compliant with the stricter source-stated rule**. The 15 batch-24 rows
+were coded under the current rule. Aggregate provisional category counts are 104
+batting-friendly, 43 balanced, 38 spin, 27 pace/seam, 28 slow/two-paced, and three
+unknown, but the first 228 rows remain provisional until every retained code is
+checked against the eligible source and any analyst-inferred value is removed or
+blanked.
 
 Before final pitch-effect modeling, the project must:
 
@@ -132,19 +139,33 @@ Before final pitch-effect modeling, the project must:
 4. record the re-audit status reproducibly;
 5. then perform the independent 20% double-coding reliability check using the same explicit-source-only rule.
 
-The current legacy pitch-report-complete model table contains 456 paired team-innings: 334 development rows from 167 matches, 20 validation rows from ten 2024 matches, and 102 locked-test rows from 51 matches. The 2024 pitch-model run is deliberately a pipeline smoke test, not a substantive pitch finding. Ten validation matches, legacy-code re-audit still pending, and no independent double-coding are insufficient for a substantive source-stated pitch-effect claim. Exact specifications and metrics are in `docs/modeling_status.md` and `docs/results.md`.
+The current mixed-status pitch-report model table contains 486 paired team-innings:
+364 development rows from 182 matches, 20 validation rows from ten 2024 matches,
+and 102 locked-test rows from 51 matches. The 2024 pitch-model run is deliberately
+a pipeline smoke test, not a substantive pitch finding. Ten validation matches,
+legacy-code re-audit still pending, and no independent double-coding are
+insufficient for a substantive source-stated pitch-effect claim. Exact
+specifications and metrics are in `docs/modeling_status.md` and `docs/results.md`.
 
-Twenty-three outcome-blind pitch batches cover 575 reviewed matches: 228 non-ESPN
-pre-match reports passed source and timing validation, 347 reviewed matches are
-listed in `data/manual/pitch_set_aside.csv`, and 519 remain explicitly unreviewed.
-Verified source/timing coverage is 228/1,094 (20.840951%). The prespecified 200-match collection
-target is exceeded, but analytical pitch-effect eligibility under the new rule is not final until the 228-row re-audit and independent reliability gate pass.
+Twenty-four outcome-blind pitch batches cover 600 reviewed matches: 243 non-ESPN
+pre-match reports passed source and timing validation, 357 reviewed matches are
+listed in `data/manual/pitch_set_aside.csv`, and 494 remain explicitly unreviewed.
+Verified source/timing coverage is 243/1,094 (22.212066%). The prespecified
+200-match collection target is exceeded, but final analytical eligibility still
+requires re-auditing the first 228 rows and passing the independent reliability gate.
 
-The blinded 46-row assignment is `data/manual/pitch_reliability_sample_template.csv`; it retains source documents and match identity but omits every first-coder pitch judgment. The minimized tracked releases are `data/manual/pitch_reports_verified.csv` and `data/manual/match_start_times_verified.csv`; they contain provenance, factual timestamps, provisional legacy codes, and short original paraphrases, not copied article text.
+The current blinded 49-row assignment is
+`data/manual/pitch_reliability_sample_template.csv`; it retains source documents and
+match identity but omits every first-coder pitch judgment. Regenerate it after the
+legacy re-audit freezes the compliant reference set. The minimized tracked releases
+are `data/manual/pitch_reports_verified.csv` and
+`data/manual/match_start_times_verified.csv`; they contain provenance, factual
+timestamps, mixed-status provisional codes, and short original paraphrases, not
+copied article text.
 
-The 228 accepted sources span 35 normalized provider hostnames. MyKhel contributes
-53 matches (23.2%), ICC 36 (15.8%), and Business Standard 26 (11.4%); the top
-three account for 50.4%, and the provider HHI is 1,132. This documents a
+The 243 accepted reports span 35 normalized provider hostnames. MyKhel contributes
+59 matches (24.3%), ICC 36 (14.8%), and Business Standard 27 (11.1%); the top
+three account for 50.2%, and the provider HHI is 1,131. This documents a
 multi-source measurement design rather than implying that all pitch data came from
 ESPN or any single publisher. Provider diversity does not remove source-specific
 wording or selection bias, so `artifacts/tables/pitch_source_providers.csv` reports
@@ -162,7 +183,7 @@ predated play. Start-time and source-provenance fields are audit metadata only:
 they are never joined into the model table and are explicitly prohibited as
 predictors.
 
-The final source-stated pitch-effect analysis remains provisional until the legacy-code re-audit and independent double-coding are complete. The 2025–2026 locked-test outcomes remain unscored.
+The final source-stated pitch-effect analysis remains provisional until the first 228 rows complete legacy-code re-audit and independent double-coding is complete. The 2025–2026 locked-test outcomes remain unscored.
 
 Do not automate bulk collection from ESPNcricinfo under the terms reviewed for
 this project. ESPN live commentary and post-match reporting are ineligible because
@@ -175,7 +196,7 @@ and report source coverage across years, venues, competition types, and outcomes
 - Never modify raw files after download; use dated/checksummed source manifests.
 - Keep original pitch-report URLs and short paraphrased notes alongside effect codes.
 - Never infer a pitch effect from a physical surface descriptor that the source did not explicitly connect to that effect.
-- Treat the existing 228 codes as provisional until the explicit-source-only re-audit is complete.
+- Treat the first 228 codes as provisional until the explicit-source-only re-audit is complete; new rows must follow the current rule immediately.
 - Version the pitch-effect codebook before double-coding begins.
 - Derive team strength using only matches before the focal match date.
 - Keep both rows from a match in the same split/fold.
@@ -201,7 +222,7 @@ and report source coverage across years, venues, competition types, and outcomes
 
 ## Data-source attribution
 
-Match data: one fixed, checksummed Cricsheet JSON archive. The pitch-report layer currently contains 228 individually cited non-ESPN pre-match reports from 35 normalized provider hostnames, but the existing analytical codes are provisional legacy codes until re-audited under the current source-stated-only rule. Final pitch-effect variables will standardize only effects explicitly stated in eligible sources and will not independently infer pitch behavior from physical surface descriptions. ESPN candidates are retained only for human/licensed follow-up; no ESPN page text or live/post-match commentary is in the released pitch codes. Generic hourly weather variables are not part of the primary design. Follow each source's licence/terms and include a source statement in the final paper.
+Match data: one fixed, checksummed Cricsheet JSON archive. The pitch-report layer contains 243 individually cited non-ESPN pre-match reports from 35 normalized provider hostnames. The first 228 analytical codes remain provisional legacy codes pending re-audit; 15 batch-24 rows were coded under the current source-stated-only rule. Final pitch-effect variables will standardize only effects explicitly stated in eligible sources and will not independently infer pitch behavior from physical surface descriptions. ESPN candidates are retained only for human/licensed follow-up; no ESPN page text or live/post-match commentary is in the released pitch codes. Generic hourly weather variables are not part of the primary design. Follow each source's licence/terms and include a source statement in the final paper.
 
 ## Licence
 

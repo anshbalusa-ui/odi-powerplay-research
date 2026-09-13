@@ -514,14 +514,16 @@ previews, and one SuperSport preview. Batch 23 used two SportsUnfold pitch repor
 two The SportsRush pitch reports, one Dhaka Tribune preview, and one
 SportsTime247 pitch report. Batch 24 used five The SportsRush reports, six MyKhel
 reports, and one report each from Business Standard, CricTracker, Dawn, and
-SportsUnfold. Each source URL, publication time, access time, match linkage, code,
-confidence, and original short paraphrase is retained in
+SportsUnfold. Its 15 accepted rows were coded under the current
+explicit-source-only rule. Each source URL, publication time, access time, match
+linkage, code, confidence, and original short paraphrase is retained in
 `data/manual/pitch_reports_verified.csv`.
 
 Across all 24 batches, 243 of 600 reviewed matches have eligible, timing-verified
-codes; 357 are explicitly set aside and 494 remain unreviewed. The accepted reports
-span 35 normalized provider hostnames. MyKhel contributes 59 matches (24.3%), ICC
-36 (14.8%), and Business Standard 27 (11.1%); the top three contribute 50.2%, and
-the provider HHI is 1,131. Provider concentration and confidence/category counts are
+pre-match reports; 357 are explicitly set aside and 494 remain unreviewed. The
+first 228 analytical codes remain provisional legacy values pending re-audit.
+The reports span 35 normalized provider hostnames. MyKhel contributes 59 matches
+(24.3%), ICC 36 (14.8%), and Business Standard 27 (11.1%); the top three contribute
+50.2%, and the provider HHI is 1,131. Provider concentration and category counts are
 reproduced in `artifacts/tables/pitch_source_providers.csv` and
 `artifacts/tables/pitch_source_provider_audit.json`.

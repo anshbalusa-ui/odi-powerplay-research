@@ -71,12 +71,12 @@ uncertainty, calibration, and preliminary figures are complete. The venue-histor
 sensitivity did not improve M1's 2024 AUC or proper scores by point estimate. The
 current numeric narrative is in `docs/results.md`.
 
-The 200-match **source/timing coverage** target is exceeded: 228 of 1,094 matches
-have eligible non-ESPN pre-match reports and verified scheduled starts, 347 of 575
-reviewed matches are set aside, and 519 remain unreviewed. However, the 228
-analytical pitch codes were produced under an earlier codebook and are now treated
-as **provisional legacy codes**. They must be re-audited against the current
-explicit-source-only rule before they can support a final source-stated pitch-effect
+The 200-match **source/timing coverage** target is exceeded: 243 of 1,094 matches
+have eligible non-ESPN pre-match reports and verified scheduled starts, 357 of 600
+reviewed matches are set aside, and 494 remain unreviewed. The first 228 analytical
+pitch codes were produced under an earlier codebook and are now treated as
+**provisional legacy codes**; 15 batch-24 rows use the current rule. The first 228
+must be re-audited before they can support a final source-stated pitch-effect
 analysis. Independent double coding also remains incomplete. The 2025–2026 locked
 test remains correctly unscored.
 

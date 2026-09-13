@@ -68,12 +68,12 @@ not be treated as stable league tables.
 
 ## Pre-match pitch reports and ESPNcricinfo
 
-Current reproducible source/timing coverage is **228 of 1,094 primary matches
-(20.840951%)**. All 228 are non-ESPN, match-specific pre-match reports with verified
-publication timing. Their existing analytical pitch codes, however, are
-**provisional legacy codes created under an earlier codebook**. They have not yet
-passed the current explicit-source-only re-audit or the independent-human
-reliability gate.
+Current reproducible source/timing coverage is **243 of 1,094 primary matches
+(22.212066%)**. All 243 are non-ESPN, match-specific pre-match reports with
+verified publication timing. The first 228 analytical pitch codes are
+**provisional legacy codes created under an earlier codebook** and have not yet
+passed the current explicit-source-only re-audit. The 15 batch-24 rows were coded
+under the current rule. No row has passed the independent-human reliability gate.
 
 ### Strict measurement boundary
 
@@ -91,17 +91,17 @@ pace/seam-supportive unless the source itself states the expected pace/seam effe
 If the source does not state a playing effect, that effect remains blank or
 `unknown`.
 
-Because the 228 legacy codes predate this stricter rule, every retained nonblank
-pitch-effect value must be checked back against its eligible source. Any value that
-was based only on a physical descriptor or analyst cricket knowledge must be
+Because the first 228 codes predate this stricter rule, every retained nonblank
+pitch-effect value in those rows must be checked back against its eligible source.
+Any value based only on a physical descriptor or analyst cricket knowledge must be
 blanked or removed. Only after that re-audit may the project describe the compliant
-values as source-stated pitch effects.
+legacy values as source-stated pitch effects.
 
 Therefore:
 
-- the existing 228-code complete-case model fit is a pipeline smoke test only;
+- the existing mixed-status 243-code complete-case model fit is a pipeline smoke test only;
 - its runs × pitch and wickets × pitch interactions cannot support a research claim;
-- no fitted legacy-code model can be called reliably adjusted for source-stated
+- no fitted provisional-code model can be called reliably adjusted for source-stated
   pitch effects;
 - no source-stated match-day pitch-effect conclusion should appear in an abstract or
   paper result until the re-audit, reliability, and sample-size gates pass.
@@ -119,7 +119,7 @@ candidates, not collected ESPN data. A candidate must be reconciled against team
 date, event, and venue before any report can pass source validation.
 
 The full tracked start-time template covers 1,094 matches with `pending` placeholders.
-The separate tracked verified release contains 228 cited scheduled starts, one for
+The separate tracked verified release contains 243 cited scheduled starts, one for
 each currently published pre-match report row. Collectors need to verify only rows
 with collected pitch reports, not the entire cohort. The audit validates cohort
 identity, provenance, IANA timezones, and exact local-to-UTC conversion. Downstream
@@ -127,10 +127,10 @@ code exposes only rows explicitly marked `verified`, so a blank, partial, or mer
 plausible timestamp cannot make a pitch source eligible.
 
 The outcome-blind queue contains 1,094 match-specific search tasks and no result or
-powerplay columns. Twenty-three outcome-blind batches reviewed 575 matches: 228
-passed source/timing gates, 347 are explicitly listed in
-`data/manual/pitch_set_aside.csv`, and 519 remain unreviewed. The verified report
-subset covers 20.840951% of the cohort. Its 39.7% yield among reviewed matches is
+powerplay columns. Twenty-four outcome-blind batches reviewed 600 matches: 243
+passed source/timing gates, 357 are explicitly listed in
+`data/manual/pitch_set_aside.csv`, and 494 remain unreviewed. The verified report
+subset covers 22.212066% of the cohort. Its 40.5% yield among reviewed matches is
 not representative of the full cohort; source discoverability and publication
 practices vary by competition, era, and team.
 
@@ -146,11 +146,11 @@ Completing the final pitch-effect layer still requires:
 8. reconciliation and reliability reporting before final outcome modeling.
 
 The accepted reports span 35 normalized provider hostnames, but the source mix is
-not uniform: the largest provider contributes 23.2% and the top three contribute
-50.4%. The provider HHI is 1,132. Provider-level category and confidence counts
-from the legacy release remain useful for source-distribution auditing but should
-not be interpreted as final source-stated category counts until the re-audit is
-complete.
+not uniform: the largest provider contributes 24.3% and the top three contribute
+50.2%. The provider HHI is 1,131. Provider-level category and confidence counts
+from the provisional mixed-status release remain useful for source-distribution
+auditing but should not be interpreted as final source-stated category counts until
+the re-audit is complete.
 
 Pitch-report availability is likely nonrandom across teams, venues, competitions,
 years, and publishers. Complete-case pitch-report models may therefore be

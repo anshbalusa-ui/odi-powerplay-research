@@ -6,15 +6,15 @@ This outline is for the full paper. The SSAC27 abstract is a focused extract wit
 
 The cohort, powerplay extraction, pre-match team and venue histories,
 chronological model table, 2024 validation, uncertainty estimates, preliminary
-figures, and the 228-match source- and timing-verified pitch-report collection are
+figures, and the 243-match source- and timing-verified pitch-report collection are
 reproducible. `docs/results.md` contains the current quantitative narrative and
 `docs/limitations.md` fixes its interpretation boundary.
 
-The 228 existing analytical pitch codes are **provisional legacy codes** created
-under an earlier codebook. They must be re-audited against the current
-explicit-source-only rule before the project can call them final source-stated
-pitch-effect variables. The current legacy-code model is only a pipeline smoke test;
-independent double-coding and the locked-test evaluation also remain incomplete.
+The first 228 analytical pitch codes are **provisional legacy codes** created under
+an earlier codebook; the 15 batch-24 rows use the current strict rule. The first
+228 must be re-audited before the project can call them final source-stated
+pitch-effect variables. The current mixed-status model is only a pipeline smoke
+test; independent double-coding and locked-test evaluation also remain incomplete.
 
 ## Title page and abstract (200–250 words)
 
@@ -65,7 +65,7 @@ Use academic or authoritative sources. Do not pad this section with generic mach
 - source eligibility, timing, codebook, coverage, and cohort comparison;
 - **explicit-source-only rule:** the coder standardizes only playing effects explicitly stated by the source and performs no independent pitch diagnosis;
 - physical descriptions such as dry, grassy, moist, hard, cracked, worn, or used remain provenance only unless the source itself explicitly states the playing effect;
-- legacy 228-code re-audit before final pitch modeling;
+- legacy 228-code re-audit before final pitch modeling; all newer rows follow the current rule immediately;
 - independent double coding and reliability gate after the compliant reference set is frozen.
 
 ### 3.4 Limited non-pitch conditions
@@ -102,8 +102,8 @@ Use academic or authoritative sources. Do not pad this section with generic mach
 ### 4.1 Cohort and data quality
 
 - row counts, exclusions, missingness, and join coverage;
-- report pre-match source/timing coverage as 228/1,094 (20.840951%), with 347 of 575 reviewed matches set aside and 519 unreviewed;
-- report how many of the 228 remain analytically compliant after explicit-source-only re-audit;
+- report pre-match source/timing coverage as 243/1,094 (22.212066%), with 357 of 600 reviewed matches set aside and 494 unreviewed;
+- report how many of the first 228 remain analytically compliant after explicit-source-only re-audit;
 - report the 35-provider source mix and inter-coder reliability only after the compliant reference set and independent double coding are complete.
 
 ### 4.2 Finding 1: full-cohort powerplay profiles

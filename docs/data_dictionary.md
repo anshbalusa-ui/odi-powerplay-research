@@ -6,10 +6,10 @@
 |---|---|---|
 | `cricsheet_matches` | one match | stable match metadata and result |
 | `powerplay_innings` | one regulation team-innings | first-10-over statistics and context |
-| `pitch_reports_verified` | one verified match/source | minimized pre-match provenance plus **provisional legacy pitch codes pending explicit-source-only re-audit** |
+| `pitch_reports_verified` | one verified match/source | minimized pre-match provenance plus mixed-status provisional codes: 228 legacy rows pending re-audit and 15 current-rule rows |
 | `pitch_set_aside` | one reviewed match | outcome-blind follow-up list for attempts without eligible analysis |
 | `pitch_collection_status` | one eligible match | verified source/timing, reviewed set-aside, or unreviewed collection state |
-| `pitch_source_providers` | one normalized provider hostname | source share, category mix, and confidence mix for the current legacy release |
+| `pitch_source_providers` | one normalized provider hostname | source share, category mix, and confidence mix for the current provisional release |
 | `team_strength_pre` | one match/team | ratings calculated before the match date |
 | `venue_conditions_pre_match` | one match | rolling prior-match venue scoring environment |
 | `model_team_innings` | one team-innings | audited merged analysis table |
@@ -73,9 +73,9 @@ These fields may be present in labeled data for training/evaluation but cannot b
 
 `data/manual/match_start_times_template.csv` is outcome-blind and contains one row
 per primary-cohort match. `data/manual/match_start_times_verified.csv` is the
-tracked, minimized subset supporting the 228 source/timing-verified pre-match
-reports. It verifies timing eligibility; it does **not** certify that the legacy
-pitch codes already satisfy the current explicit-source-only coding rule.
+tracked, minimized subset supporting the 243 source/timing-verified pre-match
+reports. It verifies timing eligibility; it does **not** certify that the first 228
+legacy pitch codes already satisfy the current explicit-source-only coding rule.
 
 | Variable | Type | Definition |
 |---|---|---|
@@ -104,15 +104,16 @@ offset-aware access timestamp, a real IANA timezone, a local date equal to
 exposed to pitch-source timing validation. No start-time, timezone, status,
 verifier, or source-provenance field is joined to the model table.
 
-The tracked release contains 228 verified scheduled starts.
+The tracked release contains 243 verified scheduled starts.
 
 ## Pre-match pitch-report fields
 
-`data/manual/pitch_reports_verified.csv` contains 228 rows that passed source,
-publication-time, match-start, cohort-identity, and structural code-value validation
-under the earlier codebook. **The source/timing verification remains valid, but the
-analytical pitch codes are provisional legacy codes until an explicit-source-only
-re-audit passes.**
+`data/manual/pitch_reports_verified.csv` contains 243 rows that passed source,
+publication-time, match-start, cohort-identity, and structural code-value
+validation. The first 228 rows were produced under the earlier codebook; their
+source/timing verification remains valid, but their analytical codes are
+provisional until an explicit-source-only re-audit passes. The 15 batch-24 rows
+were coded under the current rule.
 
 `data/manual/pitch_set_aside.csv` contains no pitch codes or outcomes; it records
 the search query and reason a reviewed match needs later follow-up.
@@ -205,7 +206,7 @@ source-stated pitch effects.
 
 | Variable | Type | Definition |
 |---|---|---|
-| `pitch_available` | binary | current file: a source/timing-eligible legacy pitch row joined by exact match ID; final analysis requires the row also pass the explicit-source-only re-audit |
+| `pitch_available` | binary | current file: a source/timing-eligible provisional pitch row joined by exact match ID; final analysis requires every included row to pass the explicit-source-only rule |
 | `split` | category | `development` through 2023, `validation` in 2024, or locked `locked_test` from 2025 onward |
 | `exclusion_reasons` | string/list | semicolon-delimited prespecified reason codes |
 | `analysis_eligible_primary` | binary | passes core cleaning and the 2015-forward men's ODI primary rules; no event restriction |

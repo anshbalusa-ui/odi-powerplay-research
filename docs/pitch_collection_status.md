@@ -4,9 +4,9 @@ Last updated: 2026-09-13
 
 The current primary cohort contains 1,094 men's ODIs (2,188 team-innings) from
 2015 through the checksummed Cricsheet snapshot. `build_pitch_collection_queue.py`
-creates one deterministic, outcome-blind source row per match. Twenty-three
-25-match batches have now been reviewed: 228 non-ESPN reports passed source and
-timing validation, while 347 reviewed matches were set aside with explicit reasons.
+creates one deterministic, outcome-blind source row per match. Twenty-four
+25-match batches have now been reviewed: 243 non-ESPN reports passed source and
+timing validation, while 357 reviewed matches were set aside with explicit reasons.
 The prespecified 200-match source-coverage target is exceeded.
 
 ## Measurement rule
@@ -25,38 +25,42 @@ This rule applies to first-pass coding, independent recoding, reliability analys
 
 ## Legacy 228-code re-audit gate
 
-The 228 currently tracked pitch codes were produced under an earlier codebook. Their source URLs and timing evidence remain useful, but the analytical codes are **provisional legacy codes** until they are re-audited against the current explicit-source-only rule.
+The first 228 currently tracked pitch codes were produced under an earlier
+codebook. Their source URLs and timing evidence remain useful, but those analytical
+codes are **provisional legacy codes** until re-audited against the current
+explicit-source-only rule. The 15 batch-24 rows were coded under the current rule.
 
 Before any final source-stated pitch-effect model or paper claim:
 
-1. revisit each retained eligible pre-match source;
+1. revisit each retained eligible pre-match source in the first 228 rows;
 2. confirm that every nonblank pitch-effect code is directly supported by an explicit source statement;
 3. blank/remove any value based only on physical descriptors or researcher/agent cricket knowledge;
 4. record the re-audit status reproducibly;
 5. rebuild the pitch-report model table from the compliant rows;
 6. then complete the independent 20% double-coding reliability gate using the same strict rule.
 
-Until that re-audit passes, do **not** describe the 228 analytical codes themselves as fully source-stated or final. The source/timing coverage count remains 228.
+Until that re-audit passes, do **not** describe the first 228 analytical codes as
+fully source-stated or final. The total source/timing coverage count is 243.
 
 ## Current reproducible coverage
 
 | Status | Matches |
 |---|---:|
 | Eligible matches queued | 1,094 |
-| Matches reviewed in twenty-three 25-match batches | 575 |
-| Timing-verified pre-match reports with provisional legacy codes | 228 |
-| Reviewed matches set aside | 347 |
-| Unreviewed matches | 519 |
-| Current legacy model-table merge | 228 |
-| Source/timing coverage | 20.840951% |
+| Matches reviewed in twenty-four 25-match batches | 600 |
+| Timing-verified pre-match reports | 243 |
+| Reviewed matches set aside | 357 |
+| Unreviewed matches | 494 |
+| Current provisional model-table merge | 243 |
+| Source/timing coverage | 22.212066% |
 
 The tracked `data/manual/pitch_reports_verified.csv` and
-`data/manual/match_start_times_verified.csv` files contain the 228 verified-source/timing rows.
+`data/manual/match_start_times_verified.csv` files contain the 243 verified-source/timing rows.
 They contain source provenance, source-publication time, collection time
-(`accessed_at_utc`), provisional legacy codes, and short original paraphrases—not copied
-article text. `data/manual/pitch_set_aside.csv` records the 347 reviewed matches
+(`accessed_at_utc`), provisional codes, and short original paraphrases—not copied
+article text. `data/manual/pitch_set_aside.csv` records the 357 reviewed matches
 without currently eligible analysis. `artifacts/tables/pitch_collection_status.csv`
-records all 1,094 cohort matches as 228 `verified`, 347 `set_aside`, or 519
+records all 1,094 cohort matches as 243 `verified`, 357 `set_aside`, or 494
 `unreviewed`; it contains no outcome or powerplay field.
 
 ## Collection constraint
@@ -72,18 +76,18 @@ explicitly stated by the source, and mark unsupported matches explicitly.
 
 The usable pitch-report subset target was 200 matches (400 paired team-innings) from the
 modern 2015-forward ODI cohort. The statistical sampling unit remains the match:
-the two innings are paired observations, not independent games. The 228-report
-release exceeds that source- and timing-verified target. Whether all 228 remain
-analytically usable under the stricter codebook depends on the explicit-source-only
-re-audit, category strata, missingness, source selection, and independent coding reliability.
+the two innings are paired observations, not independent games. The 243-report
+release exceeds that source- and timing-verified target. Whether all 243 remain
+analytically usable depends on re-auditing the first 228 rows, category strata,
+missingness, source selection, and independent coding reliability.
 
 ## Match-start verification gate
 
 `scripts/build_match_start_queue.py` generates
 `data/manual/match_start_times_template.csv` from primary-cohort metadata without
 reading result or powerplay fields. The full template has 1,094 pending rows. The
-tracked `data/manual/match_start_times_verified.csv` release contains only the 228
-rows corresponding to currently verified non-ESPN pitch reports.
+tracked `data/manual/match_start_times_verified.csv` release contains only the 243
+rows corresponding to currently verified non-ESPN pre-match reports.
 
 A collector should copy only rows corresponding to collected pitch reports into
 the Git-ignored `data/manual/match_start_times.csv`, reconcile the
@@ -112,10 +116,10 @@ every timestamp not explicitly marked `verified`.
 
 ## Source-provider audit
 
-The 228 reports span 35 normalized provider hostnames. MyKhel contributes 53
-matches (23.2%), ICC 36 (15.8%), and Business Standard 26 (11.4%). The top three
-providers account for 50.4% of accepted reports; the provider
-Herfindahl–Hirschman Index is 1,132 on the conventional 0–10,000 scale.
+The 243 reports span 35 normalized provider hostnames. MyKhel contributes 59
+matches (24.3%), ICC 36 (14.8%), and Business Standard 27 (11.1%). The top three
+providers account for 50.2% of accepted reports; the provider
+Herfindahl–Hirschman Index is 1,131 on the conventional 0–10,000 scale.
 `scripts/audit_pitch_sources.py` reproduces
 `artifacts/tables/pitch_source_providers.csv` and
 `artifacts/tables/pitch_source_provider_audit.json`.
@@ -149,7 +153,7 @@ For all new coding, use the current codebook immediately. New rows must satisfy 
 
 `scripts/build_pitch_reliability_sample.py` selects a deterministic 20% assignment
 without inspecting outcomes or first-coder values. The tracked
-`data/manual/pitch_reliability_sample_template.csv` currently contains 46 rows,
+`data/manual/pitch_reliability_sample_template.csv` currently contains 49 rows,
 spans all represented years and competition types, retains the same eligible
 pre-match source documents and match identity, and blanks every first-coder pitch
 judgment.

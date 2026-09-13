@@ -7,10 +7,10 @@ final paper results. The 2025–2026 test period remains locked and its outcomes
 not been scored. The intended pitch-report result is a prespecified effect-modification
 analysis nested within the same powerplay question, not a separate finding.
 
-The project has 228 source- and timing-verified pre-match reports, exceeding the
-collection target. **Their existing analytical pitch codes are provisional legacy
-codes created under an earlier codebook.** They must be re-audited against the
-current explicit-source-only rule before they can be treated as final
+The project has 243 source- and timing-verified pre-match reports, exceeding the
+collection target. The first 228 analytical pitch codes are **provisional legacy
+codes created under an earlier codebook**; 15 batch-24 rows use the current strict
+rule. The first 228 must be re-audited before they can be treated as final
 source-stated pitch-effect variables, and independent double-coding must still pass.
 
 The current measurement rule is strict: analytical pitch variables may standardize
@@ -107,24 +107,24 @@ The M1 calibration intercept was -0.007 (95% CI -0.089 to 0.077) and slope was
 fixed probability bins with whole-match bootstrap uncertainty. The intercept-only
 calibration slope is unidentifiable because its probabilities are constant.
 
-## Provisional legacy pitch-code subgroup smoke test
+## Provisional mixed-status pitch-code subgroup smoke test
 
-The currently merged legacy pitch-code subset contains 228 matches and 456 paired
-innings: 167 development matches, ten 2024 validation matches, and 51 locked-test
-matches. The locked outcomes remain unscored. A separate complete-case fit confirmed
-that the legacy pitch-code main fields and prespecified interactions execute end to
+The currently merged subset contains 243 matches and 486 paired innings: 182
+development matches, ten 2024 validation matches, and 51 locked-test matches. The
+locked outcomes remain unscored. A separate complete-case fit confirmed that the
+provisional pitch-code main fields and prespecified interactions execute end to
 end.
 
 These smoke-test models **must not be described as final source-stated pitch-effect
-models**, because the 228 codes have not yet passed the explicit-source-only
-re-audit or independent double-coding. The ten-match 2024 sample is also not
-adequate for substantive model comparison.
+models**, because the first 228 codes have not yet passed the explicit-source-only
+re-audit and no row has passed independent double-coding. The ten-match 2024 sample
+is also not adequate for substantive model comparison.
 
-Point estimates were ROC-AUC 0.69 and log loss 0.6305 for the powerplay
-runs-and-wickets benchmark, ROC-AUC 0.48 and log loss 0.8289 for M1 with context
-and legacy pitch main effects, and ROC-AUC 0.57 and log loss 0.7693 for M2 with the
-legacy pitch interactions. These unstable values are reported only as pipeline
-reproducibility evidence, not as Finding 2.
+Point estimates were ROC-AUC 0.69 and log loss 0.6338 for the powerplay
+runs-and-wickets benchmark, ROC-AUC 0.49 and log loss 0.7890 for M1 with context
+and provisional pitch main effects, and ROC-AUC 0.59 and log loss 0.7173 for M2
+with the provisional pitch interactions. These unstable values are reported only
+as pipeline reproducibility evidence, not as Finding 2.
 
 ## Interpretation boundary
 
@@ -133,10 +133,10 @@ held-out information about the batting team's match outcome in the full 2024
 sample. The study remains observational, so the estimates are associations rather
 than causal effects.
 
-The report/timing merge and legacy interaction pipeline run on the 228-match subset,
-but no substantive source-stated pitch-effect claim is reported. Before such a
-claim is possible, the legacy codes must be re-audited so every nonblank analytical
-pitch value is explicitly supported by the eligible source, then independently
+The report/timing merge and provisional interaction pipeline run on the 243-match
+subset, but no substantive source-stated pitch-effect claim is reported. Before
+such a claim is possible, the first 228 codes must be re-audited so every nonblank
+analytical pitch value is explicitly supported by the eligible source, then all
 double-coded under the same rule. No ESPN page text, live or post-match commentary
 entered a predictor, and no claim uses the locked test period. Exact model
 definitions, hashes, and artifact paths are in `docs/modeling_status.md`.

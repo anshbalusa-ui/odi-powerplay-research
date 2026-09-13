@@ -4,20 +4,20 @@
 
 This is a full-cohort preliminary analysis with a leakage-safe historical venue
 proxy. The main fitted models exclude final source-stated match-specific pre-match
-pitch effects. The audited merge recognizes 228 source- and timing-verified
-pitch-report matches, but their analytical pitch codes are **provisional legacy
-codes created under an earlier codebook**. Those codes require an
-explicit-source-only re-audit, independent double-coding has not passed, and only
-ten of the 228 matches fall in the 2024 validation year. The legacy pitch-code
-interaction run is therefore a pipeline smoke test, not a published research
-result.
+pitch effects. The audited merge recognizes 243 source- and timing-verified
+pitch-report matches: the first 228 analytical codes are **provisional legacy
+codes created under an earlier codebook**, while 15 batch-24 rows use the current
+strict rule. The legacy codes require an explicit-source-only re-audit, independent
+double-coding has not passed, and only ten of the 243 matches fall in the 2024
+validation year. The mixed-status interaction run is therefore a pipeline smoke
+test, not a published research result.
 
 **Current measurement rule:** final pitch-report variables may standardize only
 expected playing effects explicitly stated by eligible pre-match sources. The
 researchers do not independently diagnose the surface and do not infer spin from
 dryness, pace/seam from grass or moisture, batting ease from hardness/flatness, or
 slow/two-paced behavior from wear/usage unless the source itself states that effect.
-The existing 228 codes must be re-audited to this rule before final pitch modeling.
+The first 228 codes must be re-audited to this rule before final pitch modeling.
 
 The fixed Cricsheet snapshot contributes 1,094 primary matches and 2,188 team-innings:
 
@@ -27,9 +27,9 @@ The fixed Cricsheet snapshot contributes 1,094 primary matches and 2,188 team-in
 | validation | 2024-01-01–2024-12-31 | 71 | 142 | preliminary temporal evaluation |
 | locked test | 2025-01-01–snapshot cutoff | 152 | 304 | untouched; not scored |
 
-Both innings from each match remain in the same split. The current **legacy
-228-code** merged model-table SHA-256 is
-`a8e3d33301d93b61001a572ddb3a73f8f501654531b58aeef40052f181cb757e`.
+Both innings from each match remain in the same split. The current provisional
+243-report merged model-table SHA-256 is
+`c6257f33f4814b05f96c373e9f7e11b7af5db18c565fa8be557bc44bf344a1b6`.
 It is retained for reproducibility of the smoke test and must not be treated as the
 final source-stated pitch-effect table.
 
@@ -72,10 +72,10 @@ separately on 2021, 2022, and 2023. Every fold refits imputation, scaling, and
 encoding using only its training years. No hyperparameter search was performed;
 the declared settings are prespecified rather than selected on 2024.
 
-## Provisional legacy pitch-code subset
+## Provisional mixed-status pitch-code subset
 
-The current legacy pitch merge contains 456 paired team-innings from 228 matches:
-334 development rows from 167 matches, 20 validation rows from ten 2024 matches,
+The current pitch merge contains 486 paired team-innings from 243 matches:
+364 development rows from 182 matches, 20 validation rows from ten 2024 matches,
 and 102 unscored locked-test rows from 51 matches. A separate smoke-test fit used
 this complete-case subset and activated the earlier pitch-code main fields and
 powerplay × pitch-code interactions. Because there are no matched rows in 2021,
@@ -83,20 +83,20 @@ its explicitly requested rolling-origin diagnostics use 2022 and 2023 only; the
 missing year is not silently represented as a fold.
 
 On the ten-match 2024 subset, the runs-and-wickets benchmark had ROC-AUC 0.69,
-log loss 0.6305, and Brier score 0.2206. M1 with context, legacy pitch main effects,
-and powerplay had ROC-AUC 0.48, log loss 0.8289, and Brier score 0.3101. M2 with
-the legacy pitch interactions had ROC-AUC 0.57, log loss 0.7693, and Brier score
-0.2907.
+log loss 0.6338, and Brier score 0.2220. M1 with context, provisional pitch main
+effects, and powerplay had ROC-AUC 0.49, log loss 0.7890, and Brier score 0.2958.
+M2 with the provisional pitch interactions had ROC-AUC 0.59, log loss 0.7173, and
+Brier score 0.2701.
 
 These values are too unstable for substantive interpretation and **are not evidence
 about the final source-stated pitch-effect model**. The validation set has only ten
-independent match clusters, source coverage is selected, the legacy codes have not
-passed the new explicit-source-only re-audit, and no independent double-coding
+independent match clusters, source coverage is selected, the first 228 codes have
+not passed the new explicit-source-only re-audit, and no independent double-coding
 exists. The locked 2025–2026 outcomes remain untouched.
 
-Only 27 of 167 legacy development matches have an observed `dew_expected` code, so
-any dew coefficient remains sparse and uninterpretable. Generated smoke-test
-artifacts use separate `pitch_` paths and do not replace the full-cohort validation
+Only 29 of 182 development matches have an observed `dew_expected` code, so any
+dew coefficient remains sparse and uninterpretable. Generated smoke-test artifacts
+use separate `pitch_` paths and do not replace the full-cohort validation
 artifacts.
 
 ## 2024 temporal-validation results
@@ -143,10 +143,10 @@ python3.11 -m venv .venv
 .venv/bin/python scripts/reproduce.py --skip-download
 ```
 
-The legacy 228-code pitch-subset smoke test can still be reproduced from the
-existing artifacts for audit purposes, but it is not the final pitch-effect analysis.
-A new pitch-report model table must be rebuilt after the explicit-source-only
-re-audit and reliability gate.
+The mixed-status 243-report pitch-subset smoke test can be reproduced from the
+current artifacts for audit purposes, but it is not the final pitch-effect analysis.
+A new pitch-report model table must be rebuilt after the first 228 rows complete
+explicit-source-only re-audit and the reliability gate passes.
 
 Generated model binaries, hashes, validation predictions, calibration bins, and
 metric JSON remain under `artifacts/` and are ignored by Git under the project's
