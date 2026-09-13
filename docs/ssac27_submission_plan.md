@@ -41,11 +41,12 @@ The practical output is one coherent framework rather than two unrelated finding
 - leakage-safe pre-match Elo difference;
 - innings order and toss context;
 - verified source timing and a lean, source-audited, match-specific representation of **explicitly stated pre-match pitch effects**;
+- explicit-source-only re-audit of every legacy pitch code used in the final analysis;
 - baseline plus interpretable logistic model;
 - one nonlinear challenger only after the logistic analysis is stable;
 - chronological evaluation with development through 2023, validation in 2024, and 2025 through the fixed 2026 snapshot held out;
 - ROC-AUC, log loss, Brier score, calibration, and match-clustered confidence intervals;
-- one source-stated-pitch-effect interaction figure if reliability/coverage gates pass;
+- one source-stated-pitch-effect interaction figure if re-audit/reliability/coverage gates pass;
 - one compact model-performance/calibration table or figure;
 - public repository with code, data-building instructions, permitted data, manifests, and results.
 
@@ -70,23 +71,32 @@ uncertainty, calibration, and preliminary figures are complete. The venue-histor
 sensitivity did not improve M1's 2024 AUC or proper scores by point estimate. The
 current numeric narrative is in `docs/results.md`.
 
-The 200-match pitch source-coverage target is exceeded: 228 of 1,094 matches have
-timing-verified AI-assisted first-pass codes, 347 of 575 reviewed matches are set
-aside, and 519 remain unreviewed. The pitch reliability requirement is **not met**
-because independent double coding has not occurred. The hand-audit worksheet is
-generated but still needs external scorecard reconciliation. The 2025–2026 locked
+The 200-match **source/timing coverage** target is exceeded: 228 of 1,094 matches
+have eligible non-ESPN pre-match reports and verified scheduled starts, 347 of 575
+reviewed matches are set aside, and 519 remain unreviewed. However, the 228
+analytical pitch codes were produced under an earlier codebook and are now treated
+as **provisional legacy codes**. They must be re-audited against the current
+explicit-source-only rule before they can support a final source-stated pitch-effect
+analysis. Independent double coding also remains incomplete. The 2025–2026 locked
 test remains correctly unscored.
 
-Go/no-go decision: the full-cohort powerplay result and verified-pitch-report subgroup must remain visibly nested under one research question. Do not submit an interaction estimate involving source-stated pitch effects until independent reliability passes and the ten-match 2024 pitch-validation sample is judged adequate or replaced by a prespecified alternative. Until then, retain the full-cohort result as Finding 1 and label the pitch-report fit provisional. Never manufacture a pitch effect from physical surface wording, venue reputation, live/post-match commentary, or later outcomes, and never unlock test outcomes to compensate for missing pitch data.
+Go/no-go decision: the full-cohort powerplay result and verified-pitch-report subgroup must remain visibly nested under one research question. Do not submit an interaction estimate involving source-stated pitch effects until:
+
+1. all pitch codes used in that analysis pass the explicit-source-only re-audit;
+2. unsupported analyst-inferred codes are removed/blanked;
+3. independent reliability passes on the compliant reference set; and
+4. the pitch-subgroup validation design is judged adequate or replaced by a prespecified alternative.
+
+Until then, retain the full-cohort result as Finding 1 and label the existing legacy pitch fit as a pipeline smoke test. Never manufacture a pitch effect from physical surface wording, venue reputation, live/post-match commentary, or later outcomes, and never unlock test outcomes to compensate for missing pitch data.
 
 ## September 5–October 1 sprint
 
 | Dates | Deliverable | Go/no-go test |
 |---|---|---|
 | Sep 5–8 | download/extract Cricsheet; freeze broad modern-ODI cohort; hand-audit powerplays | no unresolved extraction discrepancies |
-| Sep 9–13 | Elo, venue crosswalk, and source-timing audit | no future information in feature audit |
-| Sep 14–18 | pitch-source collection/coding and reliability check | adequate source coverage or documented reduced pitch scope |
-| Sep 19–22 | merge, missingness report, descriptive analysis, frozen split | 2025–snapshot test IDs locked and untouched |
+| Sep 9–13 | Elo, venue crosswalk, source-timing audit, pitch-report collection | no future information in feature audit |
+| Sep 14–18 | explicit-source-only re-audit + independent reliability coding | compliant pitch-effect reference set frozen or documented reduced pitch scope |
+| Sep 19–22 | rebuild merge, missingness report, descriptive analysis, frozen split | 2025–snapshot test IDs locked and untouched |
 | Sep 23–25 | logistic model, selected interactions, marginal predictions | interpretable and calibrated baseline comparison |
 | Sep 26–27 | nonlinear challenger, bootstrap confidence intervals, final figures | identical held-out rows across models |
 | Sep 28 | freeze results and repository snapshot | results reproduce from a clean run |
@@ -95,12 +105,12 @@ Go/no-go decision: the full-cohort powerplay result and verified-pitch-report su
 
 ## Scope fallback ladder
 
-If pitch-report collection becomes the bottleneck, reduce complexity transparently rather than inferring missing effects:
+If compliant pitch-effect coverage becomes the bottleneck, reduce complexity transparently rather than inferring missing effects:
 
 1. simplify the source-stated effect code to a smaller, high-reliability set of dimensions;
-2. use only reports with verified publication times and add an explicit missing indicator;
+2. use only reports/codes that pass timing and explicit-source-support checks;
 3. define a prespecified, stratified pitch-report subgroup that spans years and competition types;
-4. make individual sparse source-stated dimensions secondary while retaining the higher-coverage primary source-stated category.
+4. make individual sparse source-stated dimensions secondary while retaining the higher-coverage compliant primary source-stated category.
 
 Never fill missing pre-match pitch effects using post-match reports, venue history, or researcher interpretation of physical pitch descriptions.
 
@@ -112,17 +122,15 @@ State the industry problem, the inadequacy of raw powerplay benchmarks, and the 
 
 ### Methods
 
-State the cohort and sources, unit of analysis, leakage cutoff, contextual variables, chronological split, model types, and calibration/uncertainty methods. Explicitly state that pitch variables are standardized from **source-stated pre-match expectations**, not independent researcher assessment of the surface.
+State the cohort and sources, unit of analysis, leakage cutoff, contextual variables, chronological split, model types, and calibration/uncertainty methods. Explicitly state that final pitch variables are standardized from **source-stated pre-match expectations**, not independent researcher assessment of the surface.
 
 ### Results
 
-Report sample size, the main 2024 validation association with uncertainty, and one
-calibration result. Replace these with locked-test values only after every freeze
-gate passes; never label validation estimates as final held-out performance.
+Report sample size, the main validated association with uncertainty, and one calibration result. Include a pitch-subgroup result only if the re-audit/reliability gates pass. Never present the legacy 228-code smoke-test metrics as a final pitch result.
 
 ### Conclusion
 
-State the full-cohort powerplay finding first. Add the verified-pitch-report interaction finding only if coverage and reliability gates pass; otherwise identify it as the prespecified incomplete subgroup analysis rather than reframing the paper as pitch-adjusted.
+State the full-cohort powerplay finding first. Add the verified-pitch-report interaction finding only if the compliant source-stated dataset and reliability gates pass; otherwise identify it as the prespecified incomplete subgroup analysis rather than reframing the paper as pitch-adjusted.
 
 ## Submission-day checklist
 
@@ -130,6 +138,7 @@ State the full-cohort powerplay finding first. Add the verified-pitch-report int
 - all four required headings are present;
 - no promised or placeholder results;
 - no causal claim from observational evidence;
+- pitch variables used in results have passed explicit-source-only re-audit;
 - pitch variables are described as standardized source statements, not researcher pitch diagnosis;
 - no more than two combined figures/tables;
 - numbers match frozen repository outputs;
