@@ -11,7 +11,9 @@ sys.path.insert(0, str(ROOT / "src"))
 from odi_powerplay.pitch import (
     PITCH_QUEUE_FIELDS,
     PITCH_SET_ASIDE_FIELDS,
+    apply_pitch_reaudit,
     build_blinded_pitch_reliability_sample,
+    build_pitch_reaudit_registry,
     build_pitch_collection_status,
     build_pitch_set_aside,
     build_pitch_collection_queue,
@@ -24,6 +26,7 @@ from odi_powerplay.pitch import (
     select_next_pitch_batch,
     validate_espn_linkage_rows,
     validate_pitch_rows,
+    validate_pitch_reaudit_registry,
 )
 
 
@@ -482,6 +485,93 @@ class PitchPipelineTests(unittest.TestCase):
                 "low_confidence_matches": 0,
             },
         )
+
+    def test_reaudit_registry_separates_legacy_and_current_rows(self) -> None:
+        legacy = self.verified_pitch_row()
+        current = {
+            **self.verified_pitch_row(),
+            "cricsheet_match_id": "match-2",
+            "coder_id": "current-coder",
+        }
+
+        registry = build_pitch_reaudit_registry([legacy, current], legacy_count=1)
+
+        self.assertEqual(registry[0]["coding_standard"], "legacy_pre_explicit_source_only")
+        self.assertEqual(registry[0]["reaudit_status"], "pending")
+        self.assertEqual(registry[0]["reaudited_pitch_primary_category"], "")
+        self.assertEqual(registry[1]["coding_standard"], "explicit_source_only_v1")
+        self.assertEqual(registry[1]["reaudit_status"], "current_standard")
+        self.assertEqual(
+            registry[1]["reaudited_pitch_primary_category"],
+            current["pitch_primary_category"],
+        )
+        self.assertEqual(
+            validate_pitch_reaudit_registry(registry, [legacy, current], legacy_count=1),
+            [],
+        )
+
+    def test_reaudit_registry_rejects_unsubstantiated_statuses(self) -> None:
+        source = self.verified_pitch_row()
+        registry = build_pitch_reaudit_registry([source], legacy_count=1)
+        registry[0].update(
+            {
+                "reaudit_status": "passed_unchanged",
+                "reviewed_at_utc": "2026-09-13T10:00:00Z",
+                "reviewer_id": "reauditor-1",
+                "effect_evidence_note": "Source explicitly states early seam assistance.",
+                "reaudited_pitch_primary_category": "spin",
+            }
+        )
+
+        issues = validate_pitch_reaudit_registry(registry, [source], legacy_count=1)
+
+        self.assertIn("passed_unchanged must preserve every pitch field", {
+            issue["message"] for issue in issues
+        })
+
+    def test_apply_pitch_reaudit_excludes_pending_and_applies_revisions(self) -> None:
+        pending = self.verified_pitch_row()
+        revised = {
+            **self.verified_pitch_row(),
+            "cricsheet_match_id": "match-2",
+        }
+        current = {
+            **self.verified_pitch_row(),
+            "cricsheet_match_id": "match-3",
+            "coder_id": "current-coder",
+        }
+        registry = build_pitch_reaudit_registry(
+            [pending, revised, current],
+            legacy_count=2,
+        )
+        registry[1].update(
+            {
+                "reaudit_status": "passed_revised",
+                "reviewed_at_utc": "2026-09-13T10:00:00Z",
+                "reviewer_id": "reauditor-1",
+                "effect_evidence_note": "Source explicitly states batting should be easy.",
+                "reaudited_pitch_primary_category": "batting_friendly",
+                "reaudited_batting_ease": "2",
+                "reaudited_pace_seam_support": "",
+                "reaudited_spin_support": "",
+                "reaudited_bounce_profile": "",
+                "reaudited_two_paced_expected": "",
+                "reaudited_dew_expected": "",
+            }
+        )
+
+        compliant = apply_pitch_reaudit(
+            [pending, revised, current],
+            registry,
+            legacy_count=2,
+        )
+
+        self.assertEqual(
+            [row["cricsheet_match_id"] for row in compliant],
+            ["match-2", "match-3"],
+        )
+        self.assertEqual(compliant[0]["pitch_primary_category"], "batting_friendly")
+        self.assertEqual(compliant[0]["pace_seam_support"], "")
 
     def test_reliability_sample_is_deterministic_and_blinds_first_coder(self) -> None:
         rows = []

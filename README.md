@@ -139,6 +139,14 @@ Before final pitch-effect modeling, the project must:
 4. record the re-audit status reproducibly;
 5. then perform the independent 20% double-coding reliability check using the same explicit-source-only rule.
 
+The tracked `data/manual/pitch_code_reaudit.csv` is the row-level review registry.
+It currently records 228 `pending` legacy rows and 15 `current_standard` rows,
+retains the original codes, and provides separate re-audited fields plus reviewer,
+timestamp, evidence-note, and review-note columns. Run
+`.venv/bin/python scripts/audit_pitch_reaudit.py` after every review batch; pending
+or unavailable legacy rows are excluded by the compliant-release builder rather
+than silently entering a final model.
+
 The current mixed-status pitch-report model table contains 486 paired team-innings:
 364 development rows from 182 matches, 20 validation rows from ten 2024 matches,
 and 102 locked-test rows from 51 matches. The 2024 pitch-model run is deliberately

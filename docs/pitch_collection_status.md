@@ -42,6 +42,13 @@ Before any final source-stated pitch-effect model or paper claim:
 Until that re-audit passes, do **not** describe the first 228 analytical codes as
 fully source-stated or final. The total source/timing coverage count is 243.
 
+The tracked `data/manual/pitch_code_reaudit.csv` makes this gate machine-auditable.
+It preserves the original values, holds separate strict-rule replacements, and
+records the review status and concise evidence provenance for every report. The
+current audited state is 228 `pending` legacy rows and 15 `current_standard` rows;
+`scripts/audit_pitch_reaudit.py` reports 15 currently compliant rows and zero
+registry-validation issues.
+
 ## Current reproducible coverage
 
 | Status | Matches |

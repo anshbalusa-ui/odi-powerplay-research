@@ -7,6 +7,7 @@
 | `cricsheet_matches` | one match | stable match metadata and result |
 | `powerplay_innings` | one regulation team-innings | first-10-over statistics and context |
 | `pitch_reports_verified` | one verified match/source | minimized pre-match provenance plus mixed-status provisional codes: 228 legacy rows pending re-audit and 15 current-rule rows |
+| `pitch_code_reaudit` | one verified match/source | original codes, strict-codebook review status, separate re-audited codes, and concise review provenance |
 | `pitch_set_aside` | one reviewed match | outcome-blind follow-up list for attempts without eligible analysis |
 | `pitch_collection_status` | one eligible match | verified source/timing, reviewed set-aside, or unreviewed collection state |
 | `pitch_source_providers` | one normalized provider hostname | source share, category mix, and confidence mix for the current provisional release |
@@ -165,6 +166,30 @@ removed.
 Physical surface descriptors are provenance only. They are not primary or secondary
 model fields and cannot be used to derive a playing-effect code unless the source
 explicitly states that effect.
+
+## Pitch-code re-audit fields
+
+`data/manual/pitch_code_reaudit.csv` covers the full verified report release. The
+first 228 rows start as `legacy_pre_explicit_source_only` / `pending`; the 15
+batch-24 rows are `explicit_source_only_v1` / `current_standard`.
+
+| Variable | Type | Definition |
+|---|---|---|
+| `legacy_sequence` | integer/blank | original 1–228 release position; blank for rows first coded under the current rule |
+| `coding_standard` | category | `legacy_pre_explicit_source_only` or `explicit_source_only_v1` |
+| `reaudit_status` | category | `pending`, `passed_unchanged`, `passed_revised`, `source_unavailable`, or `current_standard` |
+| `original_*` | category/ordinal | immutable pitch-field value from the verified release at registry creation |
+| `reaudited_*` | category/ordinal | strict-rule replacement; blank while pending or when the source cannot be re-opened |
+| `reviewed_at_utc` | timestamp/blank | offset-aware review timestamp |
+| `reviewer_id` | string/blank | anonymized strict-codebook reviewer |
+| `effect_evidence_note` | string/blank | short original paraphrase of the source's explicit expected playing effects |
+| `review_note` | string/blank | concise disposition or source-access explanation |
+
+`scripts/audit_pitch_reaudit.py` requires exact source identity and original-code
+agreement, valid status transitions, review provenance for completed rows, exact
+code equality for `passed_unchanged`, and at least one changed field for
+`passed_revised`. `pending` and `source_unavailable` rows cannot enter the
+compliant pitch release.
 
 ## Team strength
 

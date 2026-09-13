@@ -104,6 +104,29 @@ PITCH_COLLECTION_STATUS_FIELDS = (
     "collection_status",
     "exclusion_reason",
 )
+PITCH_REAUDIT_FIELDS = (
+    "cricsheet_match_id",
+    "source_url",
+    "source_title",
+    "legacy_sequence",
+    "coding_standard",
+    "reaudit_status",
+    *(f"original_{field}" for field in PITCH_FIELDS),
+    *(f"reaudited_{field}" for field in PITCH_FIELDS),
+    "reviewed_at_utc",
+    "reviewer_id",
+    "effect_evidence_note",
+    "review_note",
+)
+PITCH_REAUDIT_STATUSES = {
+    "pending",
+    "passed_unchanged",
+    "passed_revised",
+    "source_unavailable",
+    "current_standard",
+}
+
+
 
 
 def espn_link_candidate(match_id: Any) -> dict[str, str]:
@@ -576,6 +599,238 @@ def validate_pitch_rows(
             issue(match_id, "short_paraphrased_note", "must not exceed 300 characters")
 
     return issues
+def build_pitch_reaudit_registry(
+    pitch_rows: Iterable[dict[str, Any]],
+    *,
+    legacy_count: int = 228,
+) -> list[dict[str, str]]:
+    """Create an auditable strict-codebook registry without consulting outcomes."""
+
+    if legacy_count < 0:
+        raise ValueError("legacy_count must be nonnegative")
+    output: list[dict[str, str]] = []
+    seen: set[str] = set()
+    for sequence, row in enumerate(pitch_rows, start=1):
+        match_id = str(row.get("cricsheet_match_id", "")).strip()
+        if not match_id:
+            raise ValueError("pitch row is missing cricsheet_match_id")
+        if match_id in seen:
+            raise ValueError(f"duplicate pitch match ID {match_id}")
+        seen.add(match_id)
+        is_legacy = sequence <= legacy_count
+        registry_row = {field: "" for field in PITCH_REAUDIT_FIELDS}
+        registry_row.update(
+            {
+                "cricsheet_match_id": match_id,
+                "source_url": str(row.get("source_url", "")).strip(),
+                "source_title": str(row.get("source_title", "")).strip(),
+                "legacy_sequence": str(sequence) if is_legacy else "",
+                "coding_standard": (
+                    "legacy_pre_explicit_source_only"
+                    if is_legacy
+                    else "explicit_source_only_v1"
+                ),
+                "reaudit_status": "pending" if is_legacy else "current_standard",
+            }
+        )
+        for field in PITCH_FIELDS:
+            original = str(row.get(field, "")).strip()
+            registry_row[f"original_{field}"] = original
+            if not is_legacy:
+                registry_row[f"reaudited_{field}"] = original
+        if not is_legacy:
+            registry_row.update(
+                {
+                    "reviewed_at_utc": str(row.get("accessed_at_utc", "")).strip(),
+                    "reviewer_id": str(row.get("coder_id", "")).strip(),
+                    "effect_evidence_note": str(
+                        row.get("short_paraphrased_note", "")
+                    ).strip(),
+                    "review_note": "Initially coded under explicit_source_only_v1.",
+                }
+            )
+        output.append(registry_row)
+    return output
+
+
+def validate_pitch_reaudit_registry(
+    registry_rows: Iterable[dict[str, Any]],
+    pitch_rows: Iterable[dict[str, Any]],
+    *,
+    legacy_count: int = 228,
+) -> list[dict[str, str]]:
+    """Validate strict-codebook review state against the source/timing release."""
+
+    sources = list(pitch_rows)
+    registry = list(registry_rows)
+    issues: list[dict[str, str]] = []
+
+    def issue(match_id: str, field: str, message: str) -> None:
+        issues.append({"cricsheet_match_id": match_id, "field": field, "message": message})
+
+    source_by_id: dict[str, tuple[int, dict[str, Any]]] = {}
+    for sequence, row in enumerate(sources, start=1):
+        match_id = str(row.get("cricsheet_match_id", "")).strip()
+        if not match_id:
+            issue("", "cricsheet_match_id", "source row is missing match ID")
+        elif match_id in source_by_id:
+            issue(match_id, "cricsheet_match_id", "duplicate source match ID")
+        else:
+            source_by_id[match_id] = (sequence, row)
+
+    registry_by_id: dict[str, dict[str, Any]] = {}
+    for row in registry:
+        match_id = str(row.get("cricsheet_match_id", "")).strip()
+        if not match_id:
+            issue("", "cricsheet_match_id", "registry row is missing match ID")
+            continue
+        if match_id in registry_by_id:
+            issue(match_id, "cricsheet_match_id", "duplicate registry match ID")
+            continue
+        registry_by_id[match_id] = row
+        source_entry = source_by_id.get(match_id)
+        if source_entry is None:
+            issue(match_id, "cricsheet_match_id", "registry match is absent from pitch release")
+            continue
+        sequence, source = source_entry
+        is_legacy = sequence <= legacy_count
+        expected_standard = (
+            "legacy_pre_explicit_source_only"
+            if is_legacy
+            else "explicit_source_only_v1"
+        )
+        standard = str(row.get("coding_standard", "")).strip()
+        status = str(row.get("reaudit_status", "")).strip()
+        if standard != expected_standard:
+            issue(match_id, "coding_standard", f"must be {expected_standard}")
+        if status not in PITCH_REAUDIT_STATUSES:
+            issue(match_id, "reaudit_status", f"unsupported value: {status}")
+
+        for field in ("source_url", "source_title"):
+            if str(row.get(field, "")).strip() != str(source.get(field, "")).strip():
+                issue(match_id, field, "must match the verified pitch release")
+        expected_sequence = str(sequence) if is_legacy else ""
+        if str(row.get("legacy_sequence", "")).strip() != expected_sequence:
+            issue(match_id, "legacy_sequence", f"must be {expected_sequence!r}")
+
+        originals: dict[str, str] = {}
+        reaudited: dict[str, str] = {}
+        for field in PITCH_FIELDS:
+            original = str(row.get(f"original_{field}", "")).strip()
+            expected_original = str(source.get(field, "")).strip()
+            if original != expected_original:
+                issue(match_id, f"original_{field}", "must match the verified pitch release")
+            originals[field] = original
+            revised = str(row.get(f"reaudited_{field}", "")).strip()
+            blank_pending_primary = (
+                field == "pitch_primary_category"
+                and not revised
+                and status in {"pending", "source_unavailable"}
+            )
+            if not blank_pending_primary and revised not in ALLOWED_VALUES[field]:
+                issue(match_id, f"reaudited_{field}", f"unsupported value: {revised}")
+            reaudited[field] = revised
+
+        reviewed_at = str(row.get("reviewed_at_utc", "")).strip()
+        reviewer = str(row.get("reviewer_id", "")).strip()
+        evidence = str(row.get("effect_evidence_note", "")).strip()
+        review_note = str(row.get("review_note", "")).strip()
+        if len(evidence) > 300:
+            issue(match_id, "effect_evidence_note", "must not exceed 300 characters")
+
+        if not is_legacy:
+            if status != "current_standard":
+                issue(match_id, "reaudit_status", "current-standard rows must retain current_standard")
+            if reaudited != originals:
+                issue(match_id, "reaudit_status", "current_standard must preserve every pitch field")
+            if not reviewer or _parse_timestamp(reviewed_at) is None or not evidence:
+                issue(
+                    match_id,
+                    "reviewer_id",
+                    "current-standard rows require reviewer, review timestamp, and evidence note",
+                )
+            continue
+
+        if status == "pending":
+            if any(reaudited.values()):
+                issue(match_id, "reaudit_status", "pending rows must not contain re-audited codes")
+            if reviewed_at or reviewer or evidence or review_note:
+                issue(match_id, "reaudit_status", "pending rows must not contain review metadata")
+        elif status == "source_unavailable":
+            if any(reaudited.values()):
+                issue(match_id, "reaudit_status", "source_unavailable rows must not contain codes")
+            if not reviewer or _parse_timestamp(reviewed_at) is None or not review_note:
+                issue(
+                    match_id,
+                    "reviewer_id",
+                    "source_unavailable rows require reviewer, review timestamp, and note",
+                )
+        elif status in {"passed_unchanged", "passed_revised"}:
+            if not reaudited["pitch_primary_category"]:
+                issue(
+                    match_id,
+                    "reaudited_pitch_primary_category",
+                    "passed rows require a primary category",
+                )
+            if not reviewer or _parse_timestamp(reviewed_at) is None or not evidence:
+                issue(
+                    match_id,
+                    "reviewer_id",
+                    "passed rows require reviewer, review timestamp, and evidence note",
+                )
+            if status == "passed_unchanged" and reaudited != originals:
+                issue(
+                    match_id,
+                    "reaudit_status",
+                    "passed_unchanged must preserve every pitch field",
+                )
+            if status == "passed_revised" and reaudited == originals:
+                issue(
+                    match_id,
+                    "reaudit_status",
+                    "passed_revised must change at least one pitch field",
+                )
+
+    for match_id in source_by_id.keys() - registry_by_id.keys():
+        issue(match_id, "cricsheet_match_id", "pitch release row is missing from registry")
+    return issues
+
+
+def apply_pitch_reaudit(
+    pitch_rows: Iterable[dict[str, Any]],
+    registry_rows: Iterable[dict[str, Any]],
+    *,
+    legacy_count: int = 228,
+) -> list[dict[str, Any]]:
+    """Return only current-rule rows, applying reviewed replacements by match ID."""
+
+    sources = list(pitch_rows)
+    registry = list(registry_rows)
+    issues = validate_pitch_reaudit_registry(registry, sources, legacy_count=legacy_count)
+    if issues:
+        first = issues[0]
+        raise ValueError(
+            f"Invalid pitch re-audit registry for {first['cricsheet_match_id']}: "
+            f"{first['field']} {first['message']}"
+        )
+    registry_by_id = {
+        str(row["cricsheet_match_id"]).strip(): row
+        for row in registry
+    }
+    compliant: list[dict[str, Any]] = []
+    accepted = {"passed_unchanged", "passed_revised", "current_standard"}
+    for source in sources:
+        match_id = str(source["cricsheet_match_id"]).strip()
+        audit = registry_by_id[match_id]
+        if str(audit["reaudit_status"]).strip() not in accepted:
+            continue
+        output = dict(source)
+        for field in PITCH_FIELDS:
+            output[field] = str(audit[f"reaudited_{field}"]).strip()
+        compliant.append(output)
+    return compliant
+
+
 
 
 def pitch_coverage_summary(
