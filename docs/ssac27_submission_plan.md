@@ -25,9 +25,11 @@ Recheck the page immediately before submission in case instructions change.
 
 Avoid framing the study as only another match-winner classifier. The stronger applied question is:
 
-> What makes a successful ODI powerplay after accounting for opposition strength and match context, and—among matches with verified pre-match reports—when does pitch type change the best balance of aggression and wicket preservation?
+> What makes a successful ODI powerplay after accounting for opposition strength and match context, and—among matches with verified pre-match reports—when do **pitch effects explicitly stated by those sources** change the best balance of aggression and wicket preservation?
 
-The practical output is one coherent framework rather than two unrelated findings: a full-cohort description of successful powerplay profiles and a prespecified pitch-subgroup effect-modification analysis showing when the profile changes.
+The practical output is one coherent framework rather than two unrelated findings: a full-cohort description of successful powerplay profiles and a prespecified subgroup analysis using standardized source-stated pre-match pitch expectations.
+
+**Measurement rule:** the project performs no independent pitch diagnosis. It does not infer spin from dryness, seam from grass/moisture, batting ease from hardness/flatness, or slow/two-paced behavior from wear/usage unless the eligible pre-match source explicitly states that expected playing effect. Physical surface descriptions may be retained as provenance only.
 
 ## Minimum viable SSAC analysis
 
@@ -38,12 +40,12 @@ The practical output is one coherent framework rather than two unrelated finding
 - complete cohort/exclusion flow;
 - leakage-safe pre-match Elo difference;
 - innings order and toss context;
-- verified source timing and a lean, source-audited, match-specific pitch representation;
+- verified source timing and a lean, source-audited, match-specific representation of **explicitly stated pre-match pitch effects**;
 - baseline plus interpretable logistic model;
 - one nonlinear challenger only after the logistic analysis is stable;
 - chronological evaluation with development through 2023, validation in 2024, and 2025 through the fixed 2026 snapshot held out;
 - ROC-AUC, log loss, Brier score, calibration, and match-clustered confidence intervals;
-- one pitch-adjusted win-probability figure;
+- one source-stated-pitch-effect interaction figure if reliability/coverage gates pass;
 - one compact model-performance/calibration table or figure;
 - public repository with code, data-building instructions, permitted data, manifests, and results.
 
@@ -75,7 +77,7 @@ because independent double coding has not occurred. The hand-audit worksheet is
 generated but still needs external scorecard reconciliation. The 2025–2026 locked
 test remains correctly unscored.
 
-Go/no-go decision: the full-cohort powerplay result and verified-pitch subgroup must remain visibly nested under one research question. Do not submit a pitch effect-modification estimate until independent reliability passes and the ten-match 2024 pitch-validation sample is judged adequate or replaced by a prespecified alternative. Until then, retain the full-cohort result as Finding 1 and label the pitch fit provisional rather than implying that most matches had pitch adjustment. Never manufacture pitch labels from live/post-match commentary or unlock test outcomes to compensate for missing pitch data.
+Go/no-go decision: the full-cohort powerplay result and verified-pitch-report subgroup must remain visibly nested under one research question. Do not submit an interaction estimate involving source-stated pitch effects until independent reliability passes and the ten-match 2024 pitch-validation sample is judged adequate or replaced by a prespecified alternative. Until then, retain the full-cohort result as Finding 1 and label the pitch-report fit provisional. Never manufacture a pitch effect from physical surface wording, venue reputation, live/post-match commentary, or later outcomes, and never unlock test outcomes to compensate for missing pitch data.
 
 ## September 5–October 1 sprint
 
@@ -93,14 +95,14 @@ Go/no-go decision: the full-cohort powerplay result and verified-pitch subgroup 
 
 ## Scope fallback ladder
 
-If pitch collection becomes the bottleneck, reduce complexity transparently rather than using post-match information:
+If pitch-report collection becomes the bottleneck, reduce complexity transparently rather than inferring missing effects:
 
-1. simplify the pitch code to a smaller, high-reliability set of dimensions;
+1. simplify the source-stated effect code to a smaller, high-reliability set of dimensions;
 2. use only reports with verified publication times and add an explicit missing indicator;
-3. define a prespecified, stratified pitch-analysis subset that spans years and competition types;
-4. make individual sparse pitch dimensions secondary while retaining the high-coverage primary pitch category.
+3. define a prespecified, stratified pitch-report subgroup that spans years and competition types;
+4. make individual sparse source-stated dimensions secondary while retaining the higher-coverage primary source-stated category.
 
-Never fill missing pre-match pitch descriptions using post-match reports.
+Never fill missing pre-match pitch effects using post-match reports, venue history, or researcher interpretation of physical pitch descriptions.
 
 ## Abstract shell
 
@@ -110,7 +112,7 @@ State the industry problem, the inadequacy of raw powerplay benchmarks, and the 
 
 ### Methods
 
-State the cohort and sources, unit of analysis, leakage cutoff, conditions/context variables, chronological split, model types, and calibration/uncertainty methods.
+State the cohort and sources, unit of analysis, leakage cutoff, contextual variables, chronological split, model types, and calibration/uncertainty methods. Explicitly state that pitch variables are standardized from **source-stated pre-match expectations**, not independent researcher assessment of the surface.
 
 ### Results
 
@@ -120,7 +122,7 @@ gate passes; never label validation estimates as final held-out performance.
 
 ### Conclusion
 
-State the full-cohort powerplay finding first. Add the verified-pitch effect-modification finding only if coverage and reliability gates pass; otherwise identify it as the prespecified incomplete subgroup analysis rather than reframing the paper as pitch-adjusted.
+State the full-cohort powerplay finding first. Add the verified-pitch-report interaction finding only if coverage and reliability gates pass; otherwise identify it as the prespecified incomplete subgroup analysis rather than reframing the paper as pitch-adjusted.
 
 ## Submission-day checklist
 
@@ -128,6 +130,7 @@ State the full-cohort powerplay finding first. Add the verified-pitch effect-mod
 - all four required headings are present;
 - no promised or placeholder results;
 - no causal claim from observational evidence;
+- pitch variables are described as standardized source statements, not researcher pitch diagnosis;
 - no more than two combined figures/tables;
 - numbers match frozen repository outputs;
 - repository is public and opens without authentication;
