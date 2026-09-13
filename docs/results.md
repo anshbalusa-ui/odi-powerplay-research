@@ -4,10 +4,12 @@
 
 These are reproducible **development and 2024 temporal-validation results**, not
 final paper results. The 2025–2026 test period remains locked and its outcomes have
-not been scored. The intended pitch result is a prespecified effect-modification
+not been scored. The intended pitch-report result is a prespecified effect-modification
 analysis nested within the same powerplay question, not a separate finding. The
-228 source- and timing-verified pitch reports now exceed the collection target,
-but the pitch codes have not passed independent double-coding.
+228 source- and timing-verified pre-match reports now exceed the collection target,
+but the source-stated pitch-effect codes have not passed independent double-coding.
+
+The pitch-report variables in this project are **not independent researcher assessments of the surface**. They standardize only expected playing effects explicitly stated by eligible pre-match sources. Physical descriptions such as dry, dusty, grassy, green, moist, hard, cracked, worn, tacky, or used are provenance only unless the source itself explicitly states the corresponding playing effect.
 
 ## Cohort construction
 
@@ -58,7 +60,7 @@ Same-day matches share the same pre-date state and do not update one another.
 At least one prior venue match is available for 997 of 1,094 primary matches
 (91.13%); 97 matches are cold starts. This is a historical scoring-environment
 proxy, not a direct observation of the match-day surface, weather, preparation, or
-curator intent, and it does not replace verified pre-match pitch reports.
+curator intent, and it does not replace or infer missing source-stated pre-match pitch effects.
 
 ## Chronological model evaluation
 
@@ -86,7 +88,7 @@ not improve it. Adding rolling venue-history conditions to M1 produced AUC 0.705
 versus 0.7082, log loss 0.6252 versus 0.6246, and Brier score 0.2185 versus
 0.2183. These negligible-to-adverse point-estimate differences have wide,
 overlapping intervals. They neither establish a useful venue-history contribution
-nor show that match-day pitch conditions are unimportant.
+nor imply anything about the importance of source-stated match-specific pitch effects.
 
 The M1 calibration intercept was -0.007 (95% CI -0.089 to 0.077) and slope was
 0.767 (0.346 to 1.332). The runs-and-wickets benchmark calibration intercept was
@@ -94,28 +96,25 @@ The M1 calibration intercept was -0.007 (95% CI -0.089 to 0.077) and slope was
 fixed probability bins with whole-match bootstrap uncertainty. The intercept-only
 calibration slope is unidentifiable because its probabilities are constant.
 
-## Provisional pitch-subset smoke test
+## Provisional source-stated pitch-effect subgroup smoke test
 
-The verified pitch subset contains 228 matches and 456 paired innings: 167
+The verified pitch-report subset contains 228 matches and 456 paired innings: 167
 development matches, ten 2024 validation matches, and 51 locked-test matches. The
 locked outcomes remain unscored. A separate complete-case fit confirmed that the
-prespecified pitch main effects and interactions execute end to end.
+prespecified **source-stated** pitch-effect main fields and interactions execute end to end.
 
 The ten-match 2024 sample is not adequate for substantive model comparison. Point
 estimates were ROC-AUC 0.69 and log loss 0.6305 for the powerplay runs-and-wickets
-benchmark, ROC-AUC 0.48 and log loss 0.8289 for M1 with context and pitch main
-effects, and ROC-AUC 0.57 and log loss 0.7693 for M2 with the prespecified pitch
+benchmark, ROC-AUC 0.48 and log loss 0.8289 for M1 with context and source-stated pitch main
+effects, and ROC-AUC 0.57 and log loss 0.7693 for M2 with the prespecified source-stated pitch
 interactions. These unstable values are reported only as reproducibility evidence,
 not as Finding 2. Source selection, provider-specific framing, the tiny validation
-sample, and absent independent double-coding prevent a pitch-effect conclusion.
+sample, and absent independent double-coding prevent a substantive source-stated pitch-effect conclusion.
 
 ## Interpretation boundary
 
 The observable conclusion is limited: first-10-over runs and wickets contain useful
 held-out information about the batting team's match outcome in the full 2024
 sample. The study remains observational, so the estimates are associations rather
-than causal effects. The pitch merge and interaction pipeline run on the verified
-subset, but no pitch-adjusted substantive claim is reported. No ESPN page text,
-live or post-match commentary entered a predictor, and no claim uses the locked
-test period. Exact model definitions, hashes, and artifact paths are in
-`docs/modeling_status.md`.
+than causal effects. The pitch-report merge and interaction pipeline run on the verified
+subset, but no source-stated pitch-effect substantive claim is reported. The researchers do not infer pitch behavior from dry/grass/moisture/cracks or other physical descriptors. No ESPN page text, live or post-match commentary entered a predictor, and no claim uses the locked test period. Exact model definitions, hashes, and artifact paths are in `docs/modeling_status.md`.
