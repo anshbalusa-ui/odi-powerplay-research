@@ -54,6 +54,8 @@ pitch:
   infer_effect_from_physical_surface_description: false
   physical_surface_descriptors_role: "provenance_note_only_never_used_to_derive_model_fields"
   unstated_effect_policy: "leave_blank_or_unknown_never_infer"
+  legacy_228_release_status: "provisional_requires_explicit_source_effect_reaudit"
+  require_explicit_source_effect_reaudit_before_final_pitch_modeling: true
   primary_features:
     - "batting_ease"
     - "pace_seam_support"
