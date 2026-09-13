@@ -1,6 +1,9 @@
 # Complete ODI Powerplay Research Pipeline Implementation Plan
 
-> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
+> **Historical plan:** This records the pre-implementation task design, not the
+> current API, counts, or completion status. Use `README.md`, `docs/results.md`,
+> `docs/modeling_status.md`, and `docs/pitch_collection_status.md` for current
+> abstract planning and verified pitch-analysis status.
 
 **Goal:** Produce a tested, leakage-safe, reproducible ODI research pipeline that joins Cricsheet first-10-over performance, pre-match team strength, and source-audited pitch conditions, then evaluates chronological logistic and nonlinear models.
 
@@ -109,7 +112,7 @@ Group matches by ISO date, emit both teams' ratings and prior decided-match win 
 - [ ] **Step 4: Build and audit the strength table**
 
 Run: `python scripts/build_team_strength.py`
-Expected: exactly one row per 1,093 primary match IDs, no duplicate IDs, and initial ratings for each team's first appearance.
+Expected: exactly one row per 1,094 primary match IDs, no duplicate IDs, and initial ratings for each team's first appearance.
 
 - [ ] **Step 5: Run tests and commit**
 

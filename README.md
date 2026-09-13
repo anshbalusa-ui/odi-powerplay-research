@@ -19,7 +19,7 @@ The SSAC version will emphasize one applied question: what makes a successful OD
 
 ## Primary research question
 
-> Among men's One Day International cricket matches, how are powerplay aggression and wicket preservation associated with the batting team's probability of winning after accounting for pre-match team strength, innings order, toss, venue, year, and competition type—and, within the verified-pitch subgroup, how do those associations vary by pitch conditions?
+> Among men's One Day International cricket matches, how are powerplay runs, wickets lost, boundary percentage, and dot-ball percentage associated with the batting team's probability of winning after accounting for pre-match opposition strength, innings order, toss, venue, year, and competition type—and, within the verified-pitch subgroup, how do those associations vary by pre-match pitch conditions?
 
 The wording is intentionally **associated with**, not **causes**. This is observational data.
 
@@ -37,6 +37,8 @@ One row represents one batting-team innings in one match. The outcome is `battin
 - An auditable cleaning stage separating raw innings, retained matches, exclusions,
   the broad 2015-forward primary cohort, and competition-type subgroups.
 - A full-cohort metric audit covering formulas, ranges, match pairing, and outcome labels.
+- A deterministic 20-match raw-JSON re-extraction audit covering 1,120 field-level
+  comparisons across 40 innings with zero discrepancies.
 - Date-batched pre-match Elo and rolling prior-20 win rates computed from all
   available clean history without same-day or future leakage.
 - Date-batched prior-20 venue powerplay histories covering 997 of 1,094 primary
@@ -93,6 +95,7 @@ python scripts/build_team_strength.py
 python scripts/build_venue_conditions.py
 python scripts/build_model_table.py
 python scripts/audit_powerplay_metrics.py
+python scripts/audit_extraction.py
 python scripts/build_hand_audit_sample.py
 python scripts/build_pitch_collection_queue.py
 python scripts/build_match_start_queue.py
@@ -109,6 +112,24 @@ python scripts/build_pitch_reliability_sample.py
 Generated primary/cohort datasets are ignored by Git and reproduced from the
 checksummed raw snapshot. The tracked hand-audit and pitch-queue templates contain
 no source prose and no secret data.
+
+## Pitch-condition data and analysis
+
+Each accepted pre-match report is coded into one primary surface category
+(`batting_friendly`, `balanced`, `pace_seam`, `spin`, `slow_two_paced`, or
+`unknown`) plus ordinal batting-ease, pace/seam-support, and spin-support fields,
+bounce profile, expected two-paced behavior, and explicit pre-match dew expectation.
+The current 228-match release contains 96 batting-friendly, 39 balanced, 36 spin,
+27 pace/seam, 27 slow/two-paced, and three unknown primary classifications.
+
+The pitch-complete model table contains 456 paired team-innings: 334 development
+rows from 167 matches, 20 validation rows from ten 2024 matches, and 102 locked-test
+rows from 51 matches. The 2024 pitch-model run is deliberately a pipeline smoke
+test, not a pitch finding: the powerplay benchmark had ROC-AUC 0.69, while the
+context-plus-pitch M1 and pitch-interaction M2 models had ROC-AUC 0.48 and 0.57.
+Ten validation matches and no independent double-coding are insufficient for a
+substantive pitch-effect claim. Exact specifications and metrics are in
+`docs/modeling_status.md` and `docs/results.md`.
 
 Twenty-three outcome-blind pitch batches cover 575 reviewed matches: 228 non-ESPN
 pre-match reports passed source and timing validation, 347 reviewed matches are

@@ -79,3 +79,14 @@ preliminary results.
 - `config_sha256`
 
 For publication tables, remove machine-specific file paths but retain hashes and source URLs.
+
+## Completed validation runs
+
+### 2026-09-13 — deterministic extraction audit
+
+- Selection frame: 1,094 primary-cohort matches from the fixed Cricsheet snapshot.
+- Selection method: SHA-256-ranked, seeded round-robin sampling across match years; seed `20250905`.
+- Audited sample: 20 matches and both regulation innings from each match.
+- Comparisons: 1,120 field-level checks covering match metadata, toss, innings order, result label, runs, wickets, legal balls, delivery events, run rate, boundary count/percentage, dot count/percentage, and powerplay completeness.
+- Result: zero discrepancies between saved extracted rows and fresh extraction from the raw JSON files.
+- Local artifact: `artifacts/tables/extraction_audit.csv`.
