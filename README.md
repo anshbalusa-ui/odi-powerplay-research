@@ -2,7 +2,7 @@
 
 [![Tests](https://github.com/anshbalusa-ui/odi-powerplay-research/actions/workflows/tests.yml/badge.svg)](https://github.com/anshbalusa-ui/odi-powerplay-research/actions/workflows/tests.yml)
 
-Reproducible Python research pipeline for an **associational** study of which first-10-over ODI batting profiles are linked to winning, how much they add beyond opposition strength and match context, and whether those relationships vary by verified pre-match pitch type.
+Reproducible Python research pipeline for an **associational** study of which first-10-over ODI batting profiles are linked to winning, how much they add beyond opposition strength and match context, and whether those relationships vary by **source-stated pre-match pitch behavior**.
 
 ## Research scope
 
@@ -13,13 +13,13 @@ World Cups are a labeled subgroup and sensitivity analysis, not the main dataset
 ## Two-track deliverables
 
 - **SSAC27 milestone:** finish a results-complete, reproducible analysis from the broad modern-ODI cohort for the abstract deadline on October 1, 2026 at 11:59 p.m. ET. The submission is a milestone, not the endpoint of the research.
-- **Full research paper:** continue expanding the cohort, pitch coding, robustness analyses, and paper after the SSAC abstract is submitted, regardless of the competition decision.
+- **Full research paper:** continue expanding the cohort, source-stated pitch-effect coding, robustness analyses, and paper after the SSAC abstract is submitted, regardless of the competition decision.
 
-The SSAC version will emphasize one applied question: what makes a successful ODI powerplay, and when does the best balance of aggression and wicket preservation change? The full cohort estimates powerplay-outcome associations; the verified-pitch subset is a prespecified effect-modification analysis within that same question. See `docs/ssac27_submission_plan.md`.
+The SSAC version will emphasize one applied question: what makes a successful ODI powerplay, and when does the best balance of aggression and wicket preservation change? The full cohort estimates powerplay-outcome associations; the verified-pitch-report subset is a prespecified effect-modification analysis within that same question. See `docs/ssac27_submission_plan.md`.
 
 ## Primary research question
 
-> Among men's One Day International cricket matches, how are powerplay runs, wickets lost, boundary percentage, and dot-ball percentage associated with the batting team's probability of winning after accounting for pre-match opposition strength, innings order, toss, venue, year, and competition type—and, within the verified-pitch subgroup, how do those associations vary by pre-match pitch conditions?
+> Among men's One Day International cricket matches, how are powerplay runs, wickets lost, boundary percentage, and dot-ball percentage associated with the batting team's probability of winning after accounting for pre-match opposition strength, innings order, toss, venue, year, and competition type—and, within the verified-pitch-report subgroup, how do those associations vary by **pitch effects explicitly stated in eligible pre-match sources**?
 
 The wording is intentionally **associated with**, not **causes**. This is observational data.
 
@@ -51,14 +51,14 @@ One row represents one batting-team innings in one match. The outcome is `battin
 - A deterministic 24-innings hand-audit worksheet spanning every year from 2015–2026.
 - An outcome-blind 1,094-match pitch-source queue plus validators, complete
   collection-status reporting, provider-concentration auditing, and a leakage-safe
-  pitch/model-table merge.
+  pitch-report/model-table merge.
 - Rights-safe ESPN linkage candidates for all 1,094 queued matches, with explicit
   human-verification fields and a zero-network structural audit.
 - A 1,094-match outcome-blind scheduled-start template with IANA-timezone,
   cohort-identity, provenance, and UTC-conversion validation.
-- An expanded release of 228 timing-verified provisional pitch codes, 347
+- An expanded release of 228 timing-verified provisional source-stated pitch codes, 347
   reviewed set-asides, and 519 explicitly unreviewed matches.
-- Pitch/source-timing templates, research design, data dictionary, pitch codebook,
+- Pitch/source-timing templates, research design, data dictionary, pitch-effect codebook,
   transformation log, paper outline, and execution roadmap.
 
 For the Cricsheet snapshot retrieved on September 10, 2026, the pipeline found
@@ -71,7 +71,7 @@ subgroup contains 110 matches; it is not the primary sample.
 ```text
 Cricsheet JSON -> match/innings table -> rolling team and venue history
                                       \
-pre-match pitch coding ---------------> audited merge -> leakage-safe model table
+eligible pre-match source-stated pitch effects -> audited merge -> leakage-safe model table
 
 model table -> chronological splits -> logistic/RF/XGBoost -> calibration/CI/plots
 ```
@@ -113,22 +113,22 @@ Generated primary/cohort datasets are ignored by Git and reproduced from the
 checksummed raw snapshot. The tracked hand-audit and pitch-queue templates contain
 no source prose and no secret data.
 
-## Pitch-condition data and analysis
+## Source-stated pitch-effect data and analysis
 
-Each accepted pre-match report is coded into one primary surface category
-(`batting_friendly`, `balanced`, `pace_seam`, `spin`, `slow_two_paced`, or
-`unknown`) plus ordinal batting-ease, pace/seam-support, and spin-support fields,
-bounce profile, expected two-paced behavior, and explicit pre-match dew expectation.
+Each accepted pre-match report is standardized only from **playing effects explicitly stated by that source** into one primary category (`batting_friendly`, `balanced`, `pace_seam`, `spin`, `slow_two_paced`, or `unknown`) plus explicitly stated batting-ease, pace/seam-support, spin-support, bounce, two-paced, and dew expectations.
+
+**The project performs zero independent pitch diagnosis.** Physical descriptions such as dry, dusty, grassy, green, moist, hard, cracked, worn, tacky, or used may be retained in the short provenance paraphrase, but they are never converted by the researcher into pitch-effect variables. For example, `dry` does not become `spin`, and `grass` does not become `pace_seam`, unless the eligible pre-match source itself explicitly states that expected playing effect. If the source does not state the effect, the corresponding field remains blank or `unknown`.
+
 The current 228-match release contains 96 batting-friendly, 39 balanced, 36 spin,
-27 pace/seam, 27 slow/two-paced, and three unknown primary classifications.
+27 pace/seam, 27 slow/two-paced, and three unknown primary source-stated classifications.
 
-The pitch-complete model table contains 456 paired team-innings: 334 development
+The pitch-report-complete model table contains 456 paired team-innings: 334 development
 rows from 167 matches, 20 validation rows from ten 2024 matches, and 102 locked-test
 rows from 51 matches. The 2024 pitch-model run is deliberately a pipeline smoke
-test, not a pitch finding: the powerplay benchmark had ROC-AUC 0.69, while the
+test, not a substantive pitch finding: the powerplay benchmark had ROC-AUC 0.69, while the
 context-plus-pitch M1 and pitch-interaction M2 models had ROC-AUC 0.48 and 0.57.
 Ten validation matches and no independent double-coding are insufficient for a
-substantive pitch-effect claim. Exact specifications and metrics are in
+substantive source-stated pitch-effect claim. Exact specifications and metrics are in
 `docs/modeling_status.md` and `docs/results.md`.
 
 Twenty-three outcome-blind pitch batches cover 575 reviewed matches: 228 non-ESPN
@@ -141,7 +141,8 @@ recoded by a genuinely independent coder. The blinded 46-row assignment is
 and match identity but omits every first-coder pitch judgment. The minimized tracked
 releases are `data/manual/pitch_reports_verified.csv` and
 `data/manual/match_start_times_verified.csv`; they contain provenance, factual
-timestamps, derived codes, and short original paraphrases, not copied article text.
+timestamps, derived standardizations of source-stated effects, and short original
+paraphrases, not copied article text.
 
 The 228 accepted sources span 35 normalized provider hostnames. MyKhel contributes
 53 matches (23.2%), ICC 36 (15.8%), and Business Standard 26 (11.4%); the top
@@ -176,7 +177,7 @@ predictors. Reproduce the tracked audits and 228-match merge with:
   --match-start-input data/manual/match_start_times_verified.csv
 ```
 
-The pitch-adjusted analysis remains provisional: only ten verified-pitch matches
+The source-stated pitch-effect analysis remains provisional: only ten verified-pitch-report matches
 fall in the 2024 temporal-validation year, and independent double-coding is still
 required. The 2025–2026 locked-test outcomes remain unscored.
 
@@ -189,8 +190,9 @@ and report source coverage across years, venues, competition types, and outcomes
 ## Reproducibility rules
 
 - Never modify raw files after download; use dated/checksummed source manifests.
-- Keep original pitch-report URLs and short paraphrased notes alongside coded values.
-- Version the pitch codebook before double-coding begins.
+- Keep original pitch-report URLs and short paraphrased notes alongside source-stated effect codes.
+- Never infer a pitch effect from a physical surface descriptor that the source did not explicitly connect to that effect.
+- Version the pitch-effect codebook before double-coding begins.
 - Derive team strength using only matches before the focal match date.
 - Keep both rows from a match in the same split/fold.
 - Fit preprocessing inside each training fold.
@@ -206,7 +208,7 @@ and report source coverage across years, venues, competition types, and outcomes
 - `docs/data_dictionary.md` — row-level schema and exact definitions
 - `docs/pitch_collection_status.md` — outcome-blind pitch-source collection progress and batch audit
 - `docs/modeling_status.md` — exact preliminary model specifications, split counts, validation results, and lock state
-- `docs/pitch_codebook.md` — reproducible text-to-category rules
+- `docs/pitch_codebook.md` — reproducible rules for standardizing explicitly stated pre-match pitch effects
 - `docs/transformation_log.md` — every planned transformation and audit artifact
 - `docs/execution_roadmap.md` — the build order and milestone checklist
 - `docs/paper_outline.md` — section-by-section paper structure
@@ -214,12 +216,9 @@ and report source coverage across years, venues, competition types, and outcomes
 
 ## Data-source attribution
 
-Match data: one fixed, checksummed Cricsheet JSON archive. Pitch conditions: 228
-individually cited non-ESPN pre-match pitch/conditions reports from 35 normalized
-provider hostnames. ESPN candidates are retained only for human/licensed follow-up;
-no ESPN page text or live/post-match commentary is in the released pitch codes.
-Generic hourly weather variables are not part of the primary design. Follow each
-source's licence/terms and include a source statement in the final paper.
+Match data: one fixed, checksummed Cricsheet JSON archive. Source-stated pitch effects: 228
+individually cited non-ESPN pre-match reports from 35 normalized provider hostnames.
+The research standardizes only effects explicitly stated in those sources and does not independently infer pitch behavior from physical surface descriptions. ESPN candidates are retained only for human/licensed follow-up; no ESPN page text or live/post-match commentary is in the released pitch codes. Generic hourly weather variables are not part of the primary design. Follow each source's licence/terms and include a source statement in the final paper.
 
 ## Licence
 
