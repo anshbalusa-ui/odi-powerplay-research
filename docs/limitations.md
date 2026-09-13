@@ -3,10 +3,11 @@
 ## Current evidence boundary
 
 The implemented analysis is results-complete for a full-cohort 2024 temporal
-validation that includes a historical venue-scoring proxy but not source-coded
-match-day pitch conditions. It is not a final pitch-adjusted analysis, not
-locked-test performance, and not causal evidence. The 2025–2026 outcome lock must
-remain closed until pitch handling and final model choices are frozen.
+validation that includes a historical venue-scoring proxy but not the final
+source-stated match-specific pre-match pitch-effect analysis. It is not a final
+pitch-report-subgroup result, not locked-test performance, and not causal evidence.
+The 2025–2026 outcome lock must remain closed until source-stated pitch-effect handling
+and final model choices are frozen.
 
 ## Match-data coverage and selection
 
@@ -65,17 +66,34 @@ not be treated as stable league tables.
   score over M1 by point estimate. Wide overlapping intervals preclude a strong
   negative conclusion.
 
-## Pitch conditions and ESPNcricinfo
+## Source-stated pre-match pitch effects and ESPNcricinfo
 
-Current reproducible pitch coverage is **228 of 1,094 primary matches
-(20.840951%)**. All 228 are AI-assisted first-pass codes from non-ESPN,
+Current reproducible pitch-report coverage is **228 of 1,094 primary matches
+(20.840951%)**. All 228 are AI-assisted first-pass standardizations from non-ESPN,
 match-specific pre-match sources. They pass the automated source, timing, and merge
-gates but have not passed the independent-human reliability gate. Therefore:
+gates but have not passed the independent-human reliability gate.
+
+### Strict measurement boundary
+
+The project performs **no independent pitch diagnosis**. Analytical pitch variables
+represent only expected playing effects explicitly stated by eligible pre-match
+sources. Physical descriptions such as dry, dusty, grassy, green, moist, hard,
+cracked, worn, tacky, or used may be preserved in a short paraphrase for provenance,
+but they cannot be converted by researcher judgment into `spin`, `pace_seam`,
+`batting_ease`, `bounce_profile`, or `two_paced_expected` values.
+
+For example, a dry surface is not coded as spin-supportive unless the source itself
+states expected spin/turn/grip assistance. A grassy surface is not coded as
+pace/seam-supportive unless the source itself states the expected pace/seam effect.
+If the source does not state a playing effect, that effect remains blank or
+`unknown`.
+
+Therefore:
 
 - a provisional complete-case model fit is a pipeline smoke test only;
-- runs × pitch and wickets × pitch interactions cannot support a research claim;
-- no fitted model can yet be called reliably pitch-adjusted;
-- no match-day pitch conclusion should appear in an abstract or paper result.
+- runs × source-stated pitch effect and wickets × source-stated pitch effect interactions cannot yet support a research claim;
+- no fitted model can yet be called reliably adjusted for source-stated pitch effects;
+- no match-day pitch-effect conclusion should appear in an abstract or paper result until reliability and sample-size gates pass.
 
 ESPNcricinfo's reviewed terms prohibit the automated extraction approach originally
 contemplated for data mining. The project therefore does not bulk scrape ESPN text.
@@ -93,7 +111,7 @@ date, event, and venue before any report can pass source validation.
 
 The full tracked start-time template covers 1,094 matches with `pending` placeholders.
 The separate tracked verified release contains 228 cited scheduled starts, one for
-each currently published pitch code. Collectors need to verify only rows with
+each currently published source-stated pitch-effect code. Collectors need to verify only rows with
 collected pitch reports, not the entire cohort. The audit validates cohort identity,
 provenance, IANA timezones, and exact local-to-UTC conversion. Downstream code
 exposes only rows explicitly marked `verified`, so a blank, partial, or merely
@@ -111,21 +129,23 @@ Completing broader coverage still requires:
 2. a direct eligible pre-match URL and publication timestamp for each coded match;
 3. a verified scheduled match-start UTC timestamp;
 4. short original paraphrases rather than copied report prose;
-5. a second independent coder for at least 46 of the 228 completed reports;
-6. reconciliation and reliability reporting before outcome modeling.
+5. coding only effects explicitly stated by the source, with physical descriptions retained as provenance rather than inferred effects;
+6. a second independent coder for at least 46 of the 228 completed reports;
+7. reconciliation and reliability reporting before outcome modeling.
 
 The accepted reports span 35 normalized provider hostnames, but the source mix is
 not uniform: the largest provider contributes 23.2% and the top three contribute
-50.4%. The provider HHI is 1,132. Provider-level pitch-category and confidence
+50.4%. The provider HHI is 1,132. Provider-level source-stated pitch-category and confidence
 counts are published in `artifacts/tables/pitch_source_providers.csv`; they expose,
 rather than resolve, outlet-specific framing and classification risk.
 
 Pitch-report availability is likely nonrandom across teams, venues, competitions,
-years, and publishers. Complete-case pitch models may therefore be selection-biased
-even after coverage and provider reporting. Text-to-code judgments also introduce
-measurement error and coder subjectivity. Missing pitch dimensions must remain
-missing; they cannot be backfilled from live commentary, match outcomes, generic
-venue stereotypes, or post-match descriptions.
+years, and publishers. Complete-case pitch-report models may therefore be selection-biased
+even after coverage and provider reporting. Text-to-code standardization also introduces
+measurement error and coder subjectivity. Missing pitch effects must remain missing;
+they cannot be backfilled from live commentary, match outcomes, generic venue
+stereotypes, physical surface descriptors, researcher cricket knowledge, or
+post-match descriptions.
 
 ## Modeling limitations
 
