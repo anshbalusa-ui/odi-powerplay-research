@@ -7,7 +7,7 @@ The project has two linked timelines:
 1. **SSAC27 milestone:** a complete, reproducible result from the broad modern men's ODI cohort by the October 1, 2026 abstract deadline.
 2. **Expanded paper:** the broader ODI study continues after submission, whether or not the abstract advances.
 
-The SSAC deadline changes sequencing, not scientific standards. Scope may be reduced for specific condition variables if source coverage is inadequate, but the match cohort is not World-Cup-only.
+The SSAC deadline changes sequencing, not scientific standards. Scope may be reduced for specific source-stated pitch-effect variables if source coverage is inadequate, but the match cohort is not World-Cup-only.
 
 ## Build order
 
@@ -18,7 +18,8 @@ The project should be built in seven gates. Do not begin final modeling until th
 **Goal:** prevent outcome-driven decisions.
 
 - Confirm the 2015-forward men's ODI primary era and fixed data-snapshot cutoff; do not filter by event.
-- Freeze primary hypotheses, cohort rules, prediction timestamp, lean pitch codebook, feature sets, and final test period.
+- Freeze primary hypotheses, cohort rules, prediction timestamp, lean **source-stated pitch-effect codebook**, feature sets, and final test period.
+- Freeze the rule that no pitch effect may be inferred from physical surface descriptions by the researcher.
 - Choose confirmatory versus exploratory interactions.
 - Create an empty results shell before examining final-test outcomes.
 
@@ -47,17 +48,20 @@ The project should be built in seven gates. Do not begin final modeling until th
 
 **Pass condition:** every eligible match has validated IDs; no post-match strength data are used.
 
-### Gate 4 — Collect and validate pitch conditions
+### Gate 4 — Collect and validate source-stated pre-match pitch effects
 
-**Goal:** make subjective and modeled conditions transparent.
+**Goal:** make source-derived pitch expectations transparent without independent researcher pitch analysis.
 
-- Collect eligible pre-match pitch reports using a prespecified design spanning years, venues, teams, outcomes, and competition types.
-- If complete pitch-report coverage is infeasible, define a source-audited analysis subset without inspecting outcomes and report its selection/coverage limits.
-- Double-code a stratified random 20% and calculate reliability.
-- Code only the prespecified pitch-behavior fields; keep explicit dew expectation secondary.
+- Collect eligible pre-match pitch reports using a prespecified design spanning years, venues, teams, and competition types without inspecting outcomes.
+- Standardize only the playing effects explicitly stated by each source.
+- Do **not** infer spin from dry/dusty/cracked wording, pace/seam from grass/green/moist wording, batting ease from hard/flat wording, or slow/two-paced behavior from used/worn/tacky wording unless the source itself states that effect.
+- Retain physical surface descriptions only in short provenance paraphrases.
+- If complete report coverage is infeasible, define a source-audited analysis subset without inspecting outcomes and report its selection/coverage limits.
+- Double-code a stratified random 20% and calculate reliability using the same explicit-source-only rule.
+- Keep explicit dew expectation secondary.
 - Inspect missingness, unsupported codes, and inconsistent values.
 
-**Pass condition:** source coverage, inter-coder reliability, and pitch-field missingness are documented.
+**Pass condition:** source coverage, inter-coder reliability, source-stated effect-field missingness, and compliance with the no-inference rule are documented.
 
 ### Gate 5 — Freeze the model table
 
@@ -65,6 +69,7 @@ The project should be built in seven gates. Do not begin final modeling until th
 
 - Merge one-to-one match tables before expanding to team-innings.
 - Apply the feature allowlist.
+- Prohibit raw physical surface descriptors and any researcher-inferred pitch labels from the model table.
 - Create a correlation report.
 - Remove deterministic/redundant pairs from the same specification.
 - Save development/test IDs and hash the table.
@@ -80,6 +85,7 @@ The project should be built in seven gates. Do not begin final modeling until th
 - Freeze all model objects and parameters.
 - Score the locked test once.
 - Compute match-clustered bootstrap CIs, calibration, permutation importance, and SHAP.
+- Interpret pitch interactions only as interactions with **source-stated pre-match expectations**, never as direct physical-surface measurements.
 
 **Pass condition:** every model has the same eligible test rows, saved probabilities, required metrics, and confidence intervals.
 
@@ -90,6 +96,7 @@ The project should be built in seven gates. Do not begin final modeling until th
 - Build figures from saved tables, never by manual editing.
 - Write methods before interpreting results.
 - Distinguish confirmatory and exploratory results.
+- Describe pitch variables as standardized source statements, not researcher diagnoses of the surface.
 - Discuss measurement error, selection bias, sample size, source coverage, and non-causal interpretation.
 - Run the project from a clean environment and compare output hashes.
 
@@ -102,9 +109,9 @@ The project should be built in seven gates. Do not begin final modeling until th
 | 1 | protocol, hypotheses, scope, source/legal check |
 | 2 | Cricsheet extraction and 20-match hand audit |
 | 3 | cohort flow, venue crosswalk, source-timing table |
-| 4 | first half of pitch reports and coding log |
-| 5 | remaining pitch reports and inter-coder sample |
-| 6 | Elo, pitch merge, missingness audit |
+| 4 | first half of pre-match reports and source-stated effect coding log |
+| 5 | remaining reports and inter-coder sample |
+| 6 | Elo, report-code merge, missingness audit |
 | 7 | descriptive analysis and frozen feature/split manifest |
 | 8 | logistic models, interactions, marginal effects |
 | 9 | RF/XGBoost, calibration, bootstrap CIs, SHAP |
@@ -114,16 +121,8 @@ For the accelerated SSAC27 milestone, follow `docs/ssac27_submission_plan.md` wh
 
 ## What to build next
 
-The highest-value next implementation is **Gate 2**, not XGBoost:
-
-1. download the Cricsheet ODI archive;
-2. run extraction;
-3. filter the 2015-forward men's ODI primary cohort and label competition types;
-4. generate the cohort flow/exclusion table;
-5. hand-audit 20 innings and turn every issue into a test.
-
-Modeling before this point would produce impressive-looking but unreliable results.
+The current repository has already progressed beyond the original Gate 2 starting point. The next high-value work is to finish the independent reliability gate for the 228 verified reports, continue outcome-blind source collection where useful, and then freeze the source-stated pitch-effect handling before the locked test is scored.
 
 ## Definition of a strong student paper
 
-The paper does not need a new algorithm. Its sophistication comes from a precise question, honest scope, careful measurement, temporal validation, leakage prevention, uncertainty/calibration, transparent subjective coding, reproducible artifacts, and clear limits on causal interpretation.
+The paper does not need a new algorithm. Its sophistication comes from a precise question, honest scope, careful measurement, temporal validation, leakage prevention, uncertainty/calibration, transparent source-stated coding, reproducible artifacts, and clear limits on causal interpretation.
