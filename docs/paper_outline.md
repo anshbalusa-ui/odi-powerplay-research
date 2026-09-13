@@ -6,35 +6,36 @@ This outline is for the full paper. The SSAC27 abstract is a focused extract wit
 
 The cohort, powerplay extraction, pre-match team and venue histories,
 chronological model table, 2024 validation, uncertainty estimates, preliminary
-figures, and the 228-match source- and timing-verified pitch collection are
+figures, and the 228-match source- and timing-verified pitch-report collection are
 reproducible. `docs/results.md` contains the current quantitative narrative and
-`docs/limitations.md` fixes its interpretation boundary. A provisional pitch-model
-smoke test runs end to end, but independent pitch double-coding and the single
-locked-test evaluation remain incomplete. No current paragraph may present a
-pitch-effect estimate as reliable or the study as final.
+`docs/limitations.md` fixes its interpretation boundary. A provisional model using
+**source-stated pre-match pitch effects** runs end to end, but independent pitch
+report double-coding and the single locked-test evaluation remain incomplete. No
+current paragraph may present a pitch-effect estimate as reliable or the study as
+final.
 
 ## Title page and abstract (200–250 words)
 
-- Use the working title *What Makes a Successful ODI Powerplay? The Role of Aggression, Wicket Preservation, Opposition Strength, and Pitch Conditions*.
+- Use the working title *What Makes a Successful ODI Powerplay? The Role of Aggression, Wicket Preservation, Opposition Strength, and Source-Stated Pitch Effects*.
 - One-sentence background and unified research question.
 - Data sources, sample period, and match-clustered unit of analysis.
 - Finding 1: full-cohort powerplay profiles after contextual adjustment.
-- Finding 2: pitch effect modification in the source-verified subgroup, only after its gates pass.
+- Finding 2: effect modification by **pitch effects explicitly stated in eligible pre-match sources**, only after its gates pass.
 - Main limitation and conclusion without causal language.
 
 ## 1. Introduction
 
 1. Explain why aggression and wicket preservation jointly define an ODI powerplay.
-2. Explain why opposition strength, innings order, and pitch behavior can change the meaning of the same start.
+2. Explain why opposition strength, innings order, and source-stated pre-match pitch behavior can change the meaning of the same start.
 3. Identify the gap: early performance is often summarized without jointly addressing context, temporal validation, and calibration.
-4. State one research question with a full-cohort analysis and a prespecified verified-pitch effect-modification subgroup.
+4. State one research question with a full-cohort analysis and a prespecified verified-pitch-report effect-modification subgroup.
 5. Summarize contributions without presenting the subgroup as an unrelated second paper.
 
 ## 2. Background and related work
 
 - ODI powerplay rules and strategic role.
 - Cricket outcome prediction and common features.
-- Environmental/pitch influences and measurement challenges.
+- Pre-match pitch-report measurement challenges and source heterogeneity.
 - Why random splits overstate real-world performance when sports data evolve over time.
 - Difference between explanation, association, and prediction.
 
@@ -56,10 +57,12 @@ Use academic or authoritative sources. Do not pad this section with generic mach
 - exact first-10-over definitions;
 - audit and edge cases.
 
-### 3.3 Verified-pitch subgroup
+### 3.3 Verified-pitch-report subgroup
 
 - prespecified role as an effect-modification analysis;
 - source eligibility, timing, codebook, coverage, and cohort comparison;
+- **explicit-source-only rule:** the coder standardizes only the playing effects stated by the source and performs no independent pitch diagnosis;
+- physical descriptions such as dry, grassy, moist, hard, cracked, worn, or used remain provenance only unless the source itself explicitly states the playing effect;
 - independent double coding and reliability gate.
 
 ### 3.4 Limited non-pitch conditions
@@ -71,8 +74,9 @@ Use academic or authoritative sources. Do not pad this section with generic mach
 ### 3.5 Context and strength
 
 - toss/innings order/venue/year;
-- leakage-safe Elo and same-date batching.
+- leakage-safe Elo and same-date batching;
 - rolling prior-20 venue scoring proxy, same-date batching, coverage, and cold starts;
+- venue history is a scoring-environment sensitivity and is not treated as match-day pitch evidence.
 
 ### 3.6 Statistical analysis
 
@@ -87,6 +91,7 @@ Use academic or authoritative sources. Do not pad this section with generic mach
 - source terms/licences and attribution;
 - transformation log and code/environment;
 - handling of copyrighted prose via short paraphrase/citation;
+- no researcher-inferred pitch labels from physical surface descriptions;
 - no individual-player ranking or sensitive data.
 
 ## 4. Results
@@ -94,7 +99,7 @@ Use academic or authoritative sources. Do not pad this section with generic mach
 ### 4.1 Cohort and data quality
 
 - row counts, exclusions, missingness, and join coverage;
-- report pitch coverage as 228/1,094 (20.840951%), with 347 of 575 reviewed matches set aside and 519 unreviewed;
+- report pitch-report coverage as 228/1,094 (20.840951%), with 347 of 575 reviewed matches set aside and 519 unreviewed;
 - report the 35-provider source mix and inter-coder reliability only after independent double coding.
 
 ### 4.2 Finding 1: full-cohort powerplay profiles
@@ -103,18 +108,19 @@ Use academic or authoritative sources. Do not pad this section with generic mach
 - adjusted associations and marginal win probabilities for aggression and wicket preservation;
 - innings-order modification and chronological predictive performance.
 
-### 4.3 Finding 2: pitch effect modification
+### 4.3 Finding 2: modification by source-stated pitch effects
 
-- restrict to source- and timing-verified pitch matches;
+- restrict to source- and timing-verified pre-match reports;
 - report subgroup composition, selection differences, and reliability before estimates;
-- show prespecified runs × pitch and wickets × pitch marginal predictions;
+- show prespecified runs × source-stated effect and wickets × source-stated effect marginal predictions;
+- make clear that categories are standardized publisher/source expectations, not researcher diagnoses of the physical pitch;
 - interpret as refinement of Finding 1, not an independent headline claim.
 
 ### 4.4 Predictive performance
 
 - report the completed 2024 validation metrics and clustered intervals as
   preliminary model-selection evidence;
-- report locked-test metrics only after the pitch and model freeze gates pass;
+- report locked-test metrics only after the pitch-report and model freeze gates pass;
 - include calibration plots and avoid claiming success from accuracy alone.
 
 ### 4.5 Nonlinear interpretation
@@ -124,18 +130,20 @@ Use academic or authoritative sources. Do not pad this section with generic mach
 - disagreements with logistic model.
 
 ### 4.6 Sensitivity analyses
-- historical venue-condition sensitivity versus M1;
-- report which conclusions changed and which remained stable.
+
+- historical venue-scoring sensitivity versus M1;
+- report which conclusions changed and which remained stable;
+- never use physical pitch descriptors or venue history to backfill missing source-stated pitch effects.
 
 ## 5. Discussion
 
 1. Answer what makes a successful powerplay using the full-cohort result.
-2. Explain when that answer changes using the verified-pitch effect-modification result, if its gates pass.
+2. Explain when that answer changes using the verified-pitch-report/source-stated-effect result, if its gates pass.
 3. Keep both findings under the same aggression-versus-wicket-preservation question.
 4. Explain why nonlinear models did or did not improve held-out prediction.
 5. Discuss calibration and practical meaning.
-6. Limitations: observational confounding, pitch-subgroup selection and coverage, subjective coding, within-match pitch change, rule/era differences, paired innings dependence, and generalizability.
-7. Future work: more eras/events, actual on-field timestamps/sensors, hierarchical venue/team models, external replication.
+6. Limitations: observational confounding, pitch-report subgroup selection and coverage, source wording differences, coding reliability, within-match pitch change, rule/era differences, paired innings dependence, and generalizability.
+7. Future work: more eras/events, direct instrumented/on-field surface measurements, hierarchical venue/team models, external replication.
 
 ## 6. Conclusion
 
@@ -144,7 +152,7 @@ One short paragraph. Answer the question, give the practical/statistical takeawa
 ## Appendices
 
 - complete data dictionary;
-- pitch codebook and reliability matrices;
+- source-stated pitch-effect codebook and reliability matrices;
 - exclusions and join audit;
 - hyperparameter grids;
 - full metrics/CIs;
