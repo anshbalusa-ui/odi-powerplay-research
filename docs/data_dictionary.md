@@ -6,10 +6,10 @@
 |---|---|---|
 | `cricsheet_matches` | one match | stable match metadata and result |
 | `powerplay_innings` | one regulation team-innings | first-10-over statistics and context |
-| `pitch_reports_verified` | one verified match/source | minimized pre-match provenance and standardized **source-stated pitch-effect** codes |
+| `pitch_reports_verified` | one verified match/source | minimized pre-match provenance plus **provisional legacy pitch codes pending explicit-source-only re-audit** |
 | `pitch_set_aside` | one reviewed match | outcome-blind follow-up list for attempts without eligible analysis |
-| `pitch_collection_status` | one eligible match | verified, reviewed set-aside, or unreviewed collection state |
-| `pitch_source_providers` | one normalized provider hostname | source share, category mix, and confidence mix |
+| `pitch_collection_status` | one eligible match | verified source/timing, reviewed set-aside, or unreviewed collection state |
+| `pitch_source_providers` | one normalized provider hostname | source share, category mix, and confidence mix for the current legacy release |
 | `team_strength_pre` | one match/team | ratings calculated before the match date |
 | `venue_conditions_pre_match` | one match | rolling prior-match venue scoring environment |
 | `model_team_innings` | one team-innings | audited merged analysis table |
@@ -73,8 +73,9 @@ These fields may be present in labeled data for training/evaluation but cannot b
 
 `data/manual/match_start_times_template.csv` is outcome-blind and contains one row
 per primary-cohort match. `data/manual/match_start_times_verified.csv` is the
-tracked, minimized subset supporting published source-stated pitch-effect codes. Any working or tracked
-copy is valid only after `audit_match_start_times.py` reports zero issues.
+tracked, minimized subset supporting the 228 source/timing-verified pre-match
+reports. It verifies timing eligibility; it does **not** certify that the legacy
+pitch codes already satisfy the current explicit-source-only coding rule.
 
 | Variable | Type | Definition |
 |---|---|---|
@@ -99,61 +100,70 @@ copy is valid only after `audit_match_start_times.py` reports zero issues.
 
 The validator requires exact cohort identity, a valid HTTP(S) source, an
 offset-aware access timestamp, a real IANA timezone, a local date equal to
-`match_date`, and exact timezone conversion to UTC. Working files may contain only
-the matches with collected pitch reports; `--require-full-cohort` separately audits
-the generated 1,094-row template. Only `verified` timestamps are exposed to
-pitch-source timing validation; partially filled or pending rows are never used.
-No start-time, timezone, status, verifier, or source-provenance field is joined to
-the model table; all are also named in the prohibited-predictor guard.
+`match_date`, and exact timezone conversion to UTC. Only `verified` timestamps are
+exposed to pitch-source timing validation. No start-time, timezone, status,
+verifier, or source-provenance field is joined to the model table.
 
-The tracked release contains 228 verified scheduled starts. No start-time,
-timezone, provenance, or verifier field is available to the fitted model.
+The tracked release contains 228 verified scheduled starts.
 
-## Source-stated pre-match pitch-effect fields
+## Pre-match pitch-report fields
 
-`data/manual/pitch_reports_verified.csv` contains only rows that passed source,
-publication-time, match-start, cohort-identity, and code-value validation.
+`data/manual/pitch_reports_verified.csv` contains 228 rows that passed source,
+publication-time, match-start, cohort-identity, and structural code-value validation
+under the earlier codebook. **The source/timing verification remains valid, but the
+analytical pitch codes are provisional legacy codes until an explicit-source-only
+re-audit passes.**
+
 `data/manual/pitch_set_aside.csv` contains no pitch codes or outcomes; it records
 the search query and reason a reviewed match needs later follow-up.
 `artifacts/tables/pitch_collection_status.csv` covers all 1,094 eligible matches
-with `verified`, `set_aside`, or `unreviewed` status.
-`artifacts/tables/pitch_source_providers.csv` groups verified rows by normalized
-source hostname and reports counts, shares, category counts, and confidence counts.
+with `verified`, `set_aside`, or `unreviewed` source-collection status.
 
-### Measurement rule
+### Current measurement rule for final analytical pitch variables
 
-Every analytical pitch variable below is a **standardization of an expected playing effect explicitly stated by the eligible pre-match source**. The researcher does not independently diagnose the pitch.
+Every final analytical pitch variable must be a **standardization of an expected
+playing effect explicitly stated by the eligible pre-match source**. The researcher
+does not independently diagnose the pitch.
 
-Physical descriptions such as `dry`, `dusty`, `grassy`, `green`, `moist`, `hard`, `cracked`, `worn`, `tacky`, or `used` may appear only in the short paraphrased provenance note unless the source itself explicitly connects them to a playing effect. They are never converted by analyst judgment into `spin`, `pace_seam`, `batting_ease`, `bounce_profile`, or `two_paced_expected` values.
+Physical descriptions such as `dry`, `dusty`, `grassy`, `green`, `moist`, `hard`,
+`cracked`, `worn`, `tacky`, or `used` may appear in the short provenance note, but
+they are never converted by analyst judgment into `spin`, `pace_seam`,
+`batting_ease`, `bounce_profile`, or `two_paced_expected` values. If the source
+does not state an expected playing effect, the corresponding field remains blank
+or `unknown`.
 
-If the source does not state an expected playing effect, the corresponding field remains blank or `unknown`.
+Before final pitch-effect modeling, every retained legacy nonblank value below must
+be re-audited against the source; unsupported inferred values must be blanked or
+removed.
 
-| Variable | Type | Definition |
+| Variable | Type | Definition under current rule |
 |---|---|---|
 | `espn_match_id_candidate` | string/nullable | numeric Cricsheet ID copied as an unverified candidate; never assumed correct |
 | `espn_legacy_match_url_candidate` | URL/nullable | unfetched legacy ESPN navigation candidate generated from the probable ID |
 | `espn_match_id_verified` | string/nullable | actual numeric ESPN ID after human or licensed match-identity verification |
-| `espn_match_url_verified` | URL/nullable | current ESPNcricinfo match page confirmed against teams, date, event, and venue |
+| `espn_match_url_verified` | URL/nullable | ESPNcricinfo match page confirmed against teams, date, event, and venue |
 | `espn_linkage_status` | category | `unverified_candidate`, `verified_match`, `not_espn_id`, `wrong_match`, or `not_available` |
-| `source_search_query` | string | outcome-blind pre-match pitch-report search query; not fetched by the pipeline |
+| `source_search_query` | string | outcome-blind pre-match pitch-report search query |
 | `source_url` | string | direct eligible pre-match report URL |
 | `source_title` | string | source article title |
-| `published_at_utc` | timestamp/date | source publication time in UTC when shown; ISO date only when the publisher omits time and the date still proves the article preceded play |
+| `published_at_utc` | timestamp/date | source publication time in UTC when shown; date only when sufficient to prove it preceded play |
 | `accessed_at_utc` | timestamp | collection time |
 | `pre_match_verified` | binary | publication verified before scheduled start |
-| `coder_id` | string | anonymized coder label; current AI-assisted provisional codes are explicitly labeled |
-| `coder_confidence` | ordered category | clarity/confidence in standardizing the **source's stated effect**, not confidence in independently predicting how the pitch will play |
-| `pitch_primary_category` | category | source-stated expected behavior: `batting_friendly`, `balanced`, `pace_seam`, `spin`, `slow_two_paced`, or `unknown`; never inferred solely from physical descriptors |
-| `batting_ease` | ordinal 0–2 | source explicitly states difficult, mixed/balanced, or easy/high-scoring batting conditions; blank when unstated |
-| `pace_seam_support` | ordinal 0–2 | source explicitly states little, some, or strong pace/seam help; blank when unstated |
-| `spin_support` | ordinal 0–2 | source explicitly states little, some/later, or strong/early spin help; blank when unstated |
-| `bounce_profile` | category/nullable | source explicitly states low, standard, steep, or variable expected bounce; blank when unstated |
-| `two_paced_expected` | binary/nullable | source explicitly states whether two-paced/holding/stopping/variable-pace behavior is expected; blank if unstated |
+| `coder_id` | string | anonymized coder label; AI-assisted provisional work explicitly labeled |
+| `coder_confidence` | ordered category | clarity/confidence in standardizing the source's stated effect, not confidence in independently predicting the pitch |
+| `pitch_primary_category` | category | final compliant value must be explicitly source-supported `batting_friendly`, `balanced`, `pace_seam`, `spin`, `slow_two_paced`, or `unknown` |
+| `batting_ease` | ordinal 0–2 | final compliant value requires an explicit source statement about batting/scoring ease; blank when unstated |
+| `pace_seam_support` | ordinal 0–2 | final compliant value requires an explicit source statement about pace/seam help; blank when unstated |
+| `spin_support` | ordinal 0–2 | final compliant value requires an explicit source statement about spin help; blank when unstated |
+| `bounce_profile` | category/nullable | final compliant value requires explicit expected bounce wording; blank when unstated |
+| `two_paced_expected` | binary/nullable | final compliant value requires explicit two-paced/holding/stopping/variable-pace wording; blank when unstated |
 | `dew_expected` | binary/nullable | secondary match-condition expectation explicitly stated by source; blank if unstated |
 | `short_paraphrased_note` | string | short audit/provenance note that may retain physical surface descriptions; avoid long copied text |
 | `exclusion_reason` | string/nullable | reason the source or row is not eligible for pitch-effect modeling |
 
-Physical surface descriptors are provenance only. They are not primary or secondary model fields and cannot be used to derive a playing-effect code unless the source explicitly states that effect.
+Physical surface descriptors are provenance only. They are not primary or secondary
+model fields and cannot be used to derive a playing-effect code unless the source
+explicitly states that effect.
 
 ## Team strength
 
@@ -187,18 +197,25 @@ matches on the same date receive the state available before that date.
 | `venue_prior_boundary_pct` | float/nullable | prior-window boundary balls divided by legal balls × 100 |
 | `venue_prior_dot_ball_pct` | float/nullable | prior-window dot balls divided by legal balls × 100 |
 
-These venue-history fields are historical scoring-environment summaries. They are **not** pitch-condition measurements and cannot backfill or infer missing source-stated pitch effects.
+These venue-history fields are historical scoring-environment summaries. They are
+**not** pitch-condition measurements and cannot backfill or infer missing
+source-stated pitch effects.
 
 ## Merge and audit fields
 
 | Variable | Type | Definition |
 |---|---|---|
-| `pitch_available` | binary | 1 only when a validated, timing-eligible pre-match source-stated pitch-effect row joined by exact match ID |
+| `pitch_available` | binary | current file: a source/timing-eligible legacy pitch row joined by exact match ID; final analysis requires the row also pass the explicit-source-only re-audit |
 | `split` | category | `development` through 2023, `validation` in 2024, or locked `locked_test` from 2025 onward |
 | `exclusion_reasons` | string/list | semicolon-delimited prespecified reason codes |
 | `analysis_eligible_primary` | binary | passes core cleaning and the 2015-forward men's ODI primary rules; no event restriction |
 | `source_snapshot_id` | string | hash/date identifier for raw-source manifest |
 
-## Final-model anti-leakage allowlist
+## Final-model anti-leakage and measurement allowlist
 
-The final training matrix may contain only approved powerplay, **source-stated pre-match pitch-effect**, historical venue, pre-match team strength, toss, innings order, venue/grouping, year, and competition-type features. Match ID is a grouping key, not a predictor. Outcome, winner, margin, result method, full innings total, later-match data, generic hourly weather variables, raw physical surface descriptors, and any researcher-inferred pitch labels are prohibited.
+The final training matrix may contain only approved powerplay, **re-audited
+source-stated pre-match pitch-effect**, historical venue, pre-match team strength,
+toss, innings order, venue/grouping, year, and competition-type features. Match ID
+is a grouping key, not a predictor. Outcome, winner, margin, result method, full
+innings total, later-match data, generic hourly weather variables, raw physical
+surface descriptors, and any researcher-inferred pitch labels are prohibited.
