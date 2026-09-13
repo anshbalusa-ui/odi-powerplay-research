@@ -1,5 +1,5 @@
 study:
-  title: "ODI powerplay performance, pitch conditions, and match outcomes"
+  title: "ODI powerplay performance, source-stated pre-match pitch effects, and match outcomes"
   match_type: "ODI"
   gender: "male"
   primary_start_year: 2015
@@ -49,6 +49,11 @@ powerplay:
 
 pitch:
   source_timing: "published_before_match_start"
+  coding_rule: "explicit_source_stated_playing_effects_only"
+  independent_pitch_analysis_allowed: false
+  infer_effect_from_physical_surface_description: false
+  physical_surface_descriptors_role: "provenance_note_only_never_used_to_derive_model_fields"
+  unstated_effect_policy: "leave_blank_or_unknown_never_infer"
   primary_features:
     - "batting_ease"
     - "pace_seam_support"
@@ -86,9 +91,9 @@ modeling:
     - "random_forest"
     - "xgboost"
   nested_feature_blocks:
-    m0: "prematch_strength_pitch_toss_innings_venue_year_competition"
+    m0: "prematch_strength_source_stated_pitch_effects_toss_innings_venue_year_competition"
     m1: "m0_plus_powerplay_runs_and_wickets"
-    m2: "m1_plus_prespecified_pitch_and_innings_interactions"
+    m2: "m1_plus_prespecified_source_stated_pitch_effect_and_innings_interactions"
   metrics:
     - "accuracy"
     - "roc_auc"
