@@ -5,13 +5,13 @@ Last updated: 2026-09-13
 The current primary cohort contains 1,094 men's ODIs (2,188 team-innings) from
 2015 through the checksummed Cricsheet snapshot. `build_pitch_collection_queue.py`
 creates one deterministic, outcome-blind source row per match. Twenty-three
-25-match batches have now been reviewed: 228 non-ESPN reports passed source,
-timing, and coding validation, while 347 reviewed matches were set aside with
-explicit reasons. The prespecified 200-match collection target is exceeded.
+25-match batches have now been reviewed: 228 non-ESPN reports passed source and
+timing validation, while 347 reviewed matches were set aside with explicit reasons.
+The prespecified 200-match source-coverage target is exceeded.
 
 ## Measurement rule
 
-The collection produces **standardized source-stated pre-match pitch effects**, not independent researcher pitch analysis.
+The intended analytical layer is **standardized source-stated pre-match pitch effects**, not independent researcher pitch analysis.
 
 - Code only an expected playing effect explicitly stated by an eligible pre-match source.
 - Do not infer spin from dry/dusty/cracked wording.
@@ -23,22 +23,37 @@ The collection produces **standardized source-stated pre-match pitch effects**, 
 
 This rule applies to first-pass coding, independent recoding, reliability analysis, and every model table built from these reports.
 
+## Legacy 228-code re-audit gate
+
+The 228 currently tracked pitch codes were produced under an earlier codebook. Their source URLs and timing evidence remain useful, but the analytical codes are **provisional legacy codes** until they are re-audited against the current explicit-source-only rule.
+
+Before any final source-stated pitch-effect model or paper claim:
+
+1. revisit each retained eligible pre-match source;
+2. confirm that every nonblank pitch-effect code is directly supported by an explicit source statement;
+3. blank/remove any value based only on physical descriptors or researcher/agent cricket knowledge;
+4. record the re-audit status reproducibly;
+5. rebuild the pitch-report model table from the compliant rows;
+6. then complete the independent 20% double-coding reliability gate using the same strict rule.
+
+Until that re-audit passes, do **not** describe the 228 analytical codes themselves as fully source-stated or final. The source/timing coverage count remains 228.
+
 ## Current reproducible coverage
 
 | Status | Matches |
 |---|---:|
 | Eligible matches queued | 1,094 |
 | Matches reviewed in twenty-three 25-match batches | 575 |
-| Timing-verified, source-coded matches | 228 |
+| Timing-verified pre-match reports with provisional legacy codes | 228 |
 | Reviewed matches set aside | 347 |
 | Unreviewed matches | 519 |
-| Leakage-safe model-table merge | 228 |
-| Current cohort coverage | 20.840951% |
+| Current legacy model-table merge | 228 |
+| Source/timing coverage | 20.840951% |
 
 The tracked `data/manual/pitch_reports_verified.csv` and
-`data/manual/match_start_times_verified.csv` files contain the 228 verified rows.
+`data/manual/match_start_times_verified.csv` files contain the 228 verified-source/timing rows.
 They contain source provenance, source-publication time, collection time
-(`accessed_at_utc`), standardized source-stated effect codes, and short original paraphrases—not copied
+(`accessed_at_utc`), provisional legacy codes, and short original paraphrases—not copied
 article text. `data/manual/pitch_set_aside.csv` records the 347 reviewed matches
 without currently eligible analysis. `artifacts/tables/pitch_collection_status.csv`
 records all 1,094 cohort matches as 228 `verified`, 347 `set_aside`, or 519
@@ -57,11 +72,10 @@ explicitly stated by the source, and mark unsupported matches explicitly.
 
 The usable pitch-report subset target was 200 matches (400 paired team-innings) from the
 modern 2015-forward ODI cohort. The statistical sampling unit remains the match:
-the two innings are paired observations, not independent games. The 228-match
-released subset exceeds that source- and timing-verified target. This supports an
-exploratory, parsimonious analysis of source-stated pre-match pitch effects, but category strata,
-missingness, source selection, and independent coding reliability still govern
-whether any result is defensible.
+the two innings are paired observations, not independent games. The 228-report
+release exceeds that source- and timing-verified target. Whether all 228 remain
+analytically usable under the stricter codebook depends on the explicit-source-only
+re-audit, category strata, missingness, source selection, and independent coding reliability.
 
 ## Match-start verification gate
 
@@ -104,15 +118,13 @@ providers account for 50.4% of accepted reports; the provider
 Herfindahl–Hirschman Index is 1,132 on the conventional 0–10,000 scale.
 `scripts/audit_pitch_sources.py` reproduces
 `artifacts/tables/pitch_source_providers.csv` and
-`artifacts/tables/pitch_source_provider_audit.json`, including provider-specific
-source-stated category and coder-confidence counts.
+`artifacts/tables/pitch_source_provider_audit.json`.
 
-This is intentionally a multi-source **reported-expectation measurement layer** attached to a
+This is intentionally a multi-source reported-expectation measurement layer attached to a
 single-source Cricsheet ball-by-ball outcome dataset. Provider diversity improves
 traceability and reduces dependence on one publisher, but it does not make
 editorial descriptions exchangeable. Outlet-specific wording, match selection,
-and article availability remain measurement and selection risks; the independent
-double-coding gate is therefore unchanged.
+and article availability remain measurement and selection risks; the explicit-source-only re-audit and independent double-coding gates are therefore required.
 
 ## Contributor batch workflow
 
@@ -124,53 +136,14 @@ competition types while containing no result, winner, or powerplay columns.
 
 Every queue row includes a probable ESPN ID and unfetched legacy match-URL
 candidate because Cricsheet documents its IDs as generally—but not always—the
-Cricinfo match IDs. The first-batch search located four relevant ESPN preview
-candidates, but they remain set aside: ESPN's reviewed terms require human or
-licensed collection rather than automated dataset extraction. A permitted reviewer
-must compare the actual page's teams, date, event, and venue, then fill
-`espn_match_id_verified`, `espn_match_url_verified`, and set
-`espn_linkage_status=verified_match`.
-
-Audit the working linkage state without contacting ESPN:
-
-```bash
-.venv/bin/python scripts/audit_espn_linkage.py \
-  --input data/manual/pitch_collection_queue_template.csv
-```
+Cricinfo match IDs. ESPN candidates remain subject to human or licensed collection.
+A permitted reviewer must compare the actual page's teams, date, event, and venue,
+then fill the verified linkage fields.
 
 Do not bulk-open the candidate URLs. They are navigation aids, may be stale or
 wrong, and do not establish permission to extract ESPN text.
 
-To select a new batch while skipping attempts already marked `0` or `1` in the
-ignored `pitch_reports.csv` working file:
-
-```bash
-.venv/bin/python scripts/select_pitch_batch.py \
-  --newest-first \
-  --n 25 \
-  --output data/manual/pitch_batch_working.csv
-```
-
-Balanced selection first covers unrepresented years, then unrepresented competition
-types, then fills year × competition strata in deterministic rounds. Use
-`--newest-first` to prioritize recent unreviewed matches while preserving the same
-outcome-blind queue. Use a documented seed or output filename for parallel
-contributors, and reserve match IDs in issue #3 before starting to avoid duplicate
-work.
-
-Copy completed batch rows into the ignored `data/manual/pitch_reports.csv` working
-file. Run `audit_pitch_collection.py` with verified UTC match starts before merging,
-then export unsupported attempts for later review:
-
-```bash
-.venv/bin/python scripts/export_pitch_set_aside.py \
-  --pitch-input data/manual/pitch_reports.csv
-```
-
-The public verified, set-aside, and collection-status files are minimized releases:
-no source passage, score, result, or powerplay metric is copied into them.
-Independently double-code at least 46 of the 228 usable rows before treating any
-source-stated pitch-effect model as a research result.
+For all new coding, use the current codebook immediately. New rows must satisfy the explicit-source-only rule at first pass; they do not get the legacy-code exception.
 
 ## Independent coding reliability gate
 
@@ -179,34 +152,14 @@ without inspecting outcomes or first-coder values. The tracked
 `data/manual/pitch_reliability_sample_template.csv` currently contains 46 rows,
 spans all represented years and competition types, retains the same eligible
 pre-match source documents and match identity, and blanks every first-coder pitch
-judgment. Give this file to a genuinely independent second coder, then store the
-completed rows in ignored `data/manual/pitch_reports_double_coded.csv` with a
-different `coder_id`.
+judgment.
 
 The second coder must follow the same explicit-source-only rule: standardize only
 playing effects stated by the source and never infer an effect from physical pitch
-wording or cricket knowledge.
+wording or cricket knowledge. The reliability sample should be regenerated from the
+re-audited compliant reference set if that set changes materially.
 
-Regenerate the blinded assignment and then audit completed independent codes:
-
-```bash
-.venv/bin/python scripts/build_pitch_reliability_sample.py
-```
-
-After both files pass source and timestamp validation, run:
-
-```bash
-.venv/bin/python scripts/audit_pitch_reliability.py \
-  --reference-input data/manual/pitch_reports.csv \
-  --recoded-input data/manual/pitch_reports_double_coded.csv \
-  --match-start-input data/manual/match_start_times.csv
-```
-
-The audit refuses rows outside the primary cohort, sources published at or after
-match start, unsupported codes, duplicate match IDs, and same-coder pairs. It
-reports comparable item counts and raw agreement. Cohen's kappa is linearly
-weighted for the three ordinal support/ease fields and unweighted otherwise. Blank
-optional codes are excluded from that field's agreement denominator rather than
-counted as agreements; field completion remains explicit.
-The command exits nonzero until at least 20% of verified reference matches have
-independent paired codes.
+The reliability audit reports comparable item counts and raw agreement. Cohen's
+kappa is linearly weighted for the three ordinal support/ease fields and unweighted
+otherwise. Blank optional codes are excluded from that field's agreement denominator
+rather than counted as agreements; field completion remains explicit.
