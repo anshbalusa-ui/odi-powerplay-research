@@ -46,6 +46,20 @@ Examples of permitted coding:
 
 If an eligible source describes the physical surface but does not state the playing effect, leave the effect field blank or `unknown`. Never infer it.
 
+## Existing 228-match release
+
+The 228-match pitch-code release predates this stricter explicit-source-only rule. Treat all 228 first-pass codes as **provisional legacy codes** until they are re-audited against the current codebook.
+
+Before any final pitch-effect modeling or paper claim:
+
+1. revisit the eligible pre-match source for each retained legacy code;
+2. confirm that every nonblank analytical pitch-effect value is explicitly supported by the source;
+3. remove or blank any value that came only from researcher/agent interpretation of a physical descriptor;
+4. record the re-audit status reproducibly;
+5. then run the independent double-coding reliability sample using the same strict rule.
+
+Do not describe the 228 rows as fully compliant source-stated effects until this re-audit has passed.
+
 ## Pitch provenance and reliability
 
 For every coded report retain the Cricsheet match ID, source URL/title, publication time, verified scheduled start, access time, coder ID, confidence, source-stated codes, and a short paraphrase. Do not copy large source passages.
@@ -68,4 +82,4 @@ Rolling venue-history variables are prior scoring-environment summaries only. Th
 
 ## Required documentation language
 
-Prefer **`source-stated pre-match pitch effects`**, **`source-stated pitch behavior`**, or **`verified pre-match report expectations`** when describing the analytical variables. Do not imply that the researchers directly measured or independently assessed the physical pitch.
+Prefer **`source-stated pre-match pitch effects`**, **`source-stated pitch behavior`**, or **`verified pre-match report expectations`** when describing analytical variables that have passed the current explicit-source-only rule. Do not imply that the researchers directly measured or independently assessed the physical pitch.
