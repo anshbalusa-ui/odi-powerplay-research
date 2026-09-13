@@ -8,11 +8,13 @@ The cohort, powerplay extraction, pre-match team and venue histories,
 chronological model table, 2024 validation, uncertainty estimates, preliminary
 figures, and the 228-match source- and timing-verified pitch-report collection are
 reproducible. `docs/results.md` contains the current quantitative narrative and
-`docs/limitations.md` fixes its interpretation boundary. A provisional model using
-**source-stated pre-match pitch effects** runs end to end, but independent pitch
-report double-coding and the single locked-test evaluation remain incomplete. No
-current paragraph may present a pitch-effect estimate as reliable or the study as
-final.
+`docs/limitations.md` fixes its interpretation boundary.
+
+The 228 existing analytical pitch codes are **provisional legacy codes** created
+under an earlier codebook. They must be re-audited against the current
+explicit-source-only rule before the project can call them final source-stated
+pitch-effect variables. The current legacy-code model is only a pipeline smoke test;
+independent double-coding and the locked-test evaluation also remain incomplete.
 
 ## Title page and abstract (200–250 words)
 
@@ -20,7 +22,7 @@ final.
 - One-sentence background and unified research question.
 - Data sources, sample period, and match-clustered unit of analysis.
 - Finding 1: full-cohort powerplay profiles after contextual adjustment.
-- Finding 2: effect modification by **pitch effects explicitly stated in eligible pre-match sources**, only after its gates pass.
+- Finding 2: effect modification by **pitch effects explicitly stated in eligible pre-match sources**, only after legacy-code re-audit and reliability gates pass.
 - Main limitation and conclusion without causal language.
 
 ## 1. Introduction
@@ -61,9 +63,10 @@ Use academic or authoritative sources. Do not pad this section with generic mach
 
 - prespecified role as an effect-modification analysis;
 - source eligibility, timing, codebook, coverage, and cohort comparison;
-- **explicit-source-only rule:** the coder standardizes only the playing effects stated by the source and performs no independent pitch diagnosis;
+- **explicit-source-only rule:** the coder standardizes only playing effects explicitly stated by the source and performs no independent pitch diagnosis;
 - physical descriptions such as dry, grassy, moist, hard, cracked, worn, or used remain provenance only unless the source itself explicitly states the playing effect;
-- independent double coding and reliability gate.
+- legacy 228-code re-audit before final pitch modeling;
+- independent double coding and reliability gate after the compliant reference set is frozen.
 
 ### 3.4 Limited non-pitch conditions
 
@@ -99,8 +102,9 @@ Use academic or authoritative sources. Do not pad this section with generic mach
 ### 4.1 Cohort and data quality
 
 - row counts, exclusions, missingness, and join coverage;
-- report pitch-report coverage as 228/1,094 (20.840951%), with 347 of 575 reviewed matches set aside and 519 unreviewed;
-- report the 35-provider source mix and inter-coder reliability only after independent double coding.
+- report pre-match source/timing coverage as 228/1,094 (20.840951%), with 347 of 575 reviewed matches set aside and 519 unreviewed;
+- report how many of the 228 remain analytically compliant after explicit-source-only re-audit;
+- report the 35-provider source mix and inter-coder reliability only after the compliant reference set and independent double coding are complete.
 
 ### 4.2 Finding 1: full-cohort powerplay profiles
 
@@ -110,7 +114,7 @@ Use academic or authoritative sources. Do not pad this section with generic mach
 
 ### 4.3 Finding 2: modification by source-stated pitch effects
 
-- restrict to source- and timing-verified pre-match reports;
+- restrict to source- and timing-verified reports whose analytical codes also pass the explicit-source-only re-audit;
 - report subgroup composition, selection differences, and reliability before estimates;
 - show prespecified runs × source-stated effect and wickets × source-stated effect marginal predictions;
 - make clear that categories are standardized publisher/source expectations, not researcher diagnoses of the physical pitch;
@@ -118,9 +122,9 @@ Use academic or authoritative sources. Do not pad this section with generic mach
 
 ### 4.4 Predictive performance
 
-- report the completed 2024 validation metrics and clustered intervals as
-  preliminary model-selection evidence;
-- report locked-test metrics only after the pitch-report and model freeze gates pass;
+- report the completed full-cohort 2024 validation metrics and clustered intervals as preliminary model-selection evidence;
+- treat existing legacy pitch-code smoke-test metrics as reproducibility evidence only;
+- report final pitch-subgroup and locked-test metrics only after re-audit, reliability, and model freeze gates pass;
 - include calibration plots and avoid claiming success from accuracy alone.
 
 ### 4.5 Nonlinear interpretation
@@ -138,11 +142,11 @@ Use academic or authoritative sources. Do not pad this section with generic mach
 ## 5. Discussion
 
 1. Answer what makes a successful powerplay using the full-cohort result.
-2. Explain when that answer changes using the verified-pitch-report/source-stated-effect result, if its gates pass.
+2. Explain when that answer changes using the compliant verified-pitch-report/source-stated-effect result, if its gates pass.
 3. Keep both findings under the same aggression-versus-wicket-preservation question.
 4. Explain why nonlinear models did or did not improve held-out prediction.
 5. Discuss calibration and practical meaning.
-6. Limitations: observational confounding, pitch-report subgroup selection and coverage, source wording differences, coding reliability, within-match pitch change, rule/era differences, paired innings dependence, and generalizability.
+6. Limitations: observational confounding, pitch-report subgroup selection and coverage, source wording differences, legacy-code re-audit, coding reliability, within-match pitch change, rule/era differences, paired innings dependence, and generalizability.
 7. Future work: more eras/events, direct instrumented/on-field surface measurements, hierarchical venue/team models, external replication.
 
 ## 6. Conclusion
@@ -153,6 +157,7 @@ One short paragraph. Answer the question, give the practical/statistical takeawa
 
 - complete data dictionary;
 - source-stated pitch-effect codebook and reliability matrices;
+- legacy-code re-audit record;
 - exclusions and join audit;
 - hyperparameter grids;
 - full metrics/CIs;
