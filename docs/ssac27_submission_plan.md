@@ -95,6 +95,27 @@ pitch fit as a reproducible checkpoint. Never manufacture a pitch effect from
 physical surface wording, venue reputation, live/post-match commentary, or later
 outcomes, and never unlock test outcomes to compensate for missing pitch data.
 
+## Pre-reliability prep run
+
+The reproducible prep branch now has canonical, machine-readable outputs for the
+unlocked 2015–2024 cohort: 942 matches and 1,884 team-innings, with 71 matches
+and 142 innings in 2024 validation. The fixed runs-and-wickets benchmark reached
+validation ROC-AUC 0.740 (95% match-clustered interval 0.642–0.822); the
+context-plus-powerplay model reached 0.708 and the prespecified interaction model
+0.710. A fixed model-standardized contrast was +0.082 across 38 to 57 runs at
+two wickets and −0.126 across one to two wickets at 47 runs; both are
+observational, not causal.
+
+The branch also adds an independent unlocked-cohort audit, exact pitch sparsity
+tables, a raw-preserving reliability/reconciliation workflow, a gated pitch
+interaction plan with reconciled-release hash provenance, a 499-word abstract
+validator, and a validated abstract skeleton. Pitch interaction estimates remain
+blocked: the outcome-blind pitch subset has 178 unlocked matches, 150 reported
+sparse cells at the diagnostic threshold, and no submitted second-coder
+judgments or completed reconciliation. The locked 2025+ outcomes remain
+unscored and absent from these evidence outputs.
+
+
 ## September 5–October 1 sprint
 
 | Dates | Deliverable | Go/no-go test |

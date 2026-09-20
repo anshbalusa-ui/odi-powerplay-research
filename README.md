@@ -118,6 +118,35 @@ python scripts/build_pitch_reliability_sample.py \
 .venv/bin/python scripts/reproduce.py --skip-download
 ```
 
+## SSAC27 pre-reliability preparation outputs
+
+The current branch also materializes the abstract-ready, unlocked analysis
+without opening the locked 2025+ outcomes:
+
+- `scripts/audit_full_cohort_analysis.py` independently audits the 2015–2024
+  cohort, metric invariants, match pairing, and non-pitch feature allowlist.
+- `scripts/build_ssac_full_cohort_results.py` writes canonical validation model
+  outputs; `scripts/build_powerplay_marginal_results.py` writes
+  model-standardized runs/wickets contrasts with an observational guardrail.
+- `scripts/diagnose_pitch_sparsity.py` reports exact pitch-code cell counts
+  without collapsing sparse categories.
+- `scripts/audit_pitch_reliability.py` writes machine-readable agreement metrics
+  and a raw-preserving disagreement CSV once a second coder submits the blinded
+  sample. `scripts/reconcile_pitch_reliability.py` keeps coder judgments
+  separate from final reconciled values.
+- `scripts/run_pitch_interaction_analysis.py` writes a prespecified pitch
+  analysis plan but refuses execution until independent double-coding,
+  reconciliation, and a hash-verified model table built from the reconciled
+  release are complete. The pitch result remains blocked.
+- `scripts/build_ssac_abstract_support.py` and
+  `scripts/validate_ssac_abstract.py` build and validate the evidence-backed
+  `docs/ssac27_abstract_skeleton.md` under the 499-word SSAC limit.
+
+Generated tables and figures are intentionally ignored by Git; tracked abstract
+evidence carries source hashes in its manifest. The public-repository audit still
+requires a separate source-license/terms review for tracked pitch provenance.
+
+
 Generated primary/cohort datasets are ignored by Git and reproduced from the
 checksummed raw snapshot. The tracked hand-audit and pitch-queue templates contain
 no source prose and no secret data.
