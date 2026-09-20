@@ -14,6 +14,9 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "src"))
 
 from odi_powerplay.pitch import (  # noqa: E402
+    RECONCILIATION_FIELDS,
+    RECONCILIATION_ID_FIELDS,
+    build_pitch_reliability_disagreements,
     pitch_intercoder_reliability,
     validate_pitch_rows,
 )
@@ -44,6 +47,11 @@ def main() -> int:
         "--output",
         type=Path,
         default=ROOT / "artifacts/tables/pitch_reliability.json",
+    )
+    parser.add_argument(
+        "--disagreements-output",
+        type=Path,
+        default=ROOT / "artifacts/tables/pitch_reliability_disagreements.csv",
     )
     parser.add_argument(
         "--issues-output",
@@ -85,6 +93,8 @@ def main() -> int:
             writer = csv.DictWriter(handle, fieldnames=list(issues[0]))
             writer.writeheader()
             writer.writerows(issues)
+        if args.disagreements_output.exists():
+            args.disagreements_output.unlink()
         report = {
             "validation_issue_count": len(issues),
             "validation_issues_by_coding_set": dict(
@@ -105,7 +115,39 @@ def main() -> int:
         recoded_rows,
         minimum_double_coded_fraction=args.minimum_double_coded_fraction,
     )
+    disagreements = build_pitch_reliability_disagreements(
+        reference_rows,
+        recoded_rows,
+    )
+    disagreement_fields = list(RECONCILIATION_ID_FIELDS)
+    for field in (*RECONCILIATION_FIELDS, "short_paraphrased_note"):
+        disagreement_fields.extend(
+            (
+                f"coder1_{field}",
+                f"coder2_{field}",
+                f"disagreement_{field}",
+                f"reconciled_{field}",
+            )
+        )
+    disagreement_fields.extend(
+        (
+            "disagreement_fields",
+            "disagreement_count",
+            "reconciliation_status",
+            "reconciled_changed_from_coder1",
+            "reconciled_by",
+            "reconciled_at_utc",
+            "reconciliation_note",
+        )
+    )
+    args.disagreements_output.parent.mkdir(parents=True, exist_ok=True)
+    with args.disagreements_output.open("w", encoding="utf-8", newline="") as handle:
+        writer = csv.DictWriter(handle, fieldnames=disagreement_fields)
+        writer.writeheader()
+        writer.writerows(disagreements)
     summary["validation_issue_count"] = 0
+    summary["disagreement_rows_output"] = str(args.disagreements_output)
+    summary["disagreement_row_count"] = len(disagreements)
     args.output.parent.mkdir(parents=True, exist_ok=True)
     args.output.write_text(
         json.dumps(summary, indent=2, sort_keys=True) + "\n",
@@ -113,6 +155,7 @@ def main() -> int:
     )
     print(json.dumps(summary, indent=2, sort_keys=True))
     return int(not summary["meets_minimum_double_coding_target"])
+
 
 
 if __name__ == "__main__":

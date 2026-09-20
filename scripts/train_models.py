@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Fit fixed chronological models without scoring the locked test."""
+"""Fit fixed chronological models without reading or scoring locked outcomes."""
 
 from __future__ import annotations
 
@@ -25,9 +25,28 @@ from odi_powerplay.modeling import (  # noqa: E402
 )
 
 
-def read_csv(path: Path) -> list[dict[str, str]]:
+LOCKED_SAFE_FIELDS = ("match_id", "split")
+
+
+def read_csv_without_locked_outcomes(path: Path) -> list[dict[str, str]]:
     with path.open(encoding="utf-8", newline="") as handle:
-        return list(csv.DictReader(handle))
+        reader = csv.reader(handle)
+        header = next(reader, [])
+        positions = {field: index for index, field in enumerate(header)}
+        required = set(LOCKED_SAFE_FIELDS) | {"batting_team_won"}
+        missing = sorted(required - positions.keys())
+        if missing:
+            raise ValueError(f"Model table is missing required fields: {', '.join(missing)}")
+        rows: list[dict[str, str]] = []
+        for values in reader:
+            split = values[positions["split"]]
+            if split == "locked_test":
+                rows.append(
+                    {field: values[positions[field]] for field in LOCKED_SAFE_FIELDS}
+                )
+            else:
+                rows.append(dict(zip(header, values, strict=True)))
+    return rows
 
 
 def main() -> int:
@@ -77,7 +96,7 @@ def main() -> int:
     except ImportError as error:
         raise RuntimeError("Install the pinned project dependencies before training") from error
 
-    rows = read_csv(args.input)
+    rows = read_csv_without_locked_outcomes(args.input)
     development, validation, locked_test_ids = partition_chronological_rows(rows)
     if not development or not validation or not locked_test_ids:
         raise ValueError("Development, validation, and locked-test periods must all be present")
