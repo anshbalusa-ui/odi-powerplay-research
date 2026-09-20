@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import sys
 import unittest
+import warnings
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -121,6 +122,28 @@ class ModelingTests(unittest.TestCase):
         self.assertGreaterEqual(probabilities[0], 0.0)
         self.assertLessEqual(probabilities[0], 1.0)
 
+
+    def test_all_missing_numeric_feature_is_kept_without_imputer_warning(self) -> None:
+        try:
+            import sklearn  # noqa: F401
+        except ImportError:
+            self.skipTest("scikit-learn is not installed")
+
+        spec = ModelSpec("all_missing", ("dew_expected",), ())
+        training = [
+            {"dew_expected": "", "batting_team_won": "1"},
+            {"dew_expected": "", "batting_team_won": "0"},
+        ]
+        with warnings.catch_warnings():
+            warnings.simplefilter("error")
+            model = fit_model(spec, training)
+
+        probabilities = predict_model(
+            spec,
+            model,
+            [{"dew_expected": ""}],
+        )
+        self.assertEqual(len(probabilities), 1)
 
 if __name__ == "__main__":
     unittest.main()
