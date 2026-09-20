@@ -1,0 +1,202 @@
+{
+  "abstract_requirements": {
+    "headings": [
+      "Introduction",
+      "Methods",
+      "Results",
+      "Conclusion"
+    ],
+    "maximum_tables_and_figures_combined": 2,
+    "requires_actual_results": true,
+    "word_limit_including_title": 499
+  },
+  "actionable_powerplay": {
+    "runs_low_to_high_at_middle_wickets": {
+      "difference": 0.08229918667511871,
+      "high_probability": 0.46231780877236234,
+      "high_runs": 57,
+      "low_probability": 0.38001862209724363,
+      "low_runs": 38,
+      "middle_wickets": 2
+    },
+    "wickets_low_to_high_at_middle_runs": {
+      "difference": -0.1261544782854876,
+      "high_probability": 0.4184477393747483,
+      "high_wickets": 2,
+      "low_probability": 0.5446022176602359,
+      "low_wickets": 1,
+      "middle_runs": 47
+    }
+  },
+  "analysis_scope": "primary_mens_odi_2015_through_2024_unlocked",
+  "artifact_version": 1,
+  "cohort": {
+    "boundary_pct": {
+      "maximum": 35.0,
+      "mean": 11.285386,
+      "median": 11.666667,
+      "minimum": 0.0
+    },
+    "dot_ball_pct": {
+      "maximum": 91.666667,
+      "mean": 65.678521,
+      "median": 66.666667,
+      "minimum": 31.666667
+    },
+    "matches": 942,
+    "powerplay_runs": {
+      "maximum": 118.0,
+      "mean": 48.534501,
+      "median": 47.0,
+      "minimum": 9.0
+    },
+    "powerplay_wickets": {
+      "maximum": 6.0,
+      "mean": 1.426752,
+      "median": 1.0,
+      "minimum": 0.0
+    },
+    "rows": 1884
+  },
+  "evidence_ledger": [
+    {
+      "claim": "The unlocked primary cohort contains 942 matches and 1884 team-innings from 2015 through 2024.",
+      "claim_id": "cohort",
+      "source_artifact": "/Users/anshbalusa/Documents/Codex/2026-08-24/github-plugin-github-openai-curated-remote/work/odi-powerplay-research/artifacts/tables/ssac_full_cohort_results.json",
+      "source_selector": "cohort_descriptives.unlocked_primary_total",
+      "status": "allowed"
+    },
+    {
+      "claim": "Temporal validation covers 71 matches and 142 innings from 2024.",
+      "claim_id": "validation",
+      "source_artifact": "/Users/anshbalusa/Documents/Codex/2026-08-24/github-plugin-github-openai-curated-remote/work/odi-powerplay-research/artifacts/tables/ssac_full_cohort_results.json",
+      "source_selector": "cohort_descriptives.validation",
+      "status": "allowed"
+    },
+    {
+      "claim": "The fixed runs+wickets benchmark had validation ROC-AUC 0.740 (95% interval 0.642\u20130.822).",
+      "claim_id": "model",
+      "source_artifact": "/Users/anshbalusa/Documents/Codex/2026-08-24/github-plugin-github-openai-curated-remote/work/odi-powerplay-research/artifacts/tables/ssac_full_cohort_results.json",
+      "source_selector": "validation_models[model=powerplay_benchmark]",
+      "status": "allowed_associational"
+    },
+    {
+      "claim": "Adding pre-match context to powerplay runs and wickets yielded validation ROC-AUC 0.708; the pre-specified interaction model yielded 0.710.",
+      "claim_id": "adjusted_model",
+      "source_artifact": "/Users/anshbalusa/Documents/Codex/2026-08-24/github-plugin-github-openai-curated-remote/work/odi-powerplay-research/artifacts/tables/ssac_full_cohort_results.json",
+      "source_selector": "validation_models[m1_context_powerplay,m2_prespecified_interactions]",
+      "status": "allowed_associational"
+    },
+    {
+      "claim": "Model-standardized predicted probability changed by +0.082 across the empirical interquartile run contrast at middle wickets, and by -0.126 across the empirical interquartile wicket contrast at middle runs.",
+      "claim_id": "actionable",
+      "source_artifact": "/Users/anshbalusa/Documents/Codex/2026-08-24/github-plugin-github-openai-curated-remote/work/odi-powerplay-research/artifacts/tables/powerplay_marginal_results.json",
+      "source_selector": "contrasts",
+      "status": "allowed_associational"
+    },
+    {
+      "claim": "Pitch interaction results are blocked: the outcome-blind pitch subset has 178 unlocked matches, but independent reliability and reconciliation are not cleared.",
+      "claim_id": "pitch_status",
+      "source_artifact": "/Users/anshbalusa/Documents/Codex/2026-08-24/github-plugin-github-openai-curated-remote/work/odi-powerplay-research/artifacts/tables/pitch_sparsity_diagnostics.json",
+      "source_selector": "matches_by_split",
+      "status": "blocked"
+    }
+  ],
+  "interpretation": "All substantive estimates are observational associations.",
+  "locked_test_outcomes_loaded": false,
+  "locked_test_scored": false,
+  "models": {
+    "m1_context_powerplay": {
+      "accuracy_at_0_5": 0.6408450704225352,
+      "brier_score": 0.21832252695961818,
+      "brier_score_lower_95": 0.18104249928899174,
+      "brier_score_upper_95": 0.2595100548748559,
+      "log_loss": 0.6246453346711133,
+      "log_loss_lower_95": 0.5362830813847023,
+      "log_loss_upper_95": 0.7238822328048641,
+      "model": "m1_context_powerplay",
+      "roc_auc": 0.7081928188851419,
+      "roc_auc_lower_95": 0.59667724657806,
+      "roc_auc_upper_95": 0.8087829795675461,
+      "validation_matches": 71,
+      "validation_rows": 142
+    },
+    "m2_prespecified_interactions": {
+      "accuracy_at_0_5": 0.6549295774647887,
+      "brier_score": 0.21857657978563425,
+      "brier_score_lower_95": 0.1807205403176821,
+      "brier_score_upper_95": 0.26091395144953733,
+      "log_loss": 0.6271332604181107,
+      "log_loss_lower_95": 0.5369466180055583,
+      "log_loss_upper_95": 0.7295444329392121,
+      "model": "m2_prespecified_interactions",
+      "roc_auc": 0.7099781789327514,
+      "roc_auc_lower_95": 0.5968855385836144,
+      "roc_auc_upper_95": 0.8087879389010116,
+      "validation_matches": 71,
+      "validation_rows": 142
+    },
+    "powerplay_benchmark": {
+      "accuracy_at_0_5": 0.6971830985915493,
+      "brier_score": 0.2118100444682702,
+      "brier_score_lower_95": 0.1896366317341148,
+      "brier_score_upper_95": 0.23746856768547792,
+      "log_loss": 0.6133949053328791,
+      "log_loss_lower_95": 0.5657086602348036,
+      "log_loss_upper_95": 0.6683002849996282,
+      "model": "powerplay_benchmark",
+      "roc_auc": 0.7395358063876215,
+      "roc_auc_lower_95": 0.6415319381075183,
+      "roc_auc_upper_95": 0.8220690339218408,
+      "validation_matches": 71,
+      "validation_rows": 142
+    }
+  },
+  "pitch_measurement": {
+    "matches_by_split": {
+      "development": 168,
+      "locked_test": 51,
+      "validation": 10
+    },
+    "pitch_interaction_claim_allowed": false,
+    "reconciliation_status": "not_cleared",
+    "reliability_status": "not_cleared",
+    "sparse_cell_count": 150,
+    "unlocked_matches": 178
+  },
+  "source_artifacts": {
+    "/Users/anshbalusa/Documents/Codex/2026-08-24/github-plugin-github-openai-curated-remote/work/odi-powerplay-research/artifacts/tables/full_cohort_analysis_audit.json": "15b87713a9d40405589e651fa658c37defd600d2a3edfbf8952cba49ef37ba6c",
+    "/Users/anshbalusa/Documents/Codex/2026-08-24/github-plugin-github-openai-curated-remote/work/odi-powerplay-research/artifacts/tables/pitch_sparsity_diagnostics.json": "b866363e1c36d294b3a96060db2edb24e994e4c65b683d7f264b8f0e0677a374",
+    "/Users/anshbalusa/Documents/Codex/2026-08-24/github-plugin-github-openai-curated-remote/work/odi-powerplay-research/artifacts/tables/powerplay_marginal_results.json": "88486d7015790af06126584a9bb6c2c4cd88f6f8888adc56fa8708c104e065d3",
+    "/Users/anshbalusa/Documents/Codex/2026-08-24/github-plugin-github-openai-curated-remote/work/odi-powerplay-research/artifacts/tables/ssac_full_cohort_results.json": "9d4cb1715d293b8c53d90aa1512f735064c0b3cc1a79332d25fcca8ed91bd55a"
+  },
+  "title": "What Makes a Successful ODI Powerplay?",
+  "validation": {
+    "boundary_pct": {
+      "maximum": 30.0,
+      "mean": 11.103286,
+      "median": 10.0,
+      "minimum": 1.666667
+    },
+    "dot_ball_pct": {
+      "maximum": 86.666667,
+      "mean": 67.816901,
+      "median": 68.333333,
+      "minimum": 46.666667
+    },
+    "matches": 71,
+    "powerplay_runs": {
+      "maximum": 100.0,
+      "mean": 47.302817,
+      "median": 47.0,
+      "minimum": 18.0
+    },
+    "powerplay_wickets": {
+      "maximum": 5.0,
+      "mean": 1.619718,
+      "median": 1.5,
+      "minimum": 0.0
+    },
+    "rows": 142
+  }
+}
