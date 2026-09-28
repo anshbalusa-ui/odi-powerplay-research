@@ -1,0 +1,16 @@
+{
+  "type": "object",
+  "properties": {
+    "batting_expectation": {"type": "string", "enum": ["difficult", "neutral", "favorable", "uncertain"]},
+    "pace_seam_expectation": {"type": "string", "enum": ["low", "neutral", "high", "uncertain"]},
+    "spin_expectation": {"type": "string", "enum": ["low", "neutral", "high", "uncertain"]},
+    "slow_two_paced_expectation": {"type": "string", "enum": ["unlikely", "possible", "likely", "uncertain"]},
+    "overall_expected_environment": {"type": "string", "enum": ["batting_favorable", "balanced", "pace_seam_favorable", "spin_slow_favorable", "uncertain"]},
+    "confidence": {"type": "integer", "minimum": 0, "maximum": 100},
+    "evidence": {"type": "string"},
+    "reasoning_basis": {"type": "array", "items": {"type": "string", "enum": ["explicit_playing_effect_statement", "physical_surface_description", "contextual_pre_match_inference"]}, "minItems": 1},
+    "rationale": {"type": "string"}
+  },
+  "required": ["batting_expectation", "pace_seam_expectation", "spin_expectation", "slow_two_paced_expectation", "overall_expected_environment", "confidence", "evidence", "reasoning_basis", "rationale"],
+  "additionalProperties": false
+}

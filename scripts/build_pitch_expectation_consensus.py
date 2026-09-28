@@ -69,6 +69,13 @@ def main() -> None:
             raise ValueError(f"assessor {assessor} manifest does not match frozen inputs")
         passes[assessor] = records(path)
         manifests[assessor] = manifest
+    schemas = {manifest.get("output_schema_sha256") for manifest in manifests.values()}
+    if len(schemas) != 1:
+        raise ValueError("assessor passes used different output schemas")
+    if schemas != {None}:
+        schema = ROOT / "config/pitch_expectation_output_schema.json"
+        if schemas != {sha256(schema)}:
+            raise ValueError("assessor output schema changed after assessment")
     validate_passes(payloads, passes)
     indexed = {label: {row["cricsheet_match_id"]: row for row in rows}
                for label, rows in passes.items()}
