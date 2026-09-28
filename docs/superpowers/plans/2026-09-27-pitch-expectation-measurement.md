@@ -24,3 +24,32 @@ Replace the **future** explicit-source-only/human-reconciliation pitch analysis 
 ## Source and model operational risks
 
 Published timestamps alone do not certify a currently served article is unamended or uncontaminated. The source may be unavailable (one checked verified source URL returned HTTP 404), and the clone does not contain licensed article bodies. Require independently retrieved safe contemporaneous text, reviewed per-source status, and stable content hashes before assessment. Assessment cannot be reproduced from only URL/title or prior coder paraphrases. OMP's subagent task interface does not expose model/reasoning routing or `fork_turns`; record observed model identity only, do not claim a requested model was used. Do not deliver empty or invented passes as complete measurement.
+
+## Operational continuation after the initial blocked handoff
+
+The installed Codex CLI can run an isolated authenticated `gpt-5.6-luna`
+high-reasoning smoke in a temporary working directory, without an
+`OPENAI_API_KEY`; the returned event identifies the requested model route but
+does not expose a separate provider build/version. Do not treat this probe as
+a production assessment.
+
+1. Add a local-only source retrieval stage over only the 227 timing-eligible
+   registry IDs. Fetch article HTML with verified TLS, record retrieval time
+   and SHA-256, parse article-scoped text plus publication/last-modified
+   metadata, and quarantine all pages without demonstrably pre-start article
+   content. Extract only short match-specific condition sentences; reject
+   result/score/live markers **before** any reviewer or assessor sees text.
+   Never bulk-copy source bodies into Git.
+2. Review separate sanitized candidate batches, preserving evidence/source
+   provenance and `needs_review`, `unavailable`, or
+   `contaminated_or_ambiguous` when safe content cannot be demonstrated.
+   Reviewers see no raw HTML, old labels, outcome or peer output. A source with
+   no safe content is not classified.
+3. Add an isolated Codex CLI adapter only if it can record actual routed model,
+   reasoning effort, rubric/input hashes and structured outputs to distinct
+   A/B/C passes. Probe one safe source, then complete all assessable sources
+   with frozen rubric, not selective rows. Assessors run in separate temporary
+   directories and never receive peer pass files.
+4. Run mechanical consensus, measurement-only diagnostics and worksheet;
+   preserve `locked_test_scored=false`, commit code/docs and only rights-cleared
+   minimized release files. No pitch/outcome interpretation before human gate.

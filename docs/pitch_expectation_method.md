@@ -11,6 +11,7 @@ Decision log:
 | PE-001 / 2026-09-27 | Use a distinct expectation construct; retain historical strict derivative without mixing variables. | Pilot reported substantial blank fields; continuing explicit-only coding does not measure available probabilistic pre-match cues. No pitch-outcome associations consulted. | `AGENTS.md`, `config/study.yaml`, canonical rubric |
 | PE-002 / 2026-09-27 | Freeze rubric v1, three independent assessors, per-field majority else `uncertain`; median confidence; overall majority and >=60 primary, any confidence broad, >=75 high, all-fields 3/3 unanimous. | Mechanical, prespecified stability gate; thresholds fixed before outcome modeling. No outcome data consulted. | `config/pitch_expectation_agent.json`, consensus scripts |
 | PE-003 / 2026-09-27 | Source captures require independent pre-match review; date-only publication must safely precede verified UTC start even at 23:59:59.999999 UTC. | Contemporary URL/title and prior coder prose are insufficient evidence; date-only UTC overlap is ambiguous. No outcomes consulted. | sanitized input builder and manifest |
+| PE-004 / 2026-09-28 | Quarantine HTML snapshots locally; require article publication **and last modification** before start, a short article-scoped condition excerpt, score/result screening, and independent excerpt review before model input. | A publication timestamp does not authenticate later page contents. Excluding temporally ambiguous, inaccessible, amended, or contaminated pages avoids leaking outcomes at the cost of severe coverage loss. No outcome fields consulted. | source collector, review dispositions, ignored captures |
 
 ## Frozen rubric and variable definitions
 
@@ -52,7 +53,25 @@ count alone.
 
 ## Execution and measurement gate
 
-Use Python 3.11+ and do not start the assessor runner until the ignored captures have passed independent review. The runner requires an actual `OPENAI_API_KEY` and provider model ID; it will not simulate assessments. The task orchestration interface does not expose per-subagent model/reasoning routing, so provider response `model` is recorded as observed version. Never imply that a configured default proves the actual model was used. Run independent passes to separate files; no pass reads another pass. Commands:
+Use Python 3.11+ and do not start either assessor runner until the ignored captures have passed independent review. The API runner requires `OPENAI_API_KEY` and returns the provider response model identifier. The installed Codex CLI adapter is an authenticated alternative when no API key exists: it routes requested `gpt-5.6-luna` for A/B and `gpt-6-sol` for C with reasoning effort `high`; the CLI reveals its version and requested route, **not** the provider's actual model build identifier. Each CLI invocation runs in a fresh temporary directory with read-only sandbox, user config/rules disabled and ephemeral session; the adapter rejects any tool-use event. The routing and event checks do not prove an independently observable server-side model build. Neither runner forwards other assessors' records. The canonical rubric file is hashed independently of each source payload. Commands for the CLI route:
+
+The CLI route additionally constrains responses with `config/pitch_expectation_output_schema.json`. Its SHA-256 is recorded in every CLI pass manifest and checked across all three passes at consensus time. A first unconstrained attempt generated only A/B: Sol returned an empty `reasoning_basis`, violating the schema; this incomplete attempt is retained locally under `artifacts/pitch_expectations/attempt_1/`. A subsequent six-source run was archived under `attempt_2/` when the generated worksheet revealed a source title disclosing a prior series result. The title was quarantined, the input manifest changed, and **all three** passes were restarted for the corrected five-source set with identical rubric and response schema. No row was selectively retried or assessment value retained from either superseded run.
+
+```bash
+python3.11 scripts/collect_pitch_expectation_candidates.py
+python3.11 scripts/materialize_pitch_expectation_source_statuses.py
+# Independently review each pre_match_candidate; write captures or conservative dispositions.
+python3.11 scripts/build_pitch_expectation_inputs.py
+python3.11 scripts/audit_pitch_expectations.py
+python3.11 scripts/run_pitch_expectation_agents_codex.py --assessor A --model gpt-5.6-luna --run-id "$RUN_ID_A"
+python3.11 scripts/run_pitch_expectation_agents_codex.py --assessor B --model gpt-5.6-luna --run-id "$RUN_ID_B"
+python3.11 scripts/run_pitch_expectation_agents_codex.py --assessor C --model gpt-6-sol --run-id "$RUN_ID_C"
+python3.11 scripts/build_pitch_expectation_consensus.py
+```
+
+The September 28 local retrieval screened all 227 timing-eligible registry candidates: 52 contaminated/ambiguous, 169 needing further review, one unavailable, and five independently reviewed assessable excerpts (plus two timing-ambiguous registry records). These five are from 2015–19; **none** are from the 2024 validation or 2025–26 locked source subgroup. All five assessable articles are from one provider. This is a severe source-availability selection problem, not a complete cohort measurement. The remaining articles must not be inferred from legacy labels or later web pages. Raw snapshots, captured excerpts, assessor passes and generated outputs stay ignored by Git and require rights review before release.
+
+The Responses API route remains available separately:
 
 ```bash
 python3.11 scripts/build_pitch_expectation_inputs.py
@@ -67,4 +86,6 @@ Set `OPENAI_API_KEY`, `LUNA_MODEL_ID`, `SOL_MODEL_ID`, and `FROZEN_RUN_ID` to re
 
 The frozen Cricsheet raw snapshot and generated model table are absent in the fresh clone; source metadata counts must not be presented as independently reproduced modern cohort or paired innings totals. The consensus report marks `cohort_pairing_verified=false`; verify cohort pairing from the snapshot after approval, without opening locked outcomes.
 
-**Stop before outcome modeling.** With zero completed A/B/C passes, classify the current measurement as `PITCH_EXPLORATORY_ONLY` (no substantive pitch analysis is permissible); re-evaluate from actual stability and source coverage when passes exist. No empty release, invented scores/agreement, or fake audit. The historical `run_pitch_interaction_analysis.py` remains a legacy script and must not be run for these new variables. Full-cohort results are not modified. Final model-table build, associations, 2024 evaluation, figures and abstract claims require explicit human approval and a separate expectation-specific modeling path. Every measurement manifest keeps `locked_test_scored=false`.
+Measurement-only diagnostic on the corrected five-source run: every majority overall assessment is `batting_favorable`, all five have 3/3 agreement on that overall category, one has unanimous agreement across **all** categorical fields, and `spin_expectation` is `uncertain` in all five. These figures describe this narrow model-assessed source subset only: no category contrast, 2024 validation coverage, locked source coverage, or reliable pitch interaction can be estimated. The worksheet contains five **unrated** cases; no human reliability or substantive accuracy claim follows from model agreement.
+
+**Stop before outcome modeling.** Even with complete A/B/C passes on five development-era articles, the category sample lacks primary-cohort breadth, 2024/locked source coverage, and an actual completed human sanity audit. Classify the current measurement as `PITCH_EXPLORATORY_ONLY`; no substantive pitch analysis is permissible. A five-case worksheet cannot satisfy the planned ~12–15 diverse-case review; do not invent extra classifications or human ratings. The historical `run_pitch_interaction_analysis.py` remains a legacy script and must not be run for these new variables. Full-cohort results are not modified. Final model-table build, associations, 2024 evaluation, figures and abstract claims require explicit human approval and a separate expectation-specific modeling path. Every measurement manifest keeps `locked_test_scored=false`.
