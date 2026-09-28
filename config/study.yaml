@@ -1,5 +1,5 @@
 study:
-  title: "ODI powerplay performance, source-stated pre-match pitch effects, and match outcomes"
+  title: "ODI powerplay performance, pre-match expected playing environment, and match outcomes"
   match_type: "ODI"
   gender: "male"
   primary_start_year: 2015
@@ -47,7 +47,7 @@ powerplay:
   wicket_kinds_not_counted:
     - "retired hurt"
 
-pitch:
+pitch_legacy_explicit_source:
   source_timing: "published_before_match_start"
   coding_rule: "explicit_source_stated_playing_effects_only"
   independent_pitch_analysis_allowed: false
@@ -72,6 +72,25 @@ pitch:
     - "cloud_cover"
     - "wind_speed"
     - "dew_point"
+
+pitch_expectation:
+  construct: "model_estimated_pre_match_expected_playing_environment"
+  rubric_path: "config/pitch_expectation_agent.json"
+  source_universe: "verified_report_registry_excluding_historical_source_unavailable"
+  assessment_input: "positive_allowlist_from_reviewed_contaminant_free_source_captures"
+  physical_cue_inference: "bounded_contextual_not_deterministic"
+  source_statuses: ["not_retrieved", "timing_ambiguous", "needs_review", "unavailable", "contaminated_or_ambiguous", "assessable"]
+  assessors: ["A", "B", "C"]
+  consensus: "two_of_three_per_categorical_field_else_uncertain"
+  confidence: "median_of_three"
+  primary_min_confidence: 60
+  high_confidence_min_confidence: 75
+  broad_min_confidence: 0
+  unanimous: "three_of_three_all_categorical_fields"
+  primary_modifier: "overall_expected_environment"
+  outcome_analysis_gate: "human_approval_after_measurement_stability_and_source_audit"
+  locked_test_scored: false
+
 
 strength:
   primary_method: "elo"

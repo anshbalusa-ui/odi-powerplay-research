@@ -5,6 +5,14 @@
 Completed on branch `ssac27-pre-reliability-prep`, based on the latest `main`.
 No changes were merged to `main`.
 
+**Historical snapshot, not the current pitch-measurement gate.** On
+2026-09-27 the proposed pitch construct changed to model-estimated
+pre-match expected playing conditions before final pitch/outcome
+interpretation. Keep this report's legacy human-reliability gates and
+historical outputs unchanged as provenance. See
+`docs/pitch_expectation_method.md`; no new assessor passes or consensus
+are claimed by this older report.
+
 The 2025–2026 locked outcomes remain unscored and are excluded from every new
 substantive result. The local second-coder file
 `data/manual/pitch_reports_double_coded.csv` was not modified.

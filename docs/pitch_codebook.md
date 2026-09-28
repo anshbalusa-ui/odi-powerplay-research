@@ -1,5 +1,11 @@
 # Pre-Match Pitch-Effect Coding Codebook
 
+**Historical explicit-source-only method.** This codebook governs the preserved
+strict derivative and unfinished human reliability workflow, **not** the
+separate model-estimated pre-match expectation variables. For the current
+measurement amendment see `docs/pitch_expectation_method.md`. No historical
+pitch labels or coder paraphrases may enter that new assessor payload.
+
 ## Purpose
 
 Convert eligible pre-match prose into auditable **source-stated pitch-effect variables** without reading the outcome.

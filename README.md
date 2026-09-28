@@ -2,7 +2,7 @@
 
 [![Tests](https://github.com/anshbalusa-ui/odi-powerplay-research/actions/workflows/tests.yml/badge.svg)](https://github.com/anshbalusa-ui/odi-powerplay-research/actions/workflows/tests.yml)
 
-Reproducible Python research pipeline for an **associational** study of which first-10-over ODI batting profiles are linked to winning, how much they add beyond opposition strength and match context, and whether those relationships vary by **source-stated pre-match pitch behavior**.
+Reproducible Python research pipeline for an **associational** study of first-10-over ODI batting profiles, winning, and effect modification by **model-estimated pre-match expected playing conditions**. Historical explicit-source-only effects remain separately preserved.
 
 ## Research scope
 
@@ -13,13 +13,13 @@ World Cups are a labeled subgroup and sensitivity analysis, not the main dataset
 ## Two-track deliverables
 
 - **SSAC27 milestone:** finish a results-complete, reproducible analysis from the broad modern-ODI cohort for the abstract deadline on October 1, 2026 at 11:59 p.m. ET. The submission is a milestone, not the endpoint of the research.
-- **Full research paper:** continue expanding the cohort, source-stated pitch-effect coding, robustness analyses, and paper after the SSAC abstract is submitted, regardless of the competition decision.
+- **Full research paper:** continue expanding the cohort, separately audited pre-match expectation measurement, robustness analyses, and paper after the SSAC abstract is submitted, regardless of the competition decision.
 
 The SSAC version will emphasize one applied question: what makes a successful ODI powerplay, and when does the best balance of aggression and wicket preservation change? The full cohort estimates powerplay-outcome associations; the verified-pitch-report subset is a prespecified effect-modification analysis within that same question. See `docs/ssac27_submission_plan.md`.
 
 ## Primary research question
 
-> Among men's One Day International cricket matches, how are powerplay runs, wickets lost, boundary percentage, and dot-ball percentage associated with the batting team's probability of winning after accounting for pre-match opposition strength, innings order, toss, venue, year, and competition type—and, within the verified-pitch-report subgroup, how do those associations vary by **pitch effects explicitly stated in eligible pre-match sources**?
+> Among men's One Day International cricket matches, how are powerplay runs, wickets lost, boundary percentage, and dot-ball percentage associated with the batting team's probability of winning after accounting for pre-match opposition strength, innings order, toss, venue, year, and competition type—and, within the verified-pitch-report subgroup, how do those associations vary by **model-estimated pre-match expected playing conditions**?
 
 The wording is intentionally **associated with**, not **causes**. This is observational data.
 
@@ -74,10 +74,9 @@ subgroup contains 110 matches; it is not the primary sample.
 
 ```text
 Cricsheet JSON -> match/innings table -> rolling team and venue history
-                                      \
-eligible pre-match source-stated pitch effects -> audited merge -> leakage-safe model table
-
-model table -> chronological splits -> logistic/RF/XGBoost -> calibration/CI/plots
+verified pre-match source -> reviewed safe text -> 3 blind assessor passes
+                                      -> mechanical expectation consensus
+measurement audit + human worksheet -> human approval -> separate pitch model
 ```
 
 ## Quick start
@@ -128,16 +127,14 @@ without opening the locked 2025+ outcomes:
 - `scripts/build_ssac_full_cohort_results.py` writes canonical validation model
   outputs; `scripts/build_powerplay_marginal_results.py` writes
   model-standardized runs/wickets contrasts with an observational guardrail.
-- `scripts/diagnose_pitch_sparsity.py` reports exact pitch-code cell counts
-  without collapsing sparse categories.
-- `scripts/audit_pitch_reliability.py` writes machine-readable agreement metrics
-  and a raw-preserving disagreement CSV once a second coder submits the blinded
-  sample. `scripts/reconcile_pitch_reliability.py` keeps coder judgments
-  separate from final reconciled values.
-- `scripts/run_pitch_interaction_analysis.py` writes a prespecified pitch
-  analysis plan but refuses execution until independent double-coding,
-  reconciliation, and a hash-verified model table built from the reconciled
-  release are complete. The pitch result remains blocked.
+- `scripts/diagnose_pitch_sparsity.py` reports historical strict pitch-code cells;
+  it is not a diagnostic for the new expectation variables.
+- `scripts/audit_pitch_reliability.py`,
+  `scripts/reconcile_pitch_reliability.py` and
+  `scripts/run_pitch_interaction_analysis.py` remain historical
+  explicit-source/human-reconciliation tools. The incomplete 46-row human
+  recoding is superseded **for the new construct**, not claimed as completed.
+  The legacy runner cannot be used as the new expectation analysis.
 - `scripts/build_ssac_abstract_support.py` and
   `scripts/validate_ssac_abstract.py` build and validate the evidence-backed
   `docs/ssac27_abstract_skeleton.md` under the 499-word SSAC limit.
@@ -151,17 +148,33 @@ Generated primary/cohort datasets are ignored by Git and reproduced from the
 checksummed raw snapshot. The tracked hand-audit and pitch-queue templates contain
 no source prose and no secret data.
 
-## Source-stated pitch-effect data and analysis
+## New pre-match expectation measurement
 
-The **current rule** is strict: each accepted pre-match report may populate analytical pitch fields only from **playing effects explicitly stated by that source**. The intended fields are one primary category (`batting_friendly`, `balanced`, `pace_seam`, `spin`, `slow_two_paced`, or `unknown`) plus explicitly stated batting-ease, pace/seam-support, spin-support, bounce, two-paced, and dew expectations.
+See [`docs/pitch_expectation_method.md`](docs/pitch_expectation_method.md).
+`config/pitch_expectation_agent.json` freezes the allowed categorical expectation
+variables, bounded inference, uncertainties, consensus and thresholds. Assessor
+inputs are projected from verified pre-match metadata plus **newly retrieved,
+independently reviewed original-source text**; old pitch codes, prior coder notes,
+powerplay/outcome data and post-match information are excluded. Three independent
+passes and deterministic consensus precede a small human evidence audit. The new
+method does **not** claim true pitch behavior or human intercoder reliability.
+No new pitch interaction is interpreted before the measurement gate and approval.
 
-**The project performs zero independent pitch diagnosis.** Physical descriptions such as dry, dusty, grassy, green, moist, hard, cracked, worn, tacky, or used may be retained in the short provenance paraphrase, but they are never converted by the researcher into pitch-effect variables. For example, `dry` does not become `spin`, and `grass` does not become `pace_seam`, unless the eligible pre-match source itself explicitly states that expected playing effect. If the source does not state the effect, the corresponding field remains blank or `unknown`.
+## Historical source-stated pitch-effect data and analysis
+
+The **historical rule** is strict: each accepted report populates legacy fields
+only from playing effects explicitly stated by that source.
+
+**The historical scheme performs zero independent pitch diagnosis.** Physical
+descriptions such as dry or green are never converted into historical effect
+fields. The new expectation scheme permits bounded, source-grounded inference;
+its variables are distinct and cannot be mixed with these historical fields.
 
 ### Expanded 243-report release: re-audit complete
 
 The auditable input file contains 243 source- and timing-verified reports. The
 first 228 were coded under an earlier codebook; the 15 batch-24 rows were coded
-under the current rule. Every legacy row now has a recorded disposition in
+under the then-current historical strict rule. Every legacy row now has a recorded disposition in
 `data/manual/pitch_code_reaudit.csv`: 169 `passed_revised`, 45
 `passed_unchanged`, and 14 `source_unavailable`, alongside 15
 `current_standard` rows. The registry has zero validation issues.
@@ -193,12 +206,12 @@ matches are listed in `data/manual/pitch_set_aside.csv`, and 494 remain
 explicitly unreviewed. Verified source/timing coverage is 243/1,094
 (22.212066%); the compliant analytical release is 229/1,094.
 
-The current blinded assignment is the 46-row
+The historical blinded assignment is the 46-row
 `data/manual/pitch_reliability_sample_template.csv`, a deterministic 20% sample
-of the 229-row compliant reference set. It retains source documents and match
-identity but omits every first-coder pitch judgment. A genuinely independent
-human second coder, reconciliation, and reliability report remain outstanding;
-the repository tracks that blocker in issue #3.
+of the 229-row historical compliant reference set. Independent human second
+coding/reconciliation was **not completed**. This requirement has been retired
+for the new expectation construct; neither human kappa nor reconciliation
+is fabricated.
 
 The minimized tracked releases are `data/manual/pitch_reports_verified.csv`,
 `data/manual/pitch_code_reaudit.csv`, and
@@ -228,25 +241,29 @@ predated play. Start-time and source-provenance fields are audit metadata only:
 they are never joined into the model table and are explicitly prohibited as
 predictors.
 
-The strict source-stated pitch-effect analysis is now materialized from the
-229-row compliant release; its 14 source-unavailable legacy rows are excluded.
-Independent double-coding and reconciliation remain incomplete. The
-2025–2026 locked-test outcomes remain unscored.
+The historical strict derivative has 229 rows after excluding the 14
+source-unavailable legacy rows. The new model-estimated expectation release
+must be built independently from freshly reviewed source captures; its
+assessment coverage and category distributions cannot be inherited from those
+legacy rows. The 2025–2026 locked-test outcomes remain unscored.
 
 Do not automate bulk collection from ESPNcricinfo under the terms reviewed for
 this project. ESPN live commentary and post-match reporting are ineligible because
 they disclose match information unavailable at the prediction timestamp. Use only
 documented pre-match evidence, retain provenance and short original paraphrases,
-and report source coverage across years, venues, competition types, and outcomes.
+and report source coverage across years, providers, venues and competition types; assessors never receive outcome fields.
 
 ## Reproducibility rules
 
 - Never modify raw files after download; use dated/checksummed source manifests.
-- Keep original pitch-report URLs and short paraphrased notes alongside effect codes.
-- Never infer a pitch effect from a physical surface descriptor that the source did not explicitly connect to that effect.
-- The completed legacy re-audit is recorded in `data/manual/pitch_code_reaudit.csv`;
-  source-unavailable rows stay excluded and any future rows must follow the current rule.
-- Version the pitch-effect codebook before double-coding begins.
+- Keep original pitch-report URLs and short paraphrased notes with the
+  **historical** effect codes, never inside the new assessor payload.
+- Apply the no-inference rule only to the historical explicit-source derivative;
+  the distinct new expectation rubric permits bounded source-grounded inference.
+- Preserve the completed historical re-audit in
+  `data/manual/pitch_code_reaudit.csv`; exclude its 14 source-unavailable rows.
+- Version and hash the new rubric before any blinded three-pass assessment;
+  a rubric change invalidates all prior new-method passes.
 - Derive team strength using only matches before the focal match date.
 - Keep both rows from a match in the same split/fold.
 - Fit preprocessing inside each training fold.
@@ -255,7 +272,7 @@ and report source coverage across years, venues, competition types, and outcomes
 
 ## Key documents
 
-- `AGENTS.md` — non-negotiable agent/coder rules, including explicit-source-only pitch coding
+- `AGENTS.md` — historical explicit-source and distinct new expectation policies
 - `docs/research_design.md` — hypotheses, cohort, leakage rules, modeling, evaluation, and robustness checks
 - `docs/results.md` — preliminary cohort, powerplay, and 2024 validation findings
 - `docs/limitations.md` — interpretation boundaries, data constraints, and external blockers

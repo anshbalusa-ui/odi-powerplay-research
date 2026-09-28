@@ -2,23 +2,32 @@
 
 ## 1. Study identity
 
-**Working title:** *What Makes a Successful ODI Powerplay? The Role of Aggression, Wicket Preservation, Opposition Strength, and Source-Stated Pitch Effects*
+**Working title:** *What Makes a Successful ODI Powerplay? Aggression, Wicket Preservation, Opposition Strength, and Pre-Match Expected Playing Conditions*
 
 **Design:** retrospective observational prediction/association study with a full-cohort powerplay analysis and a prespecified effect-modification analysis restricted to matches with verified pre-match pitch reports.
 
 **Claim boundary:** the study estimates conditional associations and predictive performance. It does not prove that scoring more quickly causes a win, because team quality, strategy, opposition, and other unmeasured factors influence both powerplay performance and the result.
 
+**2026-09-27 prospective measurement amendment:** The original explicit-source
+pitch-effect codebook and its validation/reliability sections below describe the
+historical method and are retained for provenance. The new subgroup construct is
+`model-estimated pre-match expected playing environment`; bounded inference from
+verified original-source text is allowed under uncertainty and outcome blinding.
+See `docs/pitch_expectation_method.md` and the hashed frozen rubric before any
+new pitch/outcome interpretation. The incomplete old 46-case human recoding is
+not a completed reliability result and is not the new measurement gate.
+
 ## 2. Questions and hypotheses
 
 ### Primary question
 
-Among men's One Day International cricket matches, how are powerplay aggression and wicket preservation associated with the batting team's probability of winning after accounting for pre-match team strength and match context—and, within the verified-pitch-report subgroup, how do those associations vary by **pitch effects explicitly stated by eligible pre-match sources**?
+Among men's One Day International cricket matches, how are powerplay aggression and wicket preservation associated with the batting team's probability of winning after accounting for pre-match team strength and match context—and, within the verified-pitch-report subgroup, how do those associations vary by **model-estimated pre-match expected playing conditions**?
 
 ### Prespecified hypotheses
 
 - **H1:** Conditional on wickets and context, more powerplay runs are associated with higher win probability.
 - **H2:** Conditional on runs and context, more powerplay wickets lost are associated with lower win probability.
-- **H3:** Within matches with verified pre-match pitch reports, the runs-win and wickets-win relationships vary across **source-stated pitch-effect categories**.
+- **H3 (amended before new pitch-outcome modeling):** Within matches with verified pre-match reports, the runs-win and wickets-win relationships may vary across model-estimated expected playing environments. No new claim until measurement diagnostics and human approval.
 - **H4:** Innings order modifies these relationships because the strategic meaning of a start differs when batting first versus chasing.
 
 H1, H2, and the innings-order component of H4 are tested in the full cohort. H3 is a prespecified subgroup/effect-modification analysis, not a separate unrelated finding and not a reason to discard matches without pitch reports. Bounce and two-paced interactions remain exploratory unless adequate source coverage is established before outcomes are modeled. Testing every possible interaction would create a multiple-comparisons problem.
@@ -98,7 +107,7 @@ The prediction timestamp is the end of the focal batting team's tenth over. A ca
 | Allowed | Not allowed |
 |---|---|
 | Focal team's first-10-over score events | Any focal-team event after over 10 |
-| Pre-match source statements about expected pitch behavior, published before play | Researcher-inferred pitch behavior from dry/grass/moisture/cracks or any post-match pitch summary |
+| Verified contemporaneous pre-match expected-condition assessment | Researcher/agent access to match outcomes, old pitch codes, or post-match evidence |
 | Toss, batting order, teams, venue, date | Player-of-match, victory margin, final totals |
 | Team ratings computed only from earlier dates | End-of-year ranking or tournament-final rating |
 | Explicit pre-match dew expectation | Post-match descriptions or observed later-match dew |
@@ -106,13 +115,18 @@ The prediction timestamp is the end of the focal batting team's tenth over. A ca
 
 For second innings, the first-innings total and target are technically known by over 10, but the primary model excludes them so first- and second-innings rows answer a comparable question. A chasing-only sensitivity model may include the pre-innings target if it is declared in advance.
 
-## 7. Pre-match pitch-effect data and coding
+## 7. Historical explicit-source pitch-effect coding (preserved provenance)
 
-Use only reports demonstrably published before the match began. Record the URL, title, publication/access times, coder, confidence, original match identifiers, a short paraphrase, and coded fields.
+The following non-inference rules apply **only to the historical source-stated
+derivative**, not the new expectation assessment in
+`docs/pitch_expectation_method.md`. The historical coder records source URL/title,
+publication/access times, match ID, confidence and short paraphrase.
 
-### Non-inference rule
+### Historical non-inference rule
 
-**The study does not independently analyze or diagnose the pitch.** It standardizes only expected playing effects explicitly stated by the eligible pre-match source.
+**The historical method does not independently analyze or diagnose the pitch.**
+It standardizes only expected playing effects explicitly stated by the eligible
+pre-match source.
 
 - A statement that a pitch is dry, dusty, grassy, green, moist, hard, cracked, worn, tacky, or used does not by itself create a model feature.
 - `spin_support` is coded only when the source explicitly states or clearly directly describes expected turn/spin assistance.
@@ -167,11 +181,20 @@ Fit nested feature blocks so the powerplay contribution is first estimated in th
 2. **F1 full-cohort powerplay model:** F0 plus `pp_runs` and `pp_wickets`.
 3. **F2 full-cohort scoring-process sensitivity:** F0 plus `pp_wickets`, boundary-ball percentage, and dot-ball percentage instead of runs.
 4. **V1 venue-history sensitivity:** F1 plus source-independent prior venue-history features and availability.
-5. **P0 verified-pitch-report baseline:** F0 restricted to matches with verified reports, plus **source-stated pitch-effect main fields**.
-6. **P1 verified-pitch-report powerplay model:** P0 plus `pp_runs` and `pp_wickets`.
-7. **P2 verified-pitch-report effect-modification model:** P1 plus the small prespecified interactions with **source-stated pitch effects**.
+5. **P0 expectation-subgroup pre-match baseline (post-approval only):** F0
+   restricted to matches with reviewed, assessable pre-match reports, plus the
+   distinct categorical `overall_expected_environment` expectation field.
+6. **P1 expectation-subgroup powerplay model:** P0 plus `pp_runs` and `pp_wickets`.
+7. **P2 expectation-subgroup effect-modification candidate:** P1 plus
+   prespecified runs × overall expected environment and wickets × overall
+   expected environment, **only if measurement-only cell counts support it**.
 
-The primary full-cohort comparison is F0 versus F1/F2. The pitch-report subgroup comparison is P1 versus P2 and asks whether the powerplay relationship changes when pre-match sources explicitly forecast different playing effects. Report subgroup coverage and compare the pitch-report subset with the full cohort before interpreting P2. Never backfill missing source-stated pitch effects with venue history or researcher inference.
+The primary full-cohort comparison is F0 versus F1/F2. The new subgroup
+comparison is P1 versus P2 after the measurement gate and human approval.
+Sparse category and 2024 validation counts may instead warrant a separately
+documented simpler specification or exploratory-only status **before outcome
+inspection**. Historical source-stated code fields never enter these new
+P-models; venue history cannot backfill missing expectations.
 
 ### Full-cohort score-and-wickets model
 
@@ -192,16 +215,16 @@ Use wickets, boundary percentage, and dot-ball percentage without powerplay runs
 
 ### Interactions
 
-Primary confirmatory interactions in the verified-pitch-report subgroup:
+Primary confirmatory candidate interactions **after the new measurement gate
+and human approval**, subject to category sparsity:
 
-- runs × source-stated batting ease;
-- wickets × source-stated batting ease;
-- wickets × source-stated pace/seam support;
-- wickets × source-stated spin support;
-- runs × innings order;
-- wickets × innings order.
+- runs × `overall_expected_environment`;
+- wickets × `overall_expected_environment`.
 
-Treat source-stated bounce and two-paced interactions as exploratory unless their coding coverage is sufficient before outcome modeling. Plot marginal predictions rather than interpreting interaction coefficients alone.
+The supporting batting/pace/spin/slow dimensions are not jointly interacted
+with runs and wickets in one small-subgroup model. The full-cohort prespecified
+runs × innings order and wickets × innings order remain unchanged. Plot marginal
+predictions with uncertainty only after actual unlocked outcome analyses exist.
 
 ## 11. Models
 

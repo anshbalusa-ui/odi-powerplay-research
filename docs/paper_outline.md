@@ -11,25 +11,26 @@ the completed legacy code re-audit are reproducible. `docs/results.md` contains
 the current quantitative narrative and `docs/limitations.md` fixes its
 interpretation boundary.
 
-The strict analytical pitch release contains 229 rows: 214 accepted legacy rows
-and 15 current-standard rows. Fourteen source-unavailable legacy rows are
-excluded. Independent double-coding and locked-test evaluation remain
-incomplete, so the pitch subgroup is a reproducible checkpoint rather than a
-reliability-cleared final finding.
+The **historical** strict analytical pitch release contains 229 rows: 214
+accepted legacy rows and 15 current-standard rows. Fourteen historically
+source-unavailable legacy rows are excluded. The 46-case human recoding was
+not completed. The distinct expected-conditions release now requires verified
+original-source content and independent blinded assessments before any new
+pitch/outcome finding; see `docs/pitch_expectation_method.md`.
 
 ## Title page and abstract (200–250 words)
 
-- Use the working title *What Makes a Successful ODI Powerplay? The Role of Aggression, Wicket Preservation, Opposition Strength, and Source-Stated Pitch Effects*.
+- Use the working title *What Makes a Successful ODI Powerplay? Aggression, Wicket Preservation, Opposition Strength, and Pre-Match Expected Playing Conditions*.
 - One-sentence background and unified research question.
 - Data sources, sample period, and match-clustered unit of analysis.
 - Finding 1: full-cohort powerplay profiles after contextual adjustment.
-- Finding 2: effect modification by **pitch effects explicitly stated in eligible pre-match sources**, only after the compliant reference set and reliability gates support interpretation.
+- Finding 2: effect modification by **model-estimated pre-match expected playing conditions**, only after measurement stability, human evidence audit and explicit approval.
 - Main limitation and conclusion without causal language.
 
 ## 1. Introduction
 
 1. Explain why aggression and wicket preservation jointly define an ODI powerplay.
-2. Explain why opposition strength, innings order, and source-stated pre-match pitch behavior can change the meaning of the same start.
+2. Explain why opposition strength, innings order, and contemporaneous pre-match expected conditions may change the interpretation of the same powerplay.
 3. Identify the gap: early performance is often summarized without jointly addressing context, temporal validation, and calibration.
 4. State one research question with a full-cohort analysis and a prespecified verified-pitch-report effect-modification subgroup.
 5. Summarize contributions without presenting the subgroup as an unrelated second paper.
@@ -60,16 +61,15 @@ Use academic or authoritative sources. Do not pad this section with generic mach
 - exact first-10-over definitions;
 - audit and edge cases.
 
-### 3.3 Verified-pitch-report subgroup
+### 3.3 Verified pre-match expected-conditions subgroup
 
-- prespecified role as an effect-modification analysis;
-- source eligibility, timing, codebook, coverage, and cohort comparison;
-- **explicit-source-only rule:** the coder standardizes only playing effects explicitly stated by the source and performs no independent pitch diagnosis;
-- physical descriptions such as dry, grassy, moist, hard, cracked, worn, or used remain provenance only unless the source itself explicitly states the playing effect;
-- legacy 228-code re-audit completed before the compliant pitch release; unsupported
-  values are blanked/removed and source-unavailable rows are excluded;
-- independent double coding and reliability gate after the compliant reference set
-  is frozen.
+- prespecified role as an effect-modification analysis of the main modern ODI cohort;
+- source eligibility, timing, source/content hashes, capture review and coverage;
+- distinct legacy explicit-source effect codes retained as historical provenance, never assessor inputs;
+- bounded inference from verified original-source evidence, preserving uncertainty;
+- three independent blinded passes, mechanical consensus, confidence thresholds and model-assessment agreement;
+- small human source/evidence sanity worksheet, no invented human intercoder reliability;
+- publication-timing ambiguities and unavailable/contaminated sources excluded from classifications.
 
 ### 3.4 Limited non-pitch conditions
 
@@ -97,7 +97,7 @@ Use academic or authoritative sources. Do not pad this section with generic mach
 - source terms/licences and attribution;
 - transformation log and code/environment;
 - handling of copyrighted prose via short paraphrase/citation;
-- no researcher-inferred pitch labels from physical surface descriptions;
+- no outcome/post-match/old-label contamination of new assessor inputs;
 - no individual-player ranking or sensitive data.
 
 ## 4. Results
@@ -106,8 +106,8 @@ Use academic or authoritative sources. Do not pad this section with generic mach
 
 - row counts, exclusions, missingness, and join coverage;
 - report pre-match source/timing coverage as 243/1,094 (22.212066%), with 357 of 600 reviewed matches set aside and 494 unreviewed;
-- report the 229-row compliant release and 14 source-unavailable exclusions;
-- report the 35-provider source mix and inter-coder reliability only after the compliant reference set and independent double coding are complete.
+- report historical strict 229-row/14-exclusion provenance separately from the new assessed sample;
+- report new source statuses, measurement stability, confidence and category/split counts before outcome estimates.
 
 ### 4.2 Finding 1: full-cohort powerplay profiles
 
@@ -115,19 +115,21 @@ Use academic or authoritative sources. Do not pad this section with generic mach
 - adjusted associations and marginal win probabilities for aggression and wicket preservation;
 - innings-order modification and chronological predictive performance.
 
-### 4.3 Finding 2: modification by source-stated pitch effects
+### 4.3 Finding 2: modification by pre-match expected playing environment
 
-- restrict to source- and timing-verified reports whose analytical codes also pass the explicit-source-only re-audit;
-- report subgroup composition, selection differences, and reliability before estimates;
-- show prespecified runs × source-stated effect and wickets × source-stated effect marginal predictions;
-- make clear that categories are standardized publisher/source expectations, not researcher diagnoses of the physical pitch;
-- interpret as refinement of Finding 1, not an independent headline claim.
+- do not fit/interpret until the new measurement gate and human approval pass;
+- describe newly assessed subset coverage, confidence and category sparsity;
+- show only prespecified, supportable runs × overall expected environment and wickets × overall expected environment marginal contrasts;
+- stress that categories represent pre-match expectations, not realized pitch truth;
+- interpret observationally as refinement of Finding 1, not an independent headline claim.
 
 ### 4.4 Predictive performance
 
-- report the completed full-cohort 2024 validation metrics and clustered intervals as preliminary model-selection evidence;
-- treat the compliant pitch-subgroup validation metrics as a ten-match reproducibility checkpoint until independent reliability is complete;
-- report final pitch-subgroup and locked-test metrics only after the reliability and model-freeze gates pass;
+- report completed full-cohort 2024 validation metrics and clustered intervals;
+- evaluate the distinct expectation subgroup only after the measurement
+  diagnostics and human approval; historical ten-match strict-code validation
+  remains a provenance checkpoint, not evidence for the new construct;
+- do not open locked 2025+ outcomes at this measurement gate;
 - include calibration plots and avoid claiming success from accuracy alone.
 
 ### 4.5 Nonlinear interpretation
@@ -140,16 +142,16 @@ Use academic or authoritative sources. Do not pad this section with generic mach
 
 - historical venue-scoring sensitivity versus M1;
 - report which conclusions changed and which remained stable;
-- never use physical pitch descriptors or venue history to backfill missing source-stated pitch effects.
+- never use venue history, post-match observations or historical pitch labels to backfill missing new expectations;
 
 ## 5. Discussion
 
 1. Answer what makes a successful powerplay using the full-cohort result.
-2. Explain when that answer changes using the compliant verified-pitch-report/source-stated-effect result, if its gates pass.
+2. Explain whether the powerplay associations vary with model-estimated pre-match expectations only if the new measurement and unlocked analysis gates pass.
 3. Keep both findings under the same aggression-versus-wicket-preservation question.
 4. Explain why nonlinear models did or did not improve held-out prediction.
 5. Discuss calibration and practical meaning.
-6. Limitations: observational confounding, pitch-report subgroup selection and coverage, source wording differences, legacy-code re-audit, coding reliability, within-match pitch change, rule/era differences, paired innings dependence, and generalizability.
+6. Limitations: observational confounding, pitch-report subgroup selection and coverage, source wording differences, expectation uncertainty, model-assessment disagreement, within-match pitch change, rule/era differences, paired innings dependence, and generalizability.
 7. Future work: more eras/events, direct instrumented/on-field surface measurements, hierarchical venue/team models, external replication.
 
 ## 6. Conclusion
@@ -159,8 +161,8 @@ One short paragraph. Answer the question, give the practical/statistical takeawa
 ## Appendices
 
 - complete data dictionary;
-- source-stated pitch-effect codebook and reliability matrices;
-- legacy-code re-audit record;
+- historical source-stated pitch-effect codebook and unfinished human reliability materials;
+- new rubric hash, blinded-pass manifests, agreement diagnostics, human sanity-audit worksheet and source eligibility audit;
 - exclusions and join audit;
 - hyperparameter grids;
 - full metrics/CIs;
