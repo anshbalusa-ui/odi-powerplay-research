@@ -3,10 +3,12 @@
 from __future__ import annotations
 
 import hashlib
+import html
 import json
 import re
 from collections import Counter
 from datetime import datetime
+from html.parser import HTMLParser
 from pathlib import Path
 from urllib.parse import urlparse
 
@@ -35,6 +37,7 @@ INPUT_KEYS = set(META_FIELDS) | {"source_text", "source_hash"}
 CONTAMINATION = re.compile(
     r"\b(?:final score|match result|match report|post.match|live commentary|"
     r"scorecard|as it happened|won by \d+ (?:runs|wickets)|"
+    r"won|lost|beat|beaten|defeated|conceded|clinched|"
     r"(?:innings|match) highlights)\b", re.IGNORECASE
 )
 
@@ -283,6 +286,112 @@ def audit_sample(rows: list[dict], size: int = 15) -> list[dict]:
         seen.update(attributes(candidate))
         candidates.remove(candidate)
     return selected
+
+
+class _ArticleParser(HTMLParser):
+    """Collect metadata and article-scoped paragraphs, never navigation cards."""
+
+    def __init__(self) -> None:
+        super().__init__(convert_charrefs=True)
+        self.published: list[str] = []
+        self.modified: list[str] = []
+        self.paragraphs: list[str] = []
+        self._article_depth = 0
+        self._in_paragraph = False
+        self._parts: list[str] = []
+
+    def handle_starttag(self, tag: str, attrs: list[tuple[str, str | None]]) -> None:
+        values = dict(attrs)
+        if tag == "meta":
+            marker = (values.get("property") or values.get("itemprop")
+                      or values.get("name") or "").lower()
+            content = values.get("content") or ""
+            if marker in {"article:published_time", "datepublished"}:
+                self.published.append(content)
+            elif marker in {"article:modified_time", "datemodified"}:
+                self.modified.append(content)
+        if tag == "article":
+            self._article_depth += 1
+        if tag == "p" and self._article_depth:
+            self._in_paragraph = True
+            self._parts = []
+
+    def handle_data(self, data: str) -> None:
+        if self._in_paragraph:
+            self._parts.append(data)
+
+    def handle_endtag(self, tag: str) -> None:
+        if tag == "p" and self._in_paragraph:
+            paragraph = " ".join(" ".join(self._parts).split())
+            if paragraph:
+                self.paragraphs.append(paragraph)
+            self._parts = []
+            self._in_paragraph = False
+        if tag == "article" and self._article_depth:
+            self._article_depth -= 1
+
+
+_CONDITION = re.compile(
+    r"\b(?:pitch|surface|strip|conditions|seam|spin|turn|bounce|grass|"
+    r"dust|tacky|moist|slow|dew|weather)\b", re.IGNORECASE
+)
+_RESULT = re.compile(
+    r"\b(?:won|defeat|victory|result|scorecard|final score|live commentary|"
+    r"chase[ds]?|scored?|wickets?|highest ever|innings)\b|"
+    r"\b\d{1,3}/\d{1,2}\b|\b\d{2,3}\b", re.IGNORECASE
+)
+
+
+def extract_source_candidate(report: dict, html_text: str) -> dict:
+    """Quarantine unsafe pages; expose only short condition text after temporal checks.
+
+    This is a source-review candidate, never an independent review or assessment.
+    """
+    parser = _ArticleParser()
+    parser.feed(html_text)
+    if not parser.published or not parser.modified:
+        return {"status": "needs_review", "reason": "article publication or modification time missing"}
+    try:
+        published = [_utc(value) for value in parser.published]
+        modified = [_utc(value) for value in parser.modified]
+        scheduled = _utc(report["scheduled_start_utc"])
+        original = report["published_at_utc"]
+        published_matches = (
+            any(value.date().isoformat() == original for value in published)
+            if re.fullmatch(r"\d{4}-\d{2}-\d{2}", original)
+            else any(value == _utc(original) for value in published)
+        )
+    except (ValueError, TypeError):
+        return {"status": "needs_review", "reason": "article timestamps cannot be verified"}
+    if not published_matches:
+        return {"status": "needs_review", "reason": "current publication differs from verified release"}
+    if max(modified) >= scheduled or max(published) >= scheduled:
+        return {"status": "contaminated_or_ambiguous", "reason": "article could contain later edits"}
+    if CONTAMINATION.search(report["source_title"]):
+        return {"status": "contaminated_or_ambiguous", "reason": "source title resembles result coverage"}
+    sentences = []
+    for paragraph in parser.paragraphs:
+        if _CONDITION.search(paragraph) and (
+            CONTAMINATION.search(paragraph) or _RESULT.search(paragraph)
+        ):
+            return {"status": "contaminated_or_ambiguous",
+                    "reason": "article condition section contains a result/score marker"}
+        for sentence in re.split(r"(?<=[.!?])\s+", html.unescape(paragraph)):
+            if not _CONDITION.search(sentence):
+                continue
+            if CONTAMINATION.search(sentence) or _RESULT.search(sentence):
+                return {"status": "contaminated_or_ambiguous",
+                        "reason": "article condition section contains a result/score marker"}
+            sentences.append(sentence.strip())
+    snippet = " ".join(sentences)
+    if len(snippet.split()) < 8 or len(snippet) > 900:
+        return {"status": "needs_review", "reason": "no concise article-scoped condition evidence"}
+    return {
+        "status": "pre_match_candidate",
+        "source_text": snippet,
+        "article_published_at_utc": min(published).isoformat(),
+        "article_modified_at_utc": max(modified).isoformat(),
+    }
 
 
 def canonical_json(value: object) -> str:

@@ -40,6 +40,11 @@ class AssessmentPipelineTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             source_snapshot(self.row, {**self.capture, "published_at_utc": "2024-03-02T09:00:00Z"})
 
+    def test_prior_series_result_in_title_cannot_enter_model_payload(self):
+        report = {**self.row, "source_title": "Series conceded, team seeks revival"}
+        with self.assertRaises(ValueError):
+            assessment_input(report, report, self.text, hashlib.sha256(self.text.encode()).hexdigest())
+
     def test_unavailable_and_contaminated_require_provenance_not_guesses(self):
         disposition = {
             "source_url": self.row["source_url"],
