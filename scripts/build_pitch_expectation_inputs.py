@@ -1,0 +1,104 @@
+#!/usr/bin/env python3
+"""Materialize strictly allowlisted assessor inputs from reviewed pre-match captures.
+
+Capture JSON files are locally retained, ignored and rights-sensitive. Missing captures
+remain pending; they are never silently replaced by old coder paraphrases or labels.
+"""
+
+from __future__ import annotations
+
+import argparse
+import csv
+import hashlib
+import json
+import sys
+from collections import Counter
+from datetime import datetime, timezone
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT / "src"))
+from odi_powerplay.pitch_expectation import (  # noqa: E402
+    META_FIELDS, assessment_input, canonical_json, eligible_sources,
+    rubric_hash, rubric_version, source_disposition, source_snapshot,
+)
+
+
+def selected_csv(path: Path, fields: tuple[str, ...]) -> list[dict[str, str]]:
+    """Discard excluded CSV columns at the intake boundary."""
+    with path.open(encoding="utf-8", newline="") as handle:
+        reader = csv.reader(handle)
+        header = next(reader)
+        offsets = [header.index(field) for field in fields]
+        return [dict(zip(fields, (row[index] for index in offsets), strict=True)) for row in reader]
+
+
+def sha256(path: Path) -> str:
+    return hashlib.sha256(path.read_bytes()).hexdigest()
+
+
+def main() -> None:
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--reports", type=Path, default=ROOT / "data/manual/pitch_reports_verified.csv")
+    parser.add_argument("--starts", type=Path, default=ROOT / "data/manual/match_start_times_verified.csv")
+    parser.add_argument("--registry", type=Path, default=ROOT / "data/manual/pitch_code_reaudit.csv")
+    parser.add_argument("--captures", type=Path, default=ROOT / "data/interim/pitch_expectation_captures")
+    parser.add_argument("--output", type=Path, default=ROOT / "artifacts/pitch_expectations/inputs.jsonl")
+    parser.add_argument("--manifest", type=Path, default=ROOT / "artifacts/pitch_expectations/input_manifest.json")
+    args = parser.parse_args()
+    reports = selected_csv(args.reports, tuple(field for field in META_FIELDS
+                                               if field != "scheduled_start_utc") + ("pre_match_verified",))
+    starts = selected_csv(args.starts, ("cricsheet_match_id", "start_time_status",
+                                        "scheduled_start_utc"))
+    registry = selected_csv(args.registry, ("cricsheet_match_id", "reaudit_status"))
+    timing_exclusions: list[str] = []
+    candidates = eligible_sources(reports, starts, registry, timing_exclusions)
+    payloads = []
+    statuses = [
+        {"cricsheet_match_id": key, "source_status": "timing_ambiguous"}
+        for key in timing_exclusions
+    ]
+    for report in candidates:
+        key = report["cricsheet_match_id"]
+        capture_path = args.captures / f"{key}.json"
+        if not capture_path.is_file():
+            statuses.append({"cricsheet_match_id": key, "source_status": "not_retrieved"})
+            continue
+        capture = json.loads(capture_path.read_text(encoding="utf-8"))
+        status = capture.get("review_status", "needs_review")
+        if status in {"unavailable", "contaminated_or_ambiguous", "needs_review"}:
+            statuses.append({"cricsheet_match_id": key, **source_disposition(report, capture)})
+            continue
+        validated = source_snapshot(report, capture)
+        source_hash = validated["source_hash"]
+        payloads.append(assessment_input(report, report, validated["source_text"], source_hash))
+        statuses.append({"cricsheet_match_id": key, "source_status": "assessable",
+                         "source_hash": source_hash, "retrieved_at_utc": validated["retrieved_at_utc"],
+                         "reviewer_id": validated["reviewer_id"]})
+    args.output.parent.mkdir(parents=True, exist_ok=True)
+    args.manifest.parent.mkdir(parents=True, exist_ok=True)
+    args.output.write_text("".join(canonical_json(row) + "\n" for row in payloads), encoding="utf-8")
+    summary = {
+        "construct": "pre_match_expected_playing_environment_v1",
+        "registry_candidate_count": len(candidates) + len(timing_exclusions),
+        "eligible_source_count": len(candidates),
+        "source_statuses": dict(sorted(Counter(row["source_status"] for row in statuses).items())),
+        "sources": statuses,
+        "assessable_count": len(payloads),
+        "input_sha256": sha256(args.output),
+        "rubric_sha256": rubric_hash(),
+        "rubric_version": rubric_version(),
+        "source_registry_sha256": {label: sha256(path) for label, path in
+                                   (("reports", args.reports), ("starts", args.starts),
+                                    ("registry", args.registry))},
+        "built_at_utc": datetime.now(timezone.utc).isoformat(),
+        "locked_test_scored": False,
+    }
+    args.manifest.write_text(json.dumps(summary, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    print(json.dumps({key: summary[key] for key in
+                      ("eligible_source_count", "assessable_count", "source_statuses",
+                       "rubric_sha256", "locked_test_scored")}, indent=2))
+
+
+if __name__ == "__main__":
+    main()

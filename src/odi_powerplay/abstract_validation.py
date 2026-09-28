@@ -114,11 +114,11 @@ def validate_ssac_abstract(text: str, evidence: dict[str, Any]) -> dict[str, Any
     if not pitch_allowed:
         for sentence in re.split(r"(?<=[.!?])\s+", text):
             if re.search(r"\bpitch\b", sentence, re.IGNORECASE) and not re.search(
-                r"pending|blocked|withheld|not reported|not cleared|reliability|reconciliation|prespecified|analysis",
+                r"pending|blocked|withheld|not reported|not cleared",
                 sentence,
                 re.IGNORECASE,
             ):
-                issue("pitch_gate", "pitch sentence makes a substantive claim before reliability/reconciliation clearance")
+                issue("pitch_gate", "pitch sentence makes a substantive claim before measurement approval")
                 break
 
     return {

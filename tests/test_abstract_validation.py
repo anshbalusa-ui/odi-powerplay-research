@@ -32,7 +32,7 @@ class AbstractValidationTests(unittest.TestCase):
 We studied which first-10-over batting profiles were associated with winning in men's ODIs.
 
 ## Methods
-We analyzed 942 matches (1884 team-innings) from 2015–2024 and held out 71 matches (142 innings) for temporal validation. Models were fit without locked-period outcomes. Pitch interaction analyses were not reported pending independent reliability and reconciliation. All estimates are observational and not causal.
+We analyzed 942 matches (1884 team-innings) from 2015–2024 and held out 71 matches (142 innings) for temporal validation. Models were fit without locked-period outcomes. Pitch expectation interactions were not reported pending blinded measurement and human approval. All estimates are observational and not causal.
 
 ## Results
 The fixed runs-and-wickets benchmark had validation ROC-AUC 0.740; adding context yielded 0.708, and the pre-specified interaction model yielded 0.710.
@@ -77,6 +77,20 @@ The result is observational and not causal.
 
         self.assertIn("pitch_gate", {issue["code"] for issue in result["issues"]})
 
+
+    def test_blocks_claim_disguised_as_prespecified_pitch_analysis(self) -> None:
+        text = """# Title
+## Introduction
+We studied ODI powerplays.
+## Methods
+The cohort had 942 matches, 1884 innings and 71 validation matches (142 innings).
+## Results
+Our prespecified pitch analysis found stronger winning associations; ROC-AUC was 0.740, 0.708, and 0.710.
+## Conclusion
+This is observational, not causal.
+"""
+        result = validate_ssac_abstract(text, self.evidence())
+        self.assertIn("pitch_gate", {issue["code"] for issue in result["issues"]})
 
 if __name__ == "__main__":
     unittest.main()

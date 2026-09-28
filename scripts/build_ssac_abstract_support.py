@@ -146,12 +146,13 @@ def main() -> int:
             "claim_id": "pitch_status",
             "status": "blocked",
             "claim": (
-                f"Pitch interaction results are blocked: the outcome-blind pitch subset has "
-                f"{unlocked_pitch_matches} unlocked matches, but independent reliability and "
-                "reconciliation are not cleared."
+                f"New pitch-expectation interactions remain blocked pending blinded "
+                f"assessment, stability review and human approval. The historical "
+                f"strict-code subset had {unlocked_pitch_matches} unlocked matches; "
+                "that is not the new assessed sample."
             ),
             "source_artifact": str(args.sparsity_input),
-            "source_selector": "matches_by_split",
+            "source_selector": "historical_matches_by_split",
         },
     ]
 
@@ -177,12 +178,15 @@ def main() -> int:
         },
         "actionable_powerplay": contrasts,
         "pitch_measurement": {
+            "construct": "model_estimated_pre_match_expected_playing_environment",
+            "status": "not_measured_or_human_approved",
+            "pitch_interaction_claim_allowed": False,
+        },
+        "historical_pitch_checkpoint": {
             "matches_by_split": pitch_matches,
             "unlocked_matches": unlocked_pitch_matches,
             "sparse_cell_count": sparsity["sparse_cell_count"],
-            "reliability_status": "not_cleared",
-            "reconciliation_status": "not_cleared",
-            "pitch_interaction_claim_allowed": False,
+            "measurement": "legacy_explicit_source_only_not_expectation",
         },
         "evidence_ledger": ledger,
         "source_artifacts": {

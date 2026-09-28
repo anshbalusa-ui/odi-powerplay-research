@@ -27,4 +27,5 @@ artifacts/run_manifest.json
 artifacts/figures/*
 artifacts/models/*
 artifacts/tables/*
+artifacts/pitch_expectations/*
 !artifacts/**/.gitkeep
