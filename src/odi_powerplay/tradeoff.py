@@ -172,6 +172,7 @@ def _prepare_rows(rows: Sequence[dict[str, Any]], *, dev: Sequence[dict[str, Any
             not spline_knots[0] < spline_knots[1] < spline_knots[2]):
         raise ValueError("non_distinct_development_knots")
     means: dict[str, tuple[float, float]] = {}
+    medians: dict[str, float] = {}
     operands = sorted({operand for pair in interactions for operand in pair if operand != "batting_first"})
     for operand in operands:
         vals = [_number(row, operand) for row in dev]
@@ -181,6 +182,7 @@ def _prepare_rows(rows: Sequence[dict[str, Any]], *, dev: Sequence[dict[str, Any
         if sd <= 0:
             raise ValueError(f"interaction operand has zero development variance: {operand}")
         means[operand] = mean, sd
+        medians[operand] = _quantile(present, 0.5)
     output = []
     extra_num = [f"_interaction_{idx}" for idx in range(len(interactions))]
     # Interaction products are materialized from development-standardized operands.
@@ -191,10 +193,10 @@ def _prepare_rows(rows: Sequence[dict[str, Any]], *, dev: Sequence[dict[str, Any
             def transform(field: str) -> float:
                 value = _number(original, field)
                 if value is None:
-                    return 0.0
+                    value = medians.get(field, 0.0)
                 if field in means:
                     mean, sd = means[field]
-                    return 0.0 if sd <= 0 else (value - mean) / sd
+                    return (value - mean) / sd
                 return value
             row[f"_interaction_{idx}"] = transform(left) * transform(right)
         if strengths == "win_rate":
@@ -230,7 +232,11 @@ def _prepare_rows(rows: Sequence[dict[str, Any]], *, dev: Sequence[dict[str, Any
     spec = _model_spec("tradeoff", extra_num=extra_num, extra_cat=(), estimator=estimator, include_venue_history=include_history)
     if strengths == "win_rate":
         spec = ModelSpec(spec.name, tuple(n for n in spec.numeric_features if n != "elo_difference"), spec.categorical_features, estimator=spec.estimator)
-    return output, spec, {"interaction_operand_mean_sd": means, "interaction_terms": [list(pair) for pair in interactions]}
+    return output, spec, {
+        "interaction_operand_mean_sd": means,
+        "interaction_operand_medians": medians,
+        "interaction_terms": [list(pair) for pair in interactions],
+    }
 
 
 def _fit_primary_model(rows: Sequence[dict[str, Any]]) -> tuple[ModelSpec, Any, dict[str, Any]]:

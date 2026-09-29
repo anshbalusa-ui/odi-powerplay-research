@@ -71,6 +71,29 @@ class TradeoffBehaviorTests(unittest.TestCase):
         for index in range(len(PRIMARY_INTERACTIONS)):
             self.assertEqual(predicted[f"_interaction_{index}"],
                              prepared[0][f"_interaction_{index}"])
+    def test_missing_interaction_operand_uses_development_median(self):
+        dev = [
+            {"pp_runs": 20, "pp_wickets": 1, "batting_first": 0,
+             "elo_difference": -20, "venue_prior_pp_runs_mean": 30},
+            {"pp_runs": 80, "pp_wickets": 2, "batting_first": 1,
+             "elo_difference": 20, "venue_prior_pp_runs_mean": None},
+            {"pp_runs": 40, "pp_wickets": 3, "batting_first": 1,
+             "elo_difference": 0, "venue_prior_pp_runs_mean": 50},
+            {"pp_runs": 60, "pp_wickets": 0, "batting_first": 0,
+             "elo_difference": 10, "venue_prior_pp_runs_mean": 90},
+        ]
+        prepared, _, decisions = _prepare_rows(
+            dev, dev=dev, interactions=PRIMARY_INTERACTIONS)
+        run_mean, run_sd = decisions["interaction_operand_mean_sd"]["pp_runs"]
+        venue_mean, venue_sd = decisions["interaction_operand_mean_sd"][
+            "venue_prior_pp_runs_mean"]
+        expected = ((80 - run_mean) / run_sd) * (
+            decisions["interaction_operand_medians"]["venue_prior_pp_runs_mean"]
+            - venue_mean
+        ) / venue_sd
+        self.assertAlmostEqual(prepared[1]["_interaction_4"], expected)
+        self.assertNotEqual(prepared[1]["_interaction_4"], 0.0)
+
 
     def test_three_knot_spline_has_natural_tail_and_rejects_rank_deficiency(self):
         dev = [{"pp_runs": value} for value in (0, 10, 20, 30, 40, 50)]
