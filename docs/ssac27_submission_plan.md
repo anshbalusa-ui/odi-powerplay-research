@@ -21,19 +21,28 @@ Official page: https://www.sloansportsconference.com/research-paper-competition
 
 Recheck the page immediately before submission in case instructions change.
 
-## Focused contribution
+## Focused contribution (revised 2026-09-29)
 
-Avoid framing the study as only another match-winner classifier. The stronger applied question is:
-
-> What makes a successful ODI powerplay after accounting for opposition strength and match context, and—among matches with verified pre-match reports—do **model-estimated expected playing conditions** alter the aggression/wicket-preservation associations?
-
-The full-cohort result remains Finding 1; the new pitch-expectation measurement is a nested subgroup extension. The historical source-stated effects and human-recoding plan are retained as provenance, **not** inputs to the new assessments.
+The current SSAC27 primary result is the observational, context-dependent
+first-ten-over **run–wicket exchange rate**, numerically solved on the modeled
+match-win probability scale within development-data support. It uses the
+942-match outcome-unlocked amended-source 2015–2024 cohort, with 2024 held
+for temporal validation and both innings clustered by match. The original
+September 10 fixed ZIP is absent; no 2025+ match outcome is opened or scored.
+The source amendment, exact estimand, support/uncertainty and stop rules are in
+`docs/ssac27_powerplay_tradeoff_protocol.md`. Older pitch-centered milestones,
+historical model numbers and fixed-ZIP cohort claims below are **historical
+planning/provenance**, not completed results of the new primary analysis.
+Pitch expectations are secondary measurement only until blinded discovery,
+three compliant passes, human evidence audit and approval exist. PE-008 is
+proposed but not executable without an independently approved machine-only
+search-result quarantine gate.
 
 **Amended measurement rule (2026-09-27):** permit bounded inference from source-grounded, reviewed pre-match text; preserve uncertainty, outcome blindness and independent model-assessment stability. Never present estimated expectations as actual pitch truth. See `docs/pitch_expectation_method.md`.
 
-## Minimum viable SSAC analysis
+## Historical pitch-centered minimum viable SSAC analysis (superseded)
 
-### Required
+### Originally required under the prior pitch-primary plan
 
 - auditable Cricsheet extraction for all eligible men's ODIs from 2015 through the fixed data snapshot;
 - competition-type labels, with World Cups used only as a subgroup check;
@@ -61,7 +70,7 @@ The full-cohort result remains Finding 1; the new pitch-expectation measurement 
 
 Deferral means sequencing, not abandonment.
 
-## Current readiness gate
+## Historical readiness gate (not the revised primary result)
 
 As of the reproducible September 2026 run, the Cricsheet cohort, automated metric
 audit, pre-match team strength, prior-20 venue histories covering 997 of 1,094

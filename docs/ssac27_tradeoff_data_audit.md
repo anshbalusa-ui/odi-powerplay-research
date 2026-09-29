@@ -1,6 +1,6 @@
 # SSAC27 tradeoff data audit
 
-**Status: BLOCKED for the fixed-snapshot claim; FIX_REQUIRED for any alternate-source run.** This clone does not contain the required Cricsheet archive SHA-256, and its 2025–2026 official archive candidate has a different hash. Thus exact fixed-snapshot results cannot be independently reproduced here. A separate 2015–2024-only run may be feasible after a pre-analysis source-version amendment and safe date/ID-filtered extraction; it must not be represented as reproduction of the fixed snapshot. No data-audit JSON is emitted before row-level checks.
+**Current status: BLOCKED for reproducing the missing September 10 fixed ZIP; PASS for the separately amended September 29 unlocked-cohort source and row-level audit below.** The original ZIP SHA-256 remains unavailable. The following sections through “Required recovery and proof” document the initial, pre-materialization investigation; they do not describe the subsequently rebuilt cohort as absent. Never represent results from the amended source as reproduction of the missing fixed archive.
 
 ## Snapshot availability (metadata-only)
 
@@ -52,3 +52,54 @@ Code inspection—not an execution or data-level audit—finds these safeguards 
 4. Recompute match-level membership, exactly-two-innings pairing, both-innings-same-split, duplicate/orphan IDs, cohort/split counts, and missingness for every intended model variable. Hash generated tables/manifests; reconcile exact-source results against the historical 1,094/871/71/152 claims and saved model-table fingerprint where source bytes are available.
 5. Audit joins and predictor lineage for outcome/target-derived fields, same-date and later match-result use, train-fitted preprocessing, temporal split leakage, and any path by which 2025+ outcomes can reach fit, tuning, feature selection, or scoring. Use the full-cohort audit documented in `README.md` only on verified unlocked data and preserve a separately documented lock check; do not claim the lock is proved solely because the split labels say `locked`.
 Until either the exact snapshot and lock-safe audit are available, or an explicit pre-analysis source amendment is approved and its unlocked extraction/row-level checks pass, the analysis is not runnable as a reproducible fixed-snapshot tradeoff. Prior reported figures remain historical evidence, not this audit's result.
+
+## Amended unlocked-cohort audit update (2026-09-29)
+
+Before freezing, the controller compared per-member hashes for the 942
+pre-2025 IDs across the two ZIPs as source-provenance evidence, without
+modeling outcomes or opening a locked member. The source amendment and
+run–wicket specification were then committed in `15c44d7` before cohort
+materialization and tradeoff analysis. The allowlisted materializer opened
+exactly those 942 pre-2025 match IDs from the September 29 archive.
+No locked member was opened. Each selected source's date, ODI identity and
+gender were verified against registry metadata; the ignored raw manifest SHA-256 is
+`43076c3eab6ef27f03d71e48b0017de2b37c576a384b4c490bfd54e6c7526d46`.
+The selected member mapping SHA-256 is
+`5a1b3dcfec4c5d4e369ae79aa6d70722127ec7a5f7b9e92406001a1e4c98fb0a`;
+the locked registry count is 152 **metadata-only**.
+
+`build_clean_dataset.py` extracted 942 matches/1,884 innings; all 942 passed
+the existing clean men's ODI rules, producing 871 development matches
+(1,742 innings) and 71 validation matches (142 innings), 110 World Cup
+matches and zero exclusions *within this preselected clean registry subset*.
+This subset does not independently reproduce the original archive's 3,182
+matches or 2,742 all-format clean matches. The dataset summary hash is
+`26a98e9373d2d06e0d37e7c3e416fed58833ace01c3b553ad804d158a61d5a47`.
+The source registry, archive and generated outputs were kept separate and
+checksummed.
+
+`build_team_strength.py` generated 942 strictly earlier-date match-level
+strength rows (SHA-256
+`7ce4514430738190ab156b516d79c70658aeded3f18032d5ed6def3ec274dcda`);
+`build_venue_conditions.py` generated 942 prior-date venue rows (SHA-256
+`d434cbcc1941dc4e7852788c1251b4ad0b46da5c36c9de6509855af45ec69344`);
+748 matches had prior venue history and 194 were cold-starts. The merged
+unlocked model table has 1,884 rows / 942 two-innings matches, no pitch
+observations, and SHA-256
+`8a6330c7974219f690a85188fefdec75562427fb25cb4dab2c1b3784a91aa958`.
+Its manifest SHA-256 is
+`d11e262fa557e4faddf38de87d5ff28fc0998418abf18eaf19d16dd00c915135`.
+The independent full-cohort analysis audit found **zero structural or
+powerplay-metric issues**, zero forbidden predictors, exactly two opposing
+teams and complementary 0/1 winner labels per match, and consistent dates,
+innings order and split. All 942 matches passed, with
+`locked_test_outcomes_loaded=false` / `locked_test_scored=false` (audit SHA-256
+`0c3eca3df7552bb054c518322e299be9eec0b8b82fba51c8e77ada502d5f6022`).
+The year-wise unlocked match counts are 2015:109, 2016:70, 2017:92,
+2018:89, 2019:110, 2020:39, 2021:55, 2022:133, 2023:174 and 2024:71.
+Missing prior-venue mean PP runs/wickets appear in 388 innings (the 194
+cold-start matches); prior-20 team and opponent win rates are each missing
+in 22 innings. These are kept missing for development-fitted imputation, not
+replaced with the focal match outcome or surface conditions.
+No claim about exact September 10 raw archive equality follows from these
+amended-source checks. Locked results remain unopened.

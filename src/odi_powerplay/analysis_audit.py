@@ -61,6 +61,22 @@ def audit_unlocked_model_rows(
         innings_numbers = sorted(str(row.get("innings_number", "")).strip() for row in match_rows)
         if innings_numbers != ["1", "2"]:
             issue(match_id, "innings_numbers", ["1", "2"], innings_numbers)
+        if split in UNLOCKED_SPLITS:
+            if len({str(row.get("match_date", "")) for row in match_rows}) != 1:
+                issue(match_id, "match_date_consistency", "one date", "different dates")
+            winners = sorted(str(row.get("batting_team_won", "")) for row in match_rows)
+            if winners != ["0", "1"]:
+                issue(match_id, "complementary_outcomes", ["0", "1"], winners)
+            orders = sorted(str(row.get("batting_first", "")) for row in match_rows)
+            if orders != ["0", "1"]:
+                issue(match_id, "innings_order_pair", ["0", "1"], orders)
+            first, second = match_rows
+            if (not first.get("batting_team") or not first.get("opponent")
+                    or str(first["batting_team"]) == str(first["opponent"])
+                    or str(first["batting_team"]) != str(second.get("opponent", ""))
+                    or str(first["opponent"]) != str(second.get("batting_team", ""))):
+                issue(match_id, "opposing_teams", "opposite batting/opponent pair",
+                      [str(row.get("batting_team", "")) for row in match_rows])
 
     unlocked_rows = [
         row for row in materialized if str(row.get("split", "")).strip() in UNLOCKED_SPLITS
@@ -104,6 +120,16 @@ def audit_unlocked_model_rows(
         if missing_features:
             issue("model_table", "missing_predictors", [], missing_features)
 
+    missing_values = {
+        field: sum(row.get(field) in (None, "") for row in unlocked_rows)
+        for field in model_features
+    }
+    unlocked_years = Counter(
+        str(match_rows[0].get("match_date", ""))[:4]
+        for match_rows in by_match.values()
+        if str(match_rows[0].get("split", "")) in UNLOCKED_SPLITS
+    )
+
     summary = {
         "locked_test_scored": False,
         "locked_test_outcomes_loaded": False,
@@ -115,6 +141,10 @@ def audit_unlocked_model_rows(
         ),
         "rows_by_split": dict(sorted(split_rows.items())),
         "matches_by_split": dict(sorted(split_matches.items())),
+        "unlocked_matches_by_year": dict(sorted(unlocked_years.items())),
+        "missing_predictor_values_by_field": {
+            field: count for field, count in missing_values.items() if count
+        },
         "powerplay_metric_audit": metric_summary,
         "model_spec_names": [spec.name for spec in specs],
         "model_feature_allowlist": model_features,

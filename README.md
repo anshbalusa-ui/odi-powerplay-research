@@ -2,11 +2,11 @@
 
 [![Tests](https://github.com/anshbalusa-ui/odi-powerplay-research/actions/workflows/tests.yml/badge.svg)](https://github.com/anshbalusa-ui/odi-powerplay-research/actions/workflows/tests.yml)
 
-Reproducible Python research pipeline for an **associational** study of first-10-over ODI batting profiles, winning, and effect modification by **model-estimated pre-match expected playing conditions**. Historical explicit-source-only effects remain separately preserved.
+Reproducible Python research pipeline for an **observational** study of the context-dependent powerplay run–wicket exchange rate in men's ODIs. Separately, the repo preserves historical source-stated pre-match pitch effects and an unapproved model-estimated pre-match expected playing environment measurement track.
 
 ## Research scope
 
-The primary cohort is **all clean men's ODIs from 2015 through the fixed Cricsheet snapshot**, regardless of competition type. It includes bilateral series, World Cups, Champions Trophies, continental cups, multi-team series, and qualification pathways. It does not mix Tests or T20s into the analysis.
+The historical primary-cohort definition is clean men's ODIs from 2015 through the original fixed Cricsheet snapshot, regardless of competition type. The SSAC27 amended-source analysis is restricted to the 942 prespecified, outcome-unlocked 2015–2024 registry matches, not the absent original snapshot or any 2025+ match. Neither analysis pools Tests or T20s.
 
 World Cups are a labeled subgroup and sensitivity analysis, not the main dataset. A broader historical ODI cohort can be used as a second sensitivity analysis with explicit era controls; it is not silently pooled into the modern primary analysis.
 
@@ -15,13 +15,13 @@ World Cups are a labeled subgroup and sensitivity analysis, not the main dataset
 - **SSAC27 milestone:** finish a results-complete, reproducible analysis from the broad modern-ODI cohort for the abstract deadline on October 1, 2026 at 11:59 p.m. ET. The submission is a milestone, not the endpoint of the research.
 - **Full research paper:** continue expanding the cohort, separately audited pre-match expectation measurement, robustness analyses, and paper after the SSAC abstract is submitted, regardless of the competition decision.
 
-The SSAC version will emphasize one applied question: what makes a successful ODI powerplay, and when does the best balance of aggression and wicket preservation change? The full cohort estimates powerplay-outcome associations; the verified-pitch-report subset is a prespecified effect-modification analysis within that same question. See `docs/ssac27_submission_plan.md`.
+The SSAC27 paper now centers on an observational, context-dependent **powerplay run–wicket exchange rate** on the match win-probability scale. The full modern ODI cohort—not the small pitch-report subset—supports this primary question. Pitch is a separate secondary measurement extension and cannot block the main paper. See the committed `docs/ssac27_powerplay_tradeoff_protocol.md`.
 
 ## Primary research question
 
-> Among men's One Day International cricket matches, how are powerplay runs, wickets lost, boundary percentage, and dot-ball percentage associated with the batting team's probability of winning after accounting for pre-match opposition strength, innings order, toss, venue, year, and competition type—and, within the verified-pitch-report subgroup, how do those associations vary by **model-estimated pre-match expected playing conditions**?
+> Among men's ODIs, how many additional first-ten-over runs are associated with the same modeled match win probability as preserving one more wicket, and how does that run–wicket exchange rate vary with innings order, pre-match team strength, and earlier-date venue scoring environment?
 
-The wording is intentionally **associated with**, not **causes**. This is observational data.
+This is a conditional association, **not** a causal instruction to sacrifice wickets. The primary 1→2 wicket exchange is solved from predicted probabilities within observed development-data support and reported with whole-match uncertainty. Match-specific pitch expectations remain secondary and unapproved for outcome analysis.
 
 The new pitch-expectation measurement is **not yet an effect-modification
 result**. The hardened outcome-blind source screen has 30 independently
@@ -81,6 +81,16 @@ For the Cricsheet snapshot retrieved on September 10, 2026, the pipeline found
 (2,188 team-innings) for the 2015-forward men's ODI primary cohort. The World Cup
 subgroup contains 110 matches; it is not the primary sample.
 
+The original September 10 Cricsheet ZIP (recorded SHA-256
+`28350ee04a2ee710f959de939eb2240f737e684a2f7f93e00f3c2be26e4f415e`)
+is absent in this clone. The new SSAC27 tradeoff protocol explicitly amends
+the source to an official September 29 ZIP (SHA-256
+`f8423531b24183bc2cfc1e3e27f9bd29ad7c4d5a4bdc2469bf681d7fe2f5c5ce`)
+and opens only 942 outcome-unlocked 2015–2024 registry matches. The verified
+amended cohort has 871 development matches and 71 validation matches,
+two innings each. This is **not** a reproduction of the missing September 10
+archive; no 2025+ match outcomes were opened or scored.
+
 ## Planned pipeline
 
 ```text
@@ -96,37 +106,38 @@ Use Python 3.11. Dataset construction and audits use the standard library; model
 training uses the pinned project dependencies. On macOS, XGBoost also requires
 `brew install libomp`.
 
+The SSAC27 **locked-safe amended-source** path below refuses to materialize
+any 2025+ match member. The download URL is mutable: if its SHA-256 differs
+from the frozen September 29 archive, the extractor fails closed; acquire
+the identified archive instead. It will also refuse to overwrite an existing
+raw release. Do **not** use the historical full-archive downloader/extractor
+or legacy `scripts/reproduce.py` for a locked SSAC27 analysis.
+
 ```bash
 python3.11 -m venv .venv
 .venv/bin/python -m pip install -e .
-python -m unittest discover -s tests -v
-python scripts/download_cricsheet.py --output-dir data/raw/cricsheet
-python scripts/extract_cricsheet.py \
-  --input-dir data/raw/cricsheet \
-  --output data/interim/powerplay_innings.csv
-python scripts/build_clean_dataset.py
-python scripts/build_team_strength.py
-python scripts/build_venue_conditions.py
-python scripts/build_compliant_pitch_release.py
-python scripts/build_model_table.py \
-  --pitch-input data/processed/pitch_reports_compliant.csv \
-  --match-start-input data/manual/match_start_times_verified.csv
-python scripts/audit_powerplay_metrics.py
-python scripts/audit_extraction.py
-python scripts/build_hand_audit_sample.py
-python scripts/build_pitch_collection_queue.py
-python scripts/build_match_start_queue.py
-python scripts/audit_match_start_times.py
-python scripts/audit_espn_linkage.py
-python scripts/audit_pitch_reaudit.py
-python scripts/select_pitch_batch.py --output data/manual/pitch_batch_working.csv
-python scripts/build_pitch_reliability_sample.py \
-  --input data/processed/pitch_reports_compliant.csv
-.venv/bin/python scripts/train_models.py --fit-without-locked-test
-.venv/bin/python scripts/evaluate_models.py
-.venv/bin/python scripts/make_figures.py
-.venv/bin/python scripts/reproduce.py --skip-download
+test ! -e data/raw/cricsheet/odis_json_20260929.zip &&
+  curl -fL https://cricsheet.org/downloads/odis_json.zip \
+    -o data/raw/cricsheet/odis_json_20260929.zip
+.venv/bin/python scripts/materialize_ssac27_unlocked_raw.py
+.venv/bin/python scripts/build_clean_dataset.py \
+  --input-dir data/raw/cricsheet/unlocked_20260929
+.venv/bin/python scripts/build_team_strength.py
+.venv/bin/python scripts/build_venue_conditions.py
+.venv/bin/python scripts/build_model_table.py
+.venv/bin/python scripts/audit_full_cohort_analysis.py \
+  --summary-output artifacts/ssac27_tradeoff/data_audit.json
+.venv/bin/python scripts/run_ssac27_tradeoff_pipeline.py
+.venv/bin/python -m unittest discover -s tests -v
+.venv/bin/python -m compileall -q src scripts
 ```
+
+For an already materialized raw release, start at
+`scripts/build_clean_dataset.py`; check its `source_manifest.json` against the
+frozen archive and registry before use. The default tradeoff command runs
+1,000 whole-match development refits and 2,000 fixed-prediction 2024 match
+resamples per model; pilot runs with smaller `--bootstrap-repetitions` or
+`--validation-repetitions` are **not** final uncertainty estimates.
 
 ## SSAC27 pre-reliability preparation outputs
 
@@ -299,7 +310,16 @@ and report source coverage across years, providers, venues and competition types
 
 ## Data-source attribution
 
-Match data: one fixed, checksummed Cricsheet JSON archive. The auditable pitch
+Match data: the historical project names one fixed, checksummed Cricsheet
+JSON archive; the current unlocked SSAC27 analysis instead uses a separately
+identified and checked September 29 archive. Neither raw ZIP nor generated
+model tables are committed. Source: https://cricsheet.org/downloads/ .
+The Cricsheet Register's https://cricsheet.org/register/ ODC-By notice
+covers the **Register**, not automatically the separate ODI match ZIP.
+The public download page inspected here did not establish the match ZIP's
+redistribution terms; confirm applicable match-data rights and preserve
+attribution/notices before releasing any derived dataset.
+The auditable pitch
 input contains 243 individually cited non-ESPN pre-match reports from 35
 normalized provider hostnames. Its strict derivative contains 229 rows after
 excluding 14 source-unavailable legacy reports; every retained effect is

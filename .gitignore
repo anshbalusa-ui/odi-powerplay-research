@@ -30,4 +30,5 @@ artifacts/figures/*
 artifacts/models/*
 artifacts/tables/*
 artifacts/pitch_expectations/*
+artifacts/ssac27_tradeoff/*
 !artifacts/**/.gitkeep
