@@ -45,11 +45,32 @@ a production assessment.
    `contaminated_or_ambiguous` when safe content cannot be demonstrated.
    Reviewers see no raw HTML, old labels, outcome or peer output. A source with
    no safe content is not classified.
-3. Add an isolated Codex CLI adapter only if it can record actual routed model,
-   reasoning effort, rubric/input hashes and structured outputs to distinct
+3. Add an isolated Codex CLI adapter only if it records the requested model
+   route and CLI version (provider build unavailable), reasoning effort,
+   rubric/input hashes and structured outputs to distinct
    A/B/C passes. Probe one safe source, then complete all assessable sources
    with frozen rubric, not selective rows. Assessors run in separate temporary
    directories and never receive peer pass files.
 4. Run mechanical consensus, measurement-only diagnostics and worksheet;
    preserve `locked_test_scored=false`, commit code/docs and only rights-cleared
    minimized release files. No pitch/outcome interpretation before human gate.
+
+## Outcome-blind source continuation (2026-09-28)
+
+The first five-source pass was superseded after an article-body re-screen; no
+prior assessment was selectively reused. Focal article JSON-LD and safe
+sentence-level filtering recovered candidates without relaxing the publication
+and last-modification-before-start rule. Three transient retrieval failures
+were retried using append-only original-source snapshots; sampled HTTP 403
+publishers still denied ordinary access and were not bypassed. Of 227
+timing-eligible registry IDs, 27 screened excerpts passed source review,
+67 are contaminated/ambiguous, 132 need further review, and one is unavailable;
+two additional registry IDs remain timing-ambiguous. The new 27-row hashed
+A/B/C run and 15-row unrated worksheet are local ignored artifacts under
+`artifacts/pitch_expectations/attempt_4/`. Six sources are 2025–26 reports,
+but no 2025+ outcomes were opened; no 2024 validation source passed review.
+Even with category variation, development-category cells are sparse and the
+human evidence audit is incomplete. Keep `PITCH_EXPLORATORY_ONLY` and stop
+before any new pitch/outcome interaction or abstract claim. See
+`docs/pitch_expectation_method.md` for the amended source protocol and exact
+measurement-only counts.

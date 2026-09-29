@@ -23,6 +23,13 @@ The SSAC version will emphasize one applied question: what makes a successful OD
 
 The wording is intentionally **associated with**, not **causes**. This is observational data.
 
+The new pitch-expectation measurement is **not yet an effect-modification
+result**: 27 source-reviewed reports have three independent model assessments,
+but category cells are sparse, no 2024 validation report passed source review,
+and the human evidence audit is unrated. No new pitch/outcome interaction has
+been run or approved. See `docs/pitch_expectation_method.md` for the separate
+historical pitch release, source exclusions, and measurement-only diagnostics.
+
 ## Unit of analysis
 
 One row represents one batting-team innings in one match. The outcome is `batting_team_won`. A match normally contributes two rows, so resampling, confidence intervals, and cross-validation must group by `match_id`.
