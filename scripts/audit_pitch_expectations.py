@@ -7,6 +7,7 @@ import argparse
 import hashlib
 import json
 import sys
+from collections import Counter
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -14,6 +15,7 @@ sys.path.insert(0, str(ROOT / "src"))
 from odi_powerplay.pitch_expectation import (  # noqa: E402
     CONTAMINATION, INPUT_KEYS, _utc, latest_publication_utc, rubric_hash, rubric_version,
 )
+from build_pitch_expectation_inputs import _source_coverage  # noqa: E402
 
 
 def main() -> None:
@@ -26,13 +28,39 @@ def main() -> None:
     problems = []
     if (manifest.get("locked_test_scored") is not False
             or manifest.get("rubric_sha256") != rubric_hash()
-            or manifest.get("rubric_version") != rubric_version()):
-        problems.append("rubric or locked-test manifest mismatch")
+            or manifest.get("rubric_version") != rubric_version()
+            or manifest.get("source_protocol_version") != "PE-006-v1"):
+        problems.append("rubric, source protocol or locked-test manifest mismatch")
     if hashlib.sha256(args.inputs.read_bytes()).hexdigest() != manifest.get("input_sha256"):
         problems.append("input content hash mismatch")
     rows = [json.loads(line) for line in args.inputs.read_text(encoding="utf-8").splitlines()]
     if len(rows) != manifest.get("assessable_count"):
         problems.append("assessable row count mismatch")
+    assessable_statuses = {
+        row.get("cricsheet_match_id"): row
+        for row in manifest.get("sources", [])
+        if row.get("source_status") == "assessable"
+    }
+    if set(assessable_statuses) != {row.get("cricsheet_match_id") for row in rows}:
+        problems.append("assessable source statuses do not match frozen input IDs")
+    routes = [row.get("source_access_route") for row in assessable_statuses.values()]
+    if any(route not in {"live_original", "archived_original"} for route in routes):
+        problems.append("assessable source route missing or invalid")
+    routed_sources = [row for row in manifest.get("sources", [])
+                      if row.get("source_access_route") is not None]
+    routed_values = [row["source_access_route"] for row in routed_sources]
+    if any(
+        (row.get("source_status") == "timing_ambiguous"
+         and row["source_access_route"] != "no_eligible_source")
+        or (row.get("source_status") != "timing_ambiguous"
+            and row["source_access_route"] not in {"live_original", "archived_original"})
+        for row in routed_sources
+    ):
+        problems.append("source route value invalid")
+    if dict(sorted(Counter(routed_values).items())) != manifest.get("source_access_route_counts"):
+        problems.append("source access route counts do not match source statuses")
+    if _source_coverage(routed_sources) != manifest.get("source_coverage_counts"):
+        problems.append("source coverage counts do not match source statuses")
     ids = set()
     for row in rows:
         key = row.get("cricsheet_match_id", "")
@@ -55,6 +83,13 @@ def main() -> None:
         "input_sha256": manifest.get("input_sha256"),
         "rubric_sha256": rubric_hash(),
         "rubric_version": rubric_version(),
+        "source_protocol_version": manifest.get("source_protocol_version"),
+        "outcome_blind_source_universe_counts": {
+            key: manifest[key] for key in (
+                "eligible_source_count", "source_statuses", "source_access_route_counts",
+                "year_counts", "provider_counts", "split_counts", "source_coverage_counts",
+            ) if key in manifest
+        },
         "assessment_payload_count": len(rows),
         "allowlisted_keys": sorted(INPUT_KEYS),
         "forbidden_key_count": sum(bool(set(row) - INPUT_KEYS) for row in rows),

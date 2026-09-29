@@ -48,7 +48,8 @@ def parse_agent_events(events: list[dict]) -> tuple[dict, str]:
     return answer, thread_ids[0]
 
 
-def assess(row: dict, rubric: str, model: str, assessor: str, run_id: str) -> dict:
+def assess(row: dict, rubric: str, model: str, assessor: str, run_id: str,
+           source_release_sha256: str) -> dict:
     # No repository path or peer output is provided to the child process.
     with tempfile.TemporaryDirectory(prefix="odi-pitch-assessor-") as cwd:
         process = subprocess.run([
@@ -66,7 +67,8 @@ def assess(row: dict, rubric: str, model: str, assessor: str, run_id: str) -> di
         "cricsheet_match_id": row["cricsheet_match_id"], "assessor_id": assessor,
         "model_name": model, "model_version": model,
         "reasoning_effort": "high", "prompt_hash": rubric_hash(),
-        "source_hash": row["source_hash"], "run_id": run_id,
+        "source_hash": row["source_hash"], "source_release_sha256": source_release_sha256,
+        "run_id": run_id,
         "assessed_at_utc": datetime.now(timezone.utc).isoformat(), "assessment": answer,
     }
 
@@ -91,8 +93,11 @@ def main() -> None:
     if not args.smoke and (output.exists() or manifest_path.exists()):
         raise FileExistsError(f"existing pass {args.assessor} must not be overwritten")
     manifest = json.loads(args.input_manifest.read_text(encoding="utf-8"))
-    if manifest["locked_test_scored"] is not False or manifest["rubric_sha256"] != rubric_hash() or manifest["rubric_version"] != rubric_version():
-        raise ValueError("input manifest does not match frozen rubric or lock")
+    if (manifest["locked_test_scored"] is not False
+            or manifest["rubric_sha256"] != rubric_hash()
+            or manifest["rubric_version"] != rubric_version()
+            or manifest.get("source_protocol_version") != "PE-006-v1"):
+        raise ValueError("input manifest does not match frozen source protocol, rubric or lock")
     if hashlib.sha256(args.inputs.read_bytes()).hexdigest() != manifest["input_sha256"]:
         raise ValueError("sanitized inputs changed after manifest")
     rows = [json.loads(line) for line in args.inputs.read_text(encoding="utf-8").splitlines()]
@@ -105,12 +110,15 @@ def main() -> None:
     cli_version = subprocess.run([str(CLI), "--version"], capture_output=True, text=True, check=True).stdout.strip()
     rubric = RUBRIC.read_text(encoding="utf-8")
     if args.smoke:
-        record = assess(rows[0], rubric, args.model, args.assessor, args.run_id)
+        record = assess(rows[0], rubric, args.model, args.assessor, args.run_id,
+                        manifest["input_sha256"])
         print(canonical_json({"smoke": "valid tool-free answer", "model_requested": args.model,
                               "cli_version": cli_version, "match_id": record["cricsheet_match_id"]}))
         return
     with ThreadPoolExecutor(max_workers=args.workers) as pool:
-        records = list(pool.map(lambda row: assess(row, rubric, args.model, args.assessor, args.run_id), rows))
+        records = list(pool.map(
+            lambda row: assess(row, rubric, args.model, args.assessor, args.run_id,
+                               manifest["input_sha256"]), rows))
     args.output_dir.mkdir(parents=True, exist_ok=True)
     # No partial pass is persisted on any error; never overwrite a completed pass.
     with output.open("x", encoding="utf-8") as handle:
@@ -118,11 +126,13 @@ def main() -> None:
     metadata = {
         "assessor_id": args.assessor, "model_name": args.model,
         "model_versions": [args.model], "model_version_note": "requested CLI route; provider build unavailable",
+        "model_identity_source": "requested_route",
         "cli_version": cli_version, "reasoning_effort": "high", "run_id": args.run_id,
         "prompt_hash": rubric_hash(), "rubric_version": rubric_version(),
         "output_schema_sha256": hashlib.sha256(SCHEMA.read_bytes()).hexdigest(),
         "input_sha256": manifest["input_sha256"],
         "output_sha256": hashlib.sha256(output.read_bytes()).hexdigest(),
+        "sampling_controls_note": "Temperature and seed controls are unsupported by this CLI route.",
         "record_count": len(records), "locked_test_scored": False,
     }
     with manifest_path.open("x", encoding="utf-8") as handle:

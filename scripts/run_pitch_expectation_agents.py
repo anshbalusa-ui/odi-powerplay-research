@@ -68,8 +68,9 @@ def main() -> None:
     input_manifest = json.loads(args.input_manifest.read_text(encoding="utf-8"))
     if (input_manifest["locked_test_scored"] is not False
             or input_manifest["rubric_sha256"] != rubric_hash()
-            or input_manifest["rubric_version"] != rubric_version()):
-        raise ValueError("input manifest does not match frozen rubric or lock")
+            or input_manifest["rubric_version"] != rubric_version()
+            or input_manifest.get("source_protocol_version") != "PE-006-v1"):
+        raise ValueError("input manifest does not match frozen source protocol, rubric or lock")
     if hashlib.sha256(args.inputs.read_bytes()).hexdigest() != input_manifest["input_sha256"]:
         raise ValueError("sanitized inputs changed after manifest")
     rows = [json.loads(line) for line in args.inputs.read_text(encoding="utf-8").splitlines()]
@@ -89,7 +90,9 @@ def main() -> None:
             "cricsheet_match_id": row["cricsheet_match_id"], "assessor_id": args.assessor,
             "model_name": args.model, "model_version": version,
             "reasoning_effort": args.reasoning_effort, "prompt_hash": rubric_hash(),
-            "source_hash": row["source_hash"], "run_id": args.run_id,
+            "source_hash": row["source_hash"],
+            "source_release_sha256": input_manifest["input_sha256"],
+            "run_id": args.run_id,
             "assessed_at_utc": datetime.now(timezone.utc).isoformat(), "assessment": answer,
         })
     args.output_dir.mkdir(parents=True, exist_ok=True)
@@ -98,10 +101,12 @@ def main() -> None:
     manifest_path.write_text(json.dumps({
         "assessor_id": args.assessor, "model_name": args.model,
         "model_versions": sorted({row["model_version"] for row in records}),
+        "model_identity_source": "provider_response",
         "reasoning_effort": args.reasoning_effort, "run_id": args.run_id,
         "prompt_hash": rubric_hash(), "rubric_version": rubric_version(),
         "input_sha256": input_manifest["input_sha256"],
         "output_sha256": hashlib.sha256(output.read_bytes()).hexdigest(),
+        "sampling_controls_note": "Temperature and seed were not requested; this API route uses model defaults.",
         "record_count": len(records), "locked_test_scored": False,
     }, indent=2, sort_keys=True) + "\n", encoding="utf-8")
     print(f"Pass {args.assessor}: {len(records)} assessments, model versions verified")

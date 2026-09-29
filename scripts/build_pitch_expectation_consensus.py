@@ -28,6 +28,10 @@ def records(path: Path) -> list[dict]:
     return [json.loads(line) for line in path.read_text(encoding="utf-8").splitlines()]
 
 
+def validate_pass_output_hash(manifest: dict, path: Path) -> None:
+    if manifest.get("output_sha256") != sha256(path):
+        raise ValueError(f"assessor output hash does not match manifest: {path.name}")
+
 def write_csv(path: Path, rows: list[dict], fields: list[str]) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     with path.open("w", encoding="utf-8", newline="") as handle:
@@ -35,6 +39,59 @@ def write_csv(path: Path, rows: list[dict], fields: list[str]) -> None:
         writer.writeheader()
         writer.writerows(rows)
 
+
+def cross_model_consensus_summary(answers: list[dict[str, str]]) -> dict:
+    """Compare Sol (C) with either Luna (A/B), separately from 2/3 majority."""
+    if not answers:
+        return {
+            "cross_model_consensus": {"count": 0, "proportion": None},
+            "ordinary_majority": {"count": 0, "proportion": None},
+            "three_of_three": {"count": 0, "proportion": None},
+        }
+    cross = sum(row["C"] in {row["A"], row["B"]} for row in answers)
+    majority = sum(Counter(row.values()).most_common(1)[0][1] >= 2 for row in answers)
+    unanimous = sum(len(set(row.values())) == 1 for row in answers)
+    n = len(answers)
+    return {
+        "cross_model_consensus": {"count": cross, "proportion": cross / n},
+        "ordinary_majority": {"count": majority, "proportion": majority / n},
+        "three_of_three": {"count": unanimous, "proportion": unanimous / n},
+    }
+
+
+def validate_pass_release(payloads: list[dict], passes: dict[str, list[dict]],
+                          manifests: dict[str, dict], input_manifest: dict) -> None:
+    """Verify complete, independent passes bound to the exact frozen source release."""
+    release_hash = input_manifest["input_sha256"]
+    if input_manifest.get("source_protocol_version") != "PE-006-v1":
+        raise ValueError("source protocol version does not match PE-006-v1")
+    if set(passes) != set("ABC") or set(manifests) != set("ABC"):
+        raise ValueError("three complete A/B/C passes and manifests are required")
+    run_ids = [manifests[label].get("run_id") for label in "ABC"]
+    if any(not isinstance(value, str) or not value.strip() for value in run_ids) or len(set(run_ids)) != 3:
+        raise ValueError("assessor passes must have distinct nonempty run IDs")
+    models = {label: str(manifests[label].get("model_name", "")).lower() for label in "ABC"}
+    if ("luna" not in models["A"] or "luna" not in models["B"] or "sol" not in models["C"]):
+        raise ValueError("A/B must use Luna and C must use Sol")
+    expected_ids = {row["cricsheet_match_id"] for row in payloads}
+    if len(expected_ids) != len(payloads):
+        raise ValueError("duplicate IDs in frozen input release")
+    for label in "ABC":
+        manifest = manifests[label]
+        if (manifest.get("assessor_id") != label
+                or manifest.get("input_sha256") != release_hash
+                or manifest.get("prompt_hash") != rubric_hash()):
+            raise ValueError(f"assessor {label} manifest provenance mismatch")
+        row_ids = [row.get("cricsheet_match_id") for row in passes[label]]
+        if len(row_ids) != len(expected_ids) or set(row_ids) != expected_ids:
+            raise ValueError(f"assessor {label} ID set differs from frozen inputs")
+        for row in passes[label]:
+            if (row.get("source_release_sha256") != release_hash
+                    or row.get("prompt_hash") != manifest["prompt_hash"]
+                    or row.get("run_id") != manifest["run_id"]
+                    or row.get("model_name") != manifest.get("model_name")):
+                raise ValueError(f"assessor {label} row provenance mismatch")
+    validate_passes(payloads, passes, release_hash)
 
 def main() -> None:
     parser = argparse.ArgumentParser()
@@ -60,9 +117,11 @@ def main() -> None:
     manifests = {}
     for assessor in "ABC":
         path = args.input_dir / f"pass_{assessor.lower()}.jsonl"
-        manifest = json.loads((args.input_dir / f"pass_{assessor.lower()}_manifest.json").read_text(encoding="utf-8"))
+        manifest = json.loads(
+            (args.input_dir / f"pass_{assessor.lower()}_manifest.json").read_text(encoding="utf-8")
+        )
+        validate_pass_output_hash(manifest, path)
         if (manifest["assessor_id"] != assessor or manifest["locked_test_scored"] is not False
-                or manifest["output_sha256"] != sha256(path)
                 or manifest["input_sha256"] != input_manifest["input_sha256"]
                 or manifest["prompt_hash"] != rubric_hash()
                 or manifest["rubric_version"] != rubric_version()):
@@ -76,9 +135,20 @@ def main() -> None:
         schema = ROOT / "config/pitch_expectation_output_schema.json"
         if schemas != {sha256(schema)}:
             raise ValueError("assessor output schema changed after assessment")
-    validate_passes(payloads, passes)
+    validate_pass_release(payloads, passes, manifests, input_manifest)
     indexed = {label: {row["cricsheet_match_id"]: row for row in rows}
                for label, rows in passes.items()}
+    assessable_statuses = [row for row in input_manifest["sources"]
+                           if row.get("source_status") == "assessable"]
+    route_by_id = {
+        row["cricsheet_match_id"]: row["source_access_route"]
+        for row in assessable_statuses
+    }
+    payload_ids = {row["cricsheet_match_id"] for row in payloads}
+    if (len(route_by_id) != len(assessable_statuses) or set(route_by_id) != payload_ids
+            or any(route not in {"live_original", "archived_original"}
+                   for route in route_by_id.values())):
+        raise ValueError("assessable source routes do not match the frozen inputs")
     release = []
     for payload in payloads:
         key = payload["cricsheet_match_id"]
@@ -89,13 +159,17 @@ def main() -> None:
             "competition_type": payload["competition_type"],
             "source_url": payload["source_url"], "source_title": payload["source_title"],
             "source_hash": payload["source_hash"], "prompt_hash": rubric_hash(),
-            "rubric_version": rubric_version(),
+            "rubric_version": rubric_version(), "source_access_route": route_by_id[key],
             **{field: result[field] for field in CATEGORIES},
             "confidence": result["confidence"],
             **{field: int(result[field]) for field in (
                 "primary_eligible", "broad_eligible", "high_confidence_eligible",
                 "unanimous_eligible")},
             "overall_agreement_count": result["agreement_by_field"]["overall_expected_environment"],
+            "cross_model_consensus": int(
+                indexed["C"][key]["assessment"]["overall_expected_environment"] in {
+                    indexed["A"][key]["assessment"]["overall_expected_environment"],
+                    indexed["B"][key]["assessment"]["overall_expected_environment"]}),
         })
     write_csv(args.consensus_output, release, list(release[0]))
     by_split: dict[str, list[dict]] = defaultdict(list)
@@ -111,9 +185,46 @@ def main() -> None:
         }
         for left, right in combinations("ABC", 2)
     }
+    field_stability = {}
+    for field in CATEGORIES:
+        values = [{
+            label: indexed[label][row["cricsheet_match_id"]]["assessment"][field]
+            for label in "ABC"
+        } for row in release]
+        field_stability[field] = cross_model_consensus_summary(values)
+    route_stability = {}
+    for route in ("live_original", "archived_original"):
+        route_rows = [row for row in release if row["source_access_route"] == route]
+        route_answers = [{
+            label: indexed[label][row["cricsheet_match_id"]]["assessment"]["overall_expected_environment"]
+            for label in "ABC"
+        } for row in route_rows]
+        route_stability[route] = {
+            "n": len(route_rows),
+            **cross_model_consensus_summary(route_answers),
+            "by_field": {
+                field: cross_model_consensus_summary([{
+                    label: indexed[label][row["cricsheet_match_id"]]["assessment"][field]
+                    for label in "ABC"
+                } for row in route_rows])
+                for field in CATEGORIES
+            },
+        }
+    excluded_sources = [row for row in input_manifest["sources"]
+                        if row.get("source_status") != "assessable"]
+    source_universe_counts = {
+        key: input_manifest[key] for key in (
+            "eligible_source_count", "source_statuses", "source_access_route_counts",
+            "year_counts", "provider_counts", "split_counts",
+        ) if key in input_manifest
+    }
+    source_universe_counts["excluded_status_counts"] = dict(sorted(Counter(
+        row.get("source_status", "unknown") for row in excluded_sources).items()))
     report = {
         "measurement": "independent model-assessment agreement, not true pitch accuracy",
         "locked_test_scored": False,
+        "source_protocol_version": input_manifest["source_protocol_version"],
+        "input_sha256": input_manifest["input_sha256"],
         "eligible_source_count": input_manifest["eligible_source_count"],
         "source_statuses": input_manifest["source_statuses"],
         "successfully_assessed_count": len(release),
@@ -129,6 +240,13 @@ def main() -> None:
                                                  for a in "ABC"])["agreement_by_field"][field] >= 2
                                    for row in release) for field in CATEGORIES},
         "pairwise_model_assessment_agreement": pairwise,
+        "cross_model_consensus": cross_model_consensus_summary([{
+            label: indexed[label][row["cricsheet_match_id"]]["assessment"]["overall_expected_environment"]
+            for label in "ABC"
+        } for row in release]),
+        "cross_model_consensus_by_field": field_stability,
+        "assessment_stability_by_source_route": route_stability,
+        "outcome_blind_source_universe_counts": source_universe_counts,
         "assessor_categories": {label: {field: dict(Counter(row["assessment"][field] for row in rows))
                                           for field in CATEGORIES} for label, rows in passes.items()},
         "category_counts": {field: dict(Counter(row[field] for row in release)) for field in CATEGORIES},
@@ -161,7 +279,8 @@ def main() -> None:
     worksheet = [{
         **{field: row[field] for field in (
             "cricsheet_match_id", "match_date", "source_url", "source_title",
-            "overall_expected_environment", "confidence", "overall_agreement_count")},
+            "source_access_route", "overall_expected_environment", "confidence",
+            "overall_agreement_count", "cross_model_consensus")},
         "assessor_evidence_paraphrases": " | ".join(
             indexed[label][row["cricsheet_match_id"]]["assessment"]["evidence"] for label in "ABC"),
         "pre_match_relevant": "", "evidence_supported": "", "expectation_reasonable": "",

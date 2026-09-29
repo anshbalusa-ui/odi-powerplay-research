@@ -43,7 +43,7 @@ class PitchExpectationTests(unittest.TestCase):
             "rationale": "The pre-match source forecasts good scoring.",
         }
 
-    def test_raw_report_forbidden_fields_never_enter_payload(self):
+    def test_forbidden_raw_report_fields_fail_closed(self):
         report = {**self.report, "batting_team_won": "1", "pp_runs": "42",
                   "pp_wickets": "2", "boundary_pct": "0.3", "dot_pct": "0.4",
                   "pitch_primary_category": "spin", "original_spin_support": "2",
@@ -51,13 +51,10 @@ class PitchExpectationTests(unittest.TestCase):
                   "effect_evidence_note": "legacy", "short_paraphrased_note": "prior coder"}
         text = "Published preview expects runs"
         digest = hashlib.sha256(text.encode()).hexdigest()
-        safe = assessment_input(report, self.start, text, digest)
-        for key in report.keys() - self.report.keys():
-            self.assertNotIn(key, safe)
-        self.assertEqual(safe["source_text"], text)
-        self.assertEqual(safe["source_hash"], digest)
+        with self.assertRaisesRegex(ValueError, "forbidden"):
+            assessment_input(report, self.start, text, digest)
         with self.assertRaises(ValueError):
-            assessment_input(report, self.start, text, "sha256:wrong")
+            assessment_input(self.report, self.start, text, "sha256:wrong")
 
     def test_rejects_contaminated_or_unavailable_source_text(self):
         with self.assertRaises(ValueError):

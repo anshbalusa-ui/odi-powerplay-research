@@ -15,6 +15,7 @@ import sys
 from collections import Counter
 from datetime import datetime, timezone
 from pathlib import Path
+from urllib.parse import urlparse
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "src"))
@@ -36,6 +37,35 @@ def selected_csv(path: Path, fields: tuple[str, ...]) -> list[dict[str, str]]:
 
 def sha256(path: Path) -> str:
     return hashlib.sha256(path.read_bytes()).hexdigest()
+
+
+def _split_for_date(match_date: str) -> str:
+    if match_date <= "2023-12-31":
+        return "development"
+    if match_date <= "2024-12-31":
+        return "validation"
+    return "locked"
+
+
+def _source_coverage(statuses: list[dict]) -> dict:
+    """Outcome-blind included/excluded counts for each provenance stratum."""
+    dimensions = {
+        "by_route": "source_access_route",
+        "by_year": "year",
+        "by_provider": "provider",
+        "by_split": "split",
+    }
+    counts = {}
+    for name, field in dimensions.items():
+        groups = {}
+        for row in statuses:
+            group = row[field]
+            if group not in groups:
+                groups[group] = {"included": 0, "excluded": 0}
+            bucket = "included" if row["source_status"] == "assessable" else "excluded"
+            groups[group][bucket] += 1
+        counts[name] = dict(sorted(groups.items()))
+    return counts
 
 
 def main() -> None:
@@ -63,38 +93,63 @@ def main() -> None:
             or set(screened) != {row["cricsheet_match_id"] for row in candidates}):
         raise ValueError("article screen must cover each timing-eligible source exactly once")
     payloads = []
-    statuses = [
-        {"cricsheet_match_id": key, "source_status": "timing_ambiguous"}
-        for key in timing_exclusions
-    ]
+    by_report_id = {row["cricsheet_match_id"]: row for row in reports}
+    statuses = [{
+        "cricsheet_match_id": key, "source_status": "timing_ambiguous",
+        "source_access_route": "no_eligible_source",
+        "year": by_report_id[key]["match_date"][:4],
+        "provider": urlparse(by_report_id[key]["source_url"]).hostname or "",
+        "split": _split_for_date(by_report_id[key]["match_date"]),
+    } for key in timing_exclusions]
     for report in candidates:
         key = report["cricsheet_match_id"]
+        screened_candidate = screened[key]
+        route = screened_candidate.get("source_access_route", "live_original")
+        if route not in {"live_original", "archived_original"}:
+            raise ValueError(f"{key}: screened source has an unsupported access route")
+        status_base = {
+            "cricsheet_match_id": key, "source_access_route": route,
+            "year": report["match_date"][:4],
+            "provider": urlparse(report["source_url"]).hostname or "",
+            "split": _split_for_date(report["match_date"]),
+        }
         capture_path = args.captures / f"{key}.json"
         if not capture_path.is_file():
-            statuses.append({"cricsheet_match_id": key, "source_status": "not_retrieved"})
+            statuses.append({**status_base, "source_status": "not_retrieved"})
             continue
         capture = json.loads(capture_path.read_text(encoding="utf-8"))
-        validate_screened_capture(report, screened[key], capture)
+        validate_screened_capture(report, screened_candidate, capture)
         status = capture.get("review_status", "needs_review")
         if status in {"unavailable", "contaminated_or_ambiguous", "needs_review"}:
-            statuses.append({"cricsheet_match_id": key, **source_disposition(report, capture)})
+            statuses.append({**status_base, **source_disposition(report, capture)})
             continue
         validated = source_snapshot(report, capture)
         source_hash = validated["source_hash"]
         payloads.append(assessment_input(report, report, validated["source_text"], source_hash))
-        statuses.append({"cricsheet_match_id": key, "source_status": "assessable",
+        statuses.append({**status_base, "source_status": "assessable",
                          "source_hash": source_hash, "retrieved_at_utc": validated["retrieved_at_utc"],
                          "reviewer_id": validated["reviewer_id"]})
+    coverage = _source_coverage(statuses)
+    route_counts = Counter(row["source_access_route"] for row in statuses)
+    year_counts = Counter(row["year"] for row in statuses)
+    provider_counts = Counter(row["provider"] for row in statuses)
+    split_counts = Counter(row["split"] for row in statuses)
     args.output.parent.mkdir(parents=True, exist_ok=True)
     args.manifest.parent.mkdir(parents=True, exist_ok=True)
     args.output.write_text("".join(canonical_json(row) + "\n" for row in payloads), encoding="utf-8")
     summary = {
         "construct": "pre_match_expected_playing_environment_v1",
+        "source_protocol_version": "PE-006-v1",
         "registry_candidate_count": len(candidates) + len(timing_exclusions),
         "eligible_source_count": len(candidates),
         "source_statuses": dict(sorted(Counter(row["source_status"] for row in statuses).items())),
         "sources": statuses,
         "assessable_count": len(payloads),
+        "source_access_route_counts": dict(sorted(route_counts.items())),
+        "year_counts": dict(sorted(year_counts.items())),
+        "provider_counts": dict(sorted(provider_counts.items())),
+        "split_counts": dict(sorted(split_counts.items())),
+        "source_coverage_counts": coverage,
         "input_sha256": sha256(args.output),
         "rubric_sha256": rubric_hash(),
         "rubric_version": rubric_version(),
