@@ -24,11 +24,15 @@ The SSAC version will emphasize one applied question: what makes a successful OD
 The wording is intentionally **associated with**, not **causes**. This is observational data.
 
 The new pitch-expectation measurement is **not yet an effect-modification
-result**: 27 source-reviewed reports have three independent model assessments,
-but category cells are sparse, no 2024 validation report passed source review,
-and the human evidence audit is unrated. No new pitch/outcome interaction has
-been run or approved. See `docs/pitch_expectation_method.md` for the separate
-historical pitch release, source exclusions, and measurement-only diagnostics.
+result**. The hardened outcome-blind source screen has 30 independently
+reviewed excerpts (26 live originals, four pre-start archived originals),
+including three 2024 validation reports. Earlier 27-row assessor passes are
+superseded; the revised 30-row input release has not been assessed. Fresh
+passes require provider-observed response model IDs; the available CLI exposes
+only requested routes, and no API credential is configured locally. The human
+evidence audit remains unrated. No new pitch/outcome interaction has been run
+or approved. See `docs/pitch_expectation_method.md` for source exclusions
+and the separate historical pitch release.
 
 ## Unit of analysis
 

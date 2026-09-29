@@ -74,3 +74,24 @@ human evidence audit is incomplete. Keep `PITCH_EXPLORATORY_ONLY` and stop
 before any new pitch/outcome interaction or abstract claim. See
 `docs/pitch_expectation_method.md` for the amended source protocol and exact
 measurement-only counts.
+
+## Frozen-source foundation audit (2026-09-29)
+
+The earlier 27-row model run is superseded. The uniform PE-006-v1
+live-original and two-anchor archived-original rule was applied without
+year/provider/category exceptions. All 227 cached originals and 16 exact
+pre-start archived replays were screened under the hardened focal-article
+parser; 30 independent excerpt reviews passed (26 live, four archived,
+including three 2024 validation records). The frozen source screen and
+sanitized input hashes are recorded in `docs/pitch_expectation_method.md`.
+The old passes cannot be recycled; no new A/B/C assessment or outcome
+modeling was performed during this foundation gate. Stop retrieval after the
+frozen original and prespecified archive paths; unresolved rows retain their
+explicit dispositions. A full new three-pass release and human review are
+separate later gates.
+
+The PE-007 identity decision requires provider-observed response model IDs for
+each fresh pass. The CLI cannot supply those IDs, no API credential is available,
+and the write-once manifest gate rejects requested-route-only passes. Keep
+measurement blocked until a provider-identifiable path is available; even a
+response model alias does not prove a particular provider-side build.
