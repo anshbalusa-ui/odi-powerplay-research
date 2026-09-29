@@ -1,6 +1,6 @@
 # SSAC27 primary run–wicket tradeoff protocol
 
-**Frozen decision, 2026-09-29 UTC, before this tradeoff analysis.** This is retrospective observational research. Preliminary 2015–2024 outcome modeling had already occurred before the present estimand and context specification were fixed; do not call the entire study preregistered. No 2025+ outcome has been opened or scored under this amendment. `docs/ssac27_tradeoff_statistical_spec.md` (SHA-256 `3cc40d85351a9dd87e9dd6cfa3ce4f32b0cb21745d04c59ab16234e9c1e634a7`) is the detailed implementing statistical specification. If this document conflicts with that specification, stop and amend **before** viewing new tradeoff results; do not make outcome-driven choices.
+**Frozen decision, 2026-09-29 UTC, before this tradeoff analysis.** This is retrospective observational research. Preliminary 2015–2024 outcome modeling had already occurred before the present estimand and context specification were fixed; do not call the entire study preregistered. No 2025+ outcome has been opened or scored under this amendment. `docs/ssac27_tradeoff_statistical_spec.md` (SHA-256 `d84e4288113327ae56e5ab348f933712dc9f13d7af9b993e6d1c781e35a45c6e`) is the detailed implementing statistical specification. Its cohort paragraph was clarified to reflect this already-frozen source amendment before first new tradeoff model results. If this document conflicts with that specification, stop and amend **before** viewing new tradeoff results; do not make outcome-driven choices.
 
 ## Question and estimand
 
