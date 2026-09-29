@@ -8,6 +8,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 from odi_powerplay.pitch_expectation import (  # noqa: E402
     assessment_input, validate_passes, source_snapshot, source_disposition, rubric_hash,
+    validate_screened_capture,
 )
 
 
@@ -44,6 +45,25 @@ class AssessmentPipelineTests(unittest.TestCase):
         report = {**self.row, "source_title": "Series conceded, team seeks revival"}
         with self.assertRaises(ValueError):
             assessment_input(report, report, self.text, hashlib.sha256(self.text.encode()).hexdigest())
+
+    def test_revised_source_screen_revokes_a_stale_verified_capture(self):
+        screened = {
+            "cricsheet_match_id": "123", "source_url": self.row["source_url"],
+            "published_at_utc": self.row["published_at_utc"],
+            "scheduled_start_utc": self.row["scheduled_start_utc"],
+            "retrieved_at_utc": self.capture["retrieved_at_utc"],
+            "raw_sha256": "a" * 64,
+            "status": "contaminated_or_ambiguous",
+        }
+        with self.assertRaises(ValueError):
+            validate_screened_capture(self.row, screened, self.capture)
+        approved = {**screened, "status": "pre_match_candidate", "source_text": self.text}
+        validate_screened_capture(self.row, approved, self.capture)
+        with self.assertRaises(ValueError):
+            validate_screened_capture(self.row, {**approved, "source_text": "other article"}, self.capture)
+        with self.assertRaises(ValueError):
+            validate_screened_capture(self.row, {**approved, "raw_sha256": ""}, self.capture)
+
 
     def test_unavailable_and_contaminated_require_provenance_not_guesses(self):
         disposition = {

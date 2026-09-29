@@ -21,6 +21,7 @@ sys.path.insert(0, str(ROOT / "src"))
 from odi_powerplay.pitch_expectation import (  # noqa: E402
     META_FIELDS, assessment_input, canonical_json, eligible_sources,
     rubric_hash, rubric_version, source_disposition, source_snapshot,
+    validate_screened_capture,
 )
 
 
@@ -45,6 +46,8 @@ def main() -> None:
     parser.add_argument("--captures", type=Path, default=ROOT / "data/interim/pitch_expectation_captures")
     parser.add_argument("--output", type=Path, default=ROOT / "artifacts/pitch_expectations/inputs.jsonl")
     parser.add_argument("--manifest", type=Path, default=ROOT / "artifacts/pitch_expectations/input_manifest.json")
+    parser.add_argument("--screened-candidates", type=Path, required=True,
+                        help="Frozen article screen bound to this source-review release")
     args = parser.parse_args()
     reports = selected_csv(args.reports, tuple(field for field in META_FIELDS
                                                if field != "scheduled_start_utc") + ("pre_match_verified",))
@@ -53,6 +56,12 @@ def main() -> None:
     registry = selected_csv(args.registry, ("cricsheet_match_id", "reaudit_status"))
     timing_exclusions: list[str] = []
     candidates = eligible_sources(reports, starts, registry, timing_exclusions)
+    screens = [json.loads(line) for line in
+               args.screened_candidates.read_text(encoding="utf-8").splitlines()]
+    screened = {row["cricsheet_match_id"]: row for row in screens}
+    if (len(screened) != len(screens)
+            or set(screened) != {row["cricsheet_match_id"] for row in candidates}):
+        raise ValueError("article screen must cover each timing-eligible source exactly once")
     payloads = []
     statuses = [
         {"cricsheet_match_id": key, "source_status": "timing_ambiguous"}
@@ -65,6 +74,7 @@ def main() -> None:
             statuses.append({"cricsheet_match_id": key, "source_status": "not_retrieved"})
             continue
         capture = json.loads(capture_path.read_text(encoding="utf-8"))
+        validate_screened_capture(report, screened[key], capture)
         status = capture.get("review_status", "needs_review")
         if status in {"unavailable", "contaminated_or_ambiguous", "needs_review"}:
             statuses.append({"cricsheet_match_id": key, **source_disposition(report, capture)})
@@ -88,6 +98,7 @@ def main() -> None:
         "input_sha256": sha256(args.output),
         "rubric_sha256": rubric_hash(),
         "rubric_version": rubric_version(),
+        "source_screen_sha256": sha256(args.screened_candidates),
         "source_registry_sha256": {label: sha256(path) for label, path in
                                    (("reports", args.reports), ("starts", args.starts),
                                     ("registry", args.registry))},

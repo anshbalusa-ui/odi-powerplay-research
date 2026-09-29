@@ -24,19 +24,20 @@ from odi_powerplay.pitch_expectation import (  # noqa: E402
 from build_pitch_expectation_inputs import selected_csv  # noqa: E402
 
 
-def acquire(report: dict, raw_dir: Path) -> dict:
-    """One immutable verified-HTTPS snapshot per ID; reuse it on subsequent runs."""
+def acquire(report: dict, raw_dir: Path, retry_transient: bool = False) -> dict:
+    """Reuse immutable snapshots; optionally append a new attempt after a timeout."""
     key = report["cricsheet_match_id"]
     prior = sorted(raw_dir.glob(f"{key}.*.json"))
     if prior:
-        metadata = json.loads(prior[0].read_text(encoding="utf-8"))
+        metadata = json.loads(prior[-1].read_text(encoding="utf-8"))
         if metadata["source_url"] != report["source_url"] or metadata["cricsheet_match_id"] != key:
             raise ValueError(f"{key}: cached source identity differs from frozen registry")
         raw_path = raw_dir / metadata["snapshot_filename"]
         raw = raw_path.read_bytes()
         if hashlib.sha256(raw).hexdigest() != metadata["raw_sha256"]:
             raise ValueError(f"{key}: immutable source snapshot hash mismatch")
-    else:
+    if not prior or (retry_transient and metadata["curl_exit_status"] == 28
+                     and metadata["http_status"] == "000"):
         proc = subprocess.run(
             ["curl", "--proto", "=https", "--proto-redir", "=https",
              "--location", "--silent", "--show-error", "--fail",
@@ -94,6 +95,8 @@ def main() -> None:
                         default=ROOT / "artifacts/pitch_expectations/source_candidates.jsonl")
     parser.add_argument("--limit", type=int, default=None)
     parser.add_argument("--workers", type=int, default=6)
+    parser.add_argument("--retry-transient", action="store_true",
+                        help="Append a new HTTPS snapshot only after a cached curl timeout")
     args = parser.parse_args()
     reports = selected_csv(args.reports, tuple(field for field in META_FIELDS
                                                if field != "scheduled_start_utc") + ("pre_match_verified",))
@@ -105,7 +108,7 @@ def main() -> None:
     if args.workers < 1 or args.limit is not None and args.limit < 1:
         raise ValueError("workers and optional limit must be positive")
     with ThreadPoolExecutor(max_workers=args.workers) as pool:
-        candidates = list(pool.map(lambda row: acquire(row, args.raw_dir), selected))
+        candidates = list(pool.map(lambda row: acquire(row, args.raw_dir, args.retry_transient), selected))
     args.output.parent.mkdir(parents=True, exist_ok=True)
     args.output.write_text("".join(canonical_json(row) + "\n" for row in candidates), encoding="utf-8")
     from collections import Counter

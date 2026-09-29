@@ -56,6 +56,15 @@ def _utc(text: str) -> datetime:
         raise ValueError("source and scheduled timestamps require UTC offsets")
     return parsed
 
+def _article_timestamp(text: str) -> datetime:
+    """Require a complete, offset-bearing ISO timestamp for source metadata."""
+    if not re.fullmatch(
+        r"\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?(?:Z|[+-]\d{2}:\d{2})",
+        text,
+    ):
+        raise ValueError("article timestamps must include seconds and a UTC offset")
+    return _utc(text)
+
 
 def latest_publication_utc(published: str) -> datetime:
     """Conservatively bound a date-only report to the end of that UTC day."""
@@ -205,6 +214,23 @@ def source_disposition(report: dict, capture: dict) -> dict:
         "status_note": capture["status_note"],
     }
 
+def validate_screened_capture(report: dict, candidate: dict, capture: dict) -> None:
+    """A newly screened source can revoke, but never itself grant, human approval."""
+    key = report["cricsheet_match_id"]
+    if (candidate.get("cricsheet_match_id") != key
+            or any(candidate.get(field) != report[field] for field in (
+                "source_url", "published_at_utc", "scheduled_start_utc"
+            ))
+            or not re.fullmatch(r"[0-9a-f]{64}", candidate.get("raw_sha256", ""))):
+        raise ValueError(f"{key}: screened source identity or snapshot hash differs")
+    if capture.get("review_status") == "pre_match_content_verified":
+        if (candidate.get("status") != "pre_match_candidate"
+                or capture.get("retrieved_at_utc") != candidate.get("retrieved_at_utc")
+                or not isinstance(capture.get("source_text"), str)
+                or capture["source_text"] not in candidate.get("source_text", "")):
+            raise ValueError(f"{key}: reviewed excerpt no longer passes current source screen")
+
+
 
 def validate_passes(payloads: list[dict], passes: dict[str, list[dict]]) -> None:
     """Fail closed if any pass is incomplete or bound to different inputs/rubric."""
@@ -289,16 +315,21 @@ def audit_sample(rows: list[dict], size: int = 15) -> list[dict]:
 
 
 class _ArticleParser(HTMLParser):
-    """Collect metadata and article-scoped paragraphs, never navigation cards."""
+    """Collect article metadata and body text, excluding navigation cards."""
 
-    def __init__(self) -> None:
+    def __init__(self, source_url: str) -> None:
         super().__init__(convert_charrefs=True)
+        self.source_url = source_url
         self.published: list[str] = []
         self.modified: list[str] = []
         self.paragraphs: list[str] = []
         self._article_depth = 0
         self._in_paragraph = False
         self._parts: list[str] = []
+        self._jsonld = False
+        self._jsonld_parts: list[str] = []
+        self._jsonld_signature: tuple[object, object, object] | None = None
+        self._jsonld_conflict = False
 
     def handle_starttag(self, tag: str, attrs: list[tuple[str, str | None]]) -> None:
         values = dict(attrs)
@@ -310,6 +341,19 @@ class _ArticleParser(HTMLParser):
                 self.published.append(content)
             elif marker in {"article:modified_time", "datemodified"}:
                 self.modified.append(content)
+        if tag == "time" and values.get("itemprop", "").lower() in {
+            "datepublished", "datemodified"
+        }:
+            value = values.get("datetime")
+            if value:
+                target = (self.published if values["itemprop"].lower() == "datepublished"
+                          else self.modified)
+                target.append(value)
+        if tag == "script" and (values.get("type") or "").split(";")[0].strip().lower() == (
+            "application/ld+json"
+        ):
+            self._jsonld = True
+            self._jsonld_parts = []
         if tag == "article":
             self._article_depth += 1
         if tag == "p" and self._article_depth:
@@ -317,10 +361,88 @@ class _ArticleParser(HTMLParser):
             self._parts = []
 
     def handle_data(self, data: str) -> None:
+        if self._jsonld:
+            self._jsonld_parts.append(data)
         if self._in_paragraph:
             self._parts.append(data)
 
+    @staticmethod
+    def _objects(value: object):
+        if isinstance(value, list):
+            for item in value:
+                yield from _ArticleParser._objects(item)
+        elif isinstance(value, dict):
+            yield value
+            graph = value.get("@graph")
+            if isinstance(graph, (dict, list)):
+                yield from _ArticleParser._objects(graph)
+
+    @staticmethod
+    def _article_type(value: object) -> bool:
+        types = value if isinstance(value, list) else [value]
+        return any(
+            isinstance(item, str)
+            and item.rstrip("/").rsplit("/", 1)[-1].lower() in {
+                "article", "newsarticle", "reportagearticle", "analysisnewsarticle",
+                "reviewnewsarticle", "backgroundnewsarticle",
+            }
+            for item in types
+        )
+
+    @staticmethod
+    def _url_values(value: object):
+        if isinstance(value, str):
+            yield value
+        elif isinstance(value, dict):
+            for key in ("@id", "url"):
+                if isinstance(value.get(key), str):
+                    yield value[key]
+
+    def _same_article(self, value: dict) -> bool:
+        expected = urlparse(self.source_url)
+        expected_path = expected.path.rstrip("/") or "/"
+        for raw_url in (*self._url_values(value.get("url")),
+                        *self._url_values(value.get("mainEntityOfPage"))):
+            actual = urlparse(raw_url)
+            if (actual.scheme in {"http", "https"}
+                    and actual.hostname
+                    and actual.hostname.lower() == (expected.hostname or "").lower()
+                    and actual.path.rstrip("/") == expected_path):
+                return True
+        return False
+
+    def _consume_jsonld(self) -> None:
+        try:
+            data = json.loads("".join(self._jsonld_parts))
+        except (json.JSONDecodeError, TypeError):
+            return
+        focal = [
+            item for item in self._objects(data)
+            if self._article_type(item.get("@type")) and self._same_article(item)
+        ]
+        for item in focal:
+            published = item.get("datePublished")
+            modified = item.get("dateModified")
+            body = item.get("articleBody")
+            signature = (published, modified, body)
+            if self._jsonld_signature is not None and signature != self._jsonld_signature:
+                self._jsonld_conflict = True
+                continue
+            self._jsonld_signature = signature
+            if not all(isinstance(value, str) and value.strip()
+                       for value in (published, modified, body)):
+                continue
+            self.published.append(published)
+            self.modified.append(modified)
+            self.paragraphs.extend(
+                text.strip() for text in re.split(r"\n+", body) if text.strip()
+            )
+
     def handle_endtag(self, tag: str) -> None:
+        if tag == "script" and self._jsonld:
+            self._consume_jsonld()
+            self._jsonld = False
+            self._jsonld_parts = []
         if tag == "p" and self._in_paragraph:
             paragraph = " ".join(" ".join(self._parts).split())
             if paragraph:
@@ -329,7 +451,6 @@ class _ArticleParser(HTMLParser):
             self._in_paragraph = False
         if tag == "article" and self._article_depth:
             self._article_depth -= 1
-
 
 _CONDITION = re.compile(
     r"\b(?:pitch|surface|strip|conditions|seam|spin|turn|bounce|grass|"
@@ -340,6 +461,13 @@ _RESULT = re.compile(
     r"chase[ds]?|scored?|wickets?|highest ever|innings)\b|"
     r"\b\d{1,3}/\d{1,2}\b|\b\d{2,3}\b", re.IGNORECASE
 )
+_HARD_RESULT = re.compile(
+    r"\b(?:final score|match result|match report|post.match|live commentary|"
+    r"scorecard|as it happened|won by \d+ (?:runs|wickets)|"
+    r"(?:innings|match) highlights)\b",
+    re.IGNORECASE,
+)
+
 
 
 def extract_source_candidate(report: dict, html_text: str) -> dict:
@@ -347,13 +475,15 @@ def extract_source_candidate(report: dict, html_text: str) -> dict:
 
     This is a source-review candidate, never an independent review or assessment.
     """
-    parser = _ArticleParser()
+    parser = _ArticleParser(report["source_url"])
     parser.feed(html_text)
+    if parser._jsonld_conflict:
+        return {"status": "needs_review", "reason": "conflicting focal article structured metadata"}
     if not parser.published or not parser.modified:
         return {"status": "needs_review", "reason": "article publication or modification time missing"}
     try:
-        published = [_utc(value) for value in parser.published]
-        modified = [_utc(value) for value in parser.modified]
+        published = [_article_timestamp(value) for value in parser.published]
+        modified = [_article_timestamp(value) for value in parser.modified]
         scheduled = _utc(report["scheduled_start_utc"])
         original = report["published_at_utc"]
         published_matches = (
@@ -370,22 +500,25 @@ def extract_source_candidate(report: dict, html_text: str) -> dict:
     if CONTAMINATION.search(report["source_title"]):
         return {"status": "contaminated_or_ambiguous", "reason": "source title resembles result coverage"}
     sentences = []
+    unsafe_condition = False
     for paragraph in parser.paragraphs:
-        if _CONDITION.search(paragraph) and (
-            CONTAMINATION.search(paragraph) or _RESULT.search(paragraph)
-        ):
+        if _HARD_RESULT.search(paragraph):
             return {"status": "contaminated_or_ambiguous",
-                    "reason": "article condition section contains a result/score marker"}
+                    "reason": "article contains result or live-coverage markers"}
         for sentence in re.split(r"(?<=[.!?])\s+", html.unescape(paragraph)):
             if not _CONDITION.search(sentence):
                 continue
             if CONTAMINATION.search(sentence) or _RESULT.search(sentence):
-                return {"status": "contaminated_or_ambiguous",
-                        "reason": "article condition section contains a result/score marker"}
+                unsafe_condition = True
+                continue
             sentences.append(sentence.strip())
     snippet = " ".join(sentences)
     if len(snippet.split()) < 8 or len(snippet) > 900:
-        return {"status": "needs_review", "reason": "no concise article-scoped condition evidence"}
+        return {
+            "status": "contaminated_or_ambiguous" if unsafe_condition and not sentences else "needs_review",
+            "reason": ("no outcome-blind condition sentence" if unsafe_condition and not sentences
+                       else "no concise article-scoped condition evidence"),
+        }
     return {
         "status": "pre_match_candidate",
         "source_text": snippet,

@@ -29,6 +29,53 @@ class SourceExtractionTests(unittest.TestCase):
         <p>Players gathered for training.</p>
         </article></body></html>"""
 
+
+    def test_focal_jsonld_article_supplies_body_and_both_timestamps(self):
+        structured = """<script type="application/ld+json">{
+          "@type":"NewsArticle", "url":"https://example.org/preview/",
+          "datePublished":"2023-04-29T12:00:00Z",
+          "dateModified":"2023-04-29T13:00:00+00:00",
+          "articleBody":"The pitch has a little grass and could offer seam movement early."
+        }</script>"""
+        result = extract_source_candidate(self.report, structured)
+        self.assertEqual(result["status"], "pre_match_candidate")
+        self.assertEqual(
+            result["article_published_at_utc"], "2023-04-29T12:00:00+00:00"
+        )
+        self.assertIn("grass", result["source_text"])
+
+    def test_jsonld_without_focal_identity_cannot_supply_body_or_dates(self):
+        structured = """<script type="application/ld+json">{
+          "@type":"NewsArticle", "url":"https://example.org/other",
+          "datePublished":"2023-04-29T12:00:00Z",
+          "dateModified":"2023-04-29T13:00:00Z",
+          "articleBody":"The pitch has a little grass and could offer seam movement early."
+        }</script>"""
+        result = extract_source_candidate(self.report, structured)
+        self.assertEqual(result["status"], "needs_review")
+        self.assertNotIn("source_text", result)
+
+    def test_conflicting_focal_jsonld_objects_are_quarantined(self):
+        item = """{"@type":"NewsArticle","url":"https://example.org/preview",
+          "datePublished":"2023-04-29T12:00:00Z",
+          "dateModified":"2023-04-29T13:00:00Z",
+          "articleBody":"The pitch has a little grass and could offer seam movement early."}"""
+        structured = (f"<script type='application/ld+json'>[{item},"
+                      f"{item.replace('13:00:00Z', '14:00:00Z')}]</script>")
+        result = extract_source_candidate(self.report, structured)
+        self.assertEqual(result["status"], "needs_review")
+        self.assertNotIn("source_text", result)
+
+    def test_partial_structured_timestamp_is_not_accepted(self):
+        structured = """<script type="application/ld+json">{
+          "@type":"NewsArticle", "url":"https://example.org/preview",
+          "datePublished":"2023-04-29",
+          "dateModified":"2023-04-29T13:00:00Z",
+          "articleBody":"The pitch has a little grass and could offer seam movement early."
+        }</script>"""
+        result = extract_source_candidate(self.report, structured)
+        self.assertEqual(result["status"], "needs_review")
+        self.assertNotIn("source_text", result)
     def test_only_article_scoped_pre_match_condition_sentence_survives(self):
         result = extract_source_candidate(self.report, self.html)
         self.assertEqual(result["status"], "pre_match_candidate")
@@ -50,6 +97,20 @@ class SourceExtractionTests(unittest.TestCase):
         result = extract_source_candidate(self.report, contaminated)
         self.assertEqual(result["status"], "contaminated_or_ambiguous")
         self.assertNotIn("source_text", result)
+
+    def test_prior_result_sentence_is_removed_before_source_review(self):
+        article = self.html.replace(
+            "The pitch has a little grass and could offer seam movement early.",
+            "They won their previous match. The pitch has a little grass and "
+            "could offer seam movement early.",
+        )
+        result = extract_source_candidate(self.report, article)
+        self.assertEqual(result["status"], "pre_match_candidate")
+        self.assertEqual(
+            result["source_text"],
+            "The pitch has a little grass and could offer seam movement early.",
+        )
+
 
     def test_prior_match_scoreline_cannot_reach_assessors(self):
         contaminated = self.html.replace(
