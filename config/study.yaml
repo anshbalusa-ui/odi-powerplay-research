@@ -1,5 +1,5 @@
 study:
-  title: "ODI powerplay performance, pre-match expected playing environment, and match outcomes"
+  title: "Modern ODI powerplay run-wicket exchange rates and match win probability"
   match_type: "ODI"
   gender: "male"
   primary_start_year: 2015
@@ -127,3 +127,19 @@ modeling:
     repetitions: 2000
     cluster: "match_id"
     confidence_level: 0.95
+
+ssac27_tradeoff:
+  construct: "observational_win_probability_equivalence_not_causal_wicket_value"
+  source_snapshot_status: "2026-09-10_archive_unavailable_2026-09-29_unlocked_amendment"
+  required_original_archive_sha256: "28350ee04a2ee710f959de939eb2240f737e684a2f7f93e00f3c2be26e4f415e"
+  amended_archive_sha256: "f8423531b24183bc2cfc1e3e27f9bd29ad7c4d5a4bdc2469bf681d7fe2f5c5ce"
+  source_registry: "data/manual/match_start_times_template.csv"
+  raw_member_access: "registry_ids_before_2025_only"
+  primary_transition_wickets_lost: [1, 2]
+  sensitivity_transitions: [[0, 1], [2, 3]]
+  reference_runs: "median_development_pp_runs_rounded_half_up"
+  strength_contexts: ["median_minus_1_sd", "median", "median_plus_1_sd"]
+  venue_contexts: ["development_p25", "development_median", "development_p75"]
+  match_cluster_bootstrap_repetitions: 1000
+  seed: 20250905
+  locked_test_scored: false
