@@ -103,3 +103,16 @@ in 22 innings. These are kept missing for development-fitted imputation, not
 replaced with the focal match outcome or surface conditions.
 No claim about exact September 10 raw archive equality follows from these
 amended-source checks. Locked results remain unopened.
+
+## Tradeoff fit leakage check
+
+The model-table CSV is sorted by match ID, not split: its first 1,742 rows
+contain 1,600 development innings **and all 142 validation innings**.
+The first implementation incorrectly took that positional slice for its
+primary fit, complete-case fit and spline diagnostic. Two ignored
+`artifacts/ssac27_tradeoff_smoke*` pilot releases are invalid and must not
+be cited. The final code filters `split=development` **before any fit**;
+the regression test changes interleaved 2024 labels and verifies unchanged
+primary-fit probabilities. Independent recomputation of the corrected
+development-only fitted model verifies supported numerical roots reproduce
+the target win probability to within `3e-5`. No 2025+ outcomes were loaded.
