@@ -1,5 +1,7 @@
 # Paper Outline
 
+> **Current Sloan-facing manuscript structure:** use [`docs/ssac27_manuscript_structure.md`](ssac27_manuscript_structure.md) for the current full-paper organization. The material below is retained for provenance, including the explicitly superseded historical pitch-centered plan.
+
 ## Current SSAC27 paper direction (2026-09-29)
 
 **Title:** *What Is a Powerplay Wicket Worth? Context-Dependent Run-Wicket Tradeoffs in ODI Cricket*
