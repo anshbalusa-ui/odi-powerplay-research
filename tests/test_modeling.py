@@ -123,6 +123,62 @@ class ModelingTests(unittest.TestCase):
         self.assertLessEqual(probabilities[0], 1.0)
 
 
+    def test_tradeoff_reference_encoder_drops_development_first_level(self) -> None:
+        spec = ModelSpec(
+            "reference", ("elo_difference",), ("venue", "toss_decision"),
+            categorical_reference=True,
+        )
+        training = [
+            {"elo_difference": value, "venue": venue, "toss_decision": decision,
+             "batting_team_won": label}
+            for value, venue, decision, label in (
+                (-20, "Z", "field", 0), (-10, "A", "bat", 0),
+                (10, "Z", "field", 1), (20, "A", "bat", 1),
+            )
+        ]
+        model = fit_model(spec, training)
+        preprocess = model.named_steps["preprocessing"]
+        encoder = preprocess.named_transformers_["categorical"].named_steps["encoder"]
+        self.assertEqual([levels.tolist() for levels in encoder.categories_],
+                         [["A", "Z"], ["bat", "field"]])
+        self.assertEqual(encoder.drop_idx_.tolist(), [0, 0])
+        names = preprocess.get_feature_names_out().tolist()
+        self.assertEqual(len(names), model.named_steps["classifier"].coef_.shape[1])
+        self.assertIn("categorical__venue_Z", names)
+        self.assertNotIn("categorical__venue_A", names)
+        self.assertNotIn("categorical__toss_decision_bat", names)
+        baseline, unknown = predict_model(
+            spec, model,
+            [{"elo_difference": 0, "venue": "A", "toss_decision": "bat"},
+             {"elo_difference": 0, "venue": "unseen", "toss_decision": "bat"}],
+        )
+        self.assertAlmostEqual(baseline, unknown)
+        self.assertEqual(names, fit_model(spec, list(reversed(training))).named_steps[
+            "preprocessing"].get_feature_names_out().tolist())
+
+    def test_reference_encoder_refits_only_on_sampled_development_rows(self) -> None:
+        spec = ModelSpec("reference_sample", (), ("venue",), categorical_reference=True)
+        first_sample = [
+            {"venue": venue, "batting_team_won": outcome}
+            for venue, outcome in (("A", 0), ("B", 1), ("A", 0), ("B", 1))
+        ]
+        second_sample = [
+            {"venue": venue, "batting_team_won": outcome}
+            for venue, outcome in (("B", 0), ("C", 1), ("B", 0), ("C", 1))
+        ]
+        first = fit_model(spec, first_sample)
+        second = fit_model(spec, second_sample)
+        first_encoder = first.named_steps["preprocessing"].named_transformers_[
+            "categorical"].named_steps["encoder"]
+        second_encoder = second.named_steps["preprocessing"].named_transformers_[
+            "categorical"].named_steps["encoder"]
+        self.assertEqual(first_encoder.categories_[0].tolist(), ["A", "B"])
+        self.assertEqual(second_encoder.categories_[0].tolist(), ["B", "C"])
+        self.assertEqual(first_encoder.drop_idx_.tolist(), [0])
+        self.assertEqual(second_encoder.drop_idx_.tolist(), [0])
+        self.assertNotIn("categorical__venue_A",
+                         second.named_steps["preprocessing"].get_feature_names_out())
+
     def test_all_missing_numeric_feature_is_kept_without_imputer_warning(self) -> None:
         try:
             import sklearn  # noqa: F401

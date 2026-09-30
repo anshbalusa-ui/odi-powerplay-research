@@ -160,13 +160,14 @@ def draw_match_bootstrap_rows(
 
 def _model_spec(name: str, *, interactions: Sequence[tuple[str, str]] = (), extra_num: Sequence[str] = (), extra_cat: Sequence[str] = (), estimator: str = "logistic", include_venue_history: bool = False) -> ModelSpec:
     history_features = VENUE_NUMERIC if include_venue_history else ()
-    return ModelSpec(name, tuple(dict.fromkeys((*NUMERIC, *history_features, *extra_num))), tuple(dict.fromkeys((*CATEGORICAL, *extra_cat))), tuple(interactions), estimator)
+    return ModelSpec(name, tuple(dict.fromkeys((*NUMERIC, *history_features, *extra_num))), tuple(dict.fromkeys((*CATEGORICAL, *extra_cat))), tuple(interactions), estimator, categorical_reference=True)
 
 
 def _prepare_rows(rows: Sequence[dict[str, Any]], *, dev: Sequence[dict[str, Any]],
                   interactions: Sequence[tuple[str, str]], strengths: str = "elo",
                   spline_knots: Sequence[float] | None = None, boundary_dot: bool = False,
-                  estimator: str = "logistic") -> tuple[list[dict[str, Any]], ModelSpec, dict[str, Any]]:
+                  estimator: str = "logistic", enforce_interaction_rank: bool = False
+                  ) -> tuple[list[dict[str, Any]], ModelSpec, dict[str, Any]]:
     if spline_knots is not None and (
             len(spline_knots) != 3 or
             not spline_knots[0] < spline_knots[1] < spline_knots[2]):
@@ -231,11 +232,36 @@ def _prepare_rows(rows: Sequence[dict[str, Any]], *, dev: Sequence[dict[str, Any
     include_history = any("venue_prior" in operand for pair in interactions for operand in pair)
     spec = _model_spec("tradeoff", extra_num=extra_num, extra_cat=(), estimator=estimator, include_venue_history=include_history)
     if strengths == "win_rate":
-        spec = ModelSpec(spec.name, tuple(n for n in spec.numeric_features if n != "elo_difference"), spec.categorical_features, estimator=spec.estimator)
+        spec = ModelSpec(spec.name, tuple(n for n in spec.numeric_features if n != "elo_difference"), spec.categorical_features, estimator=spec.estimator, categorical_reference=True)
+    rank_decision = {"interaction_rank": 0, "interaction_terms": len(interactions), "rank_gate": "not_applicable"}
+    if interactions:
+        import numpy as np
+        matrix = np.asarray([[row[f"_interaction_{idx}"] for idx in range(len(interactions))]
+                             for row in output[:len(dev)]], dtype=float)
+        base_columns = [np.ones(len(dev))]
+        for name in spec.numeric_features:
+            if name.startswith("_interaction_"):
+                continue
+            column = np.asarray([_number(row, name) for row in output[:len(dev)]],
+                                dtype=float)
+            observed = column[np.isfinite(column)]
+            column[~np.isfinite(column)] = (
+                _quantile(observed.tolist(), .5) if len(observed) else 0.0
+            )
+            base_columns.append(column)
+        baseline = np.column_stack(base_columns)
+        base_rank = int(np.linalg.matrix_rank(baseline))
+        rank = int(np.linalg.matrix_rank(np.column_stack((baseline, matrix)))) - base_rank
+        rank_decision = {"interaction_rank": rank, "interaction_terms": len(interactions),
+                         "main_effect_rank": base_rank,
+                         "rank_gate": "pass" if rank == len(interactions) else "fail"}
+        if enforce_interaction_rank and rank != len(interactions):
+            raise ValueError("rank_deficient_development_interactions")
     return output, spec, {
         "interaction_operand_mean_sd": means,
         "interaction_operand_medians": medians,
         "interaction_terms": [list(pair) for pair in interactions],
+        "interaction_rank_gate": rank_decision,
     }
 
 
@@ -243,7 +269,8 @@ def _fit_primary_model(rows: Sequence[dict[str, Any]]) -> tuple[ModelSpec, Any, 
     """Fit only development rows, independent of CSV order or 2024 labels."""
     development = [row for row in rows if row["split"] == "development"]
     prepared, spec, decisions = _prepare_rows(
-        development, dev=development, interactions=PRIMARY_INTERACTIONS)
+        development, dev=development, interactions=PRIMARY_INTERACTIONS,
+        enforce_interaction_rank=True)
     return spec, fit_model(spec, prepared), decisions
 
 
@@ -323,29 +350,31 @@ def _summaries(dev: Sequence[dict[str, Any]], contexts: dict[str, Any], spec: Mo
                     record = {**base, "contrast": label, "wickets_from": w0, "wickets_to": w1,
                               "run_reference": start, "support_start": s0, "support_target": s1,
                               "defined": False, "reason": reason, "runs_per_wicket": None}
-                    if support and (not interactions or (s0["supported"] and s1["supported"])):
-                        lo = max(s0["run_min"], s1["run_min"])
-                        hi = min(s0["run_max"], s1["run_max"])
-                        if lo > hi:
-                            record["reason"] = "disjoint_wicket_run_support"
-                            cells.append(record)
-                            continue
-                        if start < lo or start > hi:
-                            record["reason"] = "starting_run_outside_common_supported_envelope"
-                            cells.append(record)
-                            continue
-                        row0 = _context_row(contexts, runs=start, wickets=w0, innings=innings, elo=elo, venue_runs=venue)
-                        row1 = _context_row(contexts, runs=start, wickets=w1, innings=innings, elo=elo, venue_runs=venue)
-                        p0, p1 = _prob(spec, model, row0), _prob(spec, model, row1)
-                        record.update({"probability_fixed_run_from": p0, "probability_fixed_run_to": p1,
-                                       "probability_difference_fixed_run": p1-p0})
+                    if not support:
+                        cells.append(record)
+                        continue
+                    lo = max(s0["run_min"], s1["run_min"])
+                    if not (s0["run_min"] <= start <= s0["run_max"]
+                            and s1["run_min"] <= start <= s1["run_max"]):
+                        record["reason"] = "starting_run_outside_supported_envelope"
+                        cells.append(record)
+                        continue
+                    hi = min(s0["run_max"], s1["run_max"])
+                    row0 = _context_row(contexts, runs=start, wickets=w0, innings=innings, elo=elo, venue_runs=venue)
+                    row1 = _context_row(contexts, runs=start, wickets=w1, innings=innings, elo=elo, venue_runs=venue)
+                    p0, p1 = _prob(spec, model, row0), _prob(spec, model, row1)
+                    record.update({"probability_fixed_run_from": p0, "probability_fixed_run_to": p1,
+                                   "probability_difference_fixed_run": p1-p0})
+                    if lo <= hi:
                         record["probability_fixed_wicket_low"] = _prob(spec, model, _context_row(contexts,runs=lo,wickets=w0,innings=innings,elo=elo,venue_runs=venue))
                         record["probability_fixed_wicket_high"] = _prob(spec, model, _context_row(contexts,runs=hi,wickets=w0,innings=innings,elo=elo,venue_runs=venue))
-                        record["fixed_wicket_run_min"] = lo
-                        record["fixed_wicket_run_max"] = hi
-                        upper = min(s1["run_max"], hi) - start
-                        root = solve_nonnegative_root(lambda delta: _prob(spec, model, _context_row(contexts,runs=start+delta,wickets=w1,innings=innings,elo=elo,venue_runs=venue))-p0, upper_delta=upper)
-                        record.update({"defined": root["defined"], "runs_per_wicket": root["delta"], "reason": root["reason"], "root_iterations": root.get("iterations")})
+                    record["fixed_wicket_run_min"] = lo
+                    record["fixed_wicket_run_max"] = hi
+                    upper = s1["run_max"] - start
+                    record["root_upper_delta"] = upper
+                    root = solve_nonnegative_root(lambda delta: _prob(spec, model, _context_row(contexts,runs=start+delta,wickets=w1,innings=innings,elo=elo,venue_runs=venue))-p0, upper_delta=upper)
+                    record.update({"defined": root["defined"], "runs_per_wicket": root["delta"], "reason": root["reason"], "root_iterations": root.get("iterations")})
+                    if lo <= hi:
                         for run in range(math.ceil(lo), math.floor(hi)+1):
                             curves.append({**base, "wickets": w0, "runs": run})
                             curve_inputs.append(_context_row(contexts,runs=run,wickets=w0,innings=innings,elo=elo,venue_runs=venue))
@@ -354,6 +383,85 @@ def _summaries(dev: Sequence[dict[str, Any]], contexts: dict[str, Any], spec: Mo
         for point, probability in zip(curves, predict_model(spec, model, curve_inputs)):
             point["predicted_win_probability"] = probability
     return cells, curves
+
+
+def _paired_context_differences(point_cells, replicate_values, *, min_root_valid_fraction=.8):
+    """Return A-minus-B context contrasts using only jointly observed replicates."""
+    from itertools import combinations
+
+    cells = {(c["innings"], c["elo_state"], c["venue_state"]): c
+             for c in point_cells if c.get("contrast") == "primary_1_to_2"}
+    contexts = sorted(cells)
+    pairs = []
+    for elo, venue in sorted({(e, v) for _, e, v in contexts}):
+        pairs.append(("innings", (1, elo, venue), (0, elo, venue)))
+    for axis, index in (("strength", 1), ("venue", 2)):
+        groups = defaultdict(list)
+        for context in contexts:
+            group = tuple(context[i] for i in range(3) if i != index)
+            groups[group].append(context)
+        for group in groups.values():
+            for a, b in combinations(sorted(group, key=lambda c: c[index]), 2):
+                pairs.append((axis, a, b))
+    replicates = list(replicate_values)
+    requested = len(replicates)
+    output = []
+    for axis, a, b in pairs:
+        ca, cb = cells.get(a), cells.get(b)
+        for quantity, metric in (
+            ("fixed_run_probability_difference", "probability_difference_fixed_run"),
+            ("runs_per_wicket", "runs_per_wicket"),
+        ):
+            supported = bool(ca and cb and ca.get(metric) is not None and cb.get(metric) is not None)
+            vals, failed, undefined = [], 0, 0
+            reasons = Counter()
+            for rep in replicates:
+                if rep is None or rep.get("status") == "failed":
+                    failed += 1
+                    reasons["global_refit_failed"] += 1
+                    continue
+                values = rep.get("values", rep) if isinstance(rep, dict) else {}
+                def value_at(context):
+                    value = values.get(context)
+                    if value is None:
+                        value = next((item for key, item in values.items()
+                                      if isinstance(key, tuple) and len(key) == 5
+                                      and tuple(key[:3]) == context and key[3] == 1
+                                      and key[4] == "primary_1_to_2"), None)
+                    if isinstance(value, dict):
+                        return value.get(metric, value.get(
+                            "fixed_run_probability_difference" if quantity == "fixed_run_probability_difference"
+                            else "runs_per_wicket"))
+                    return value
+                va, vb = value_at(a), value_at(b)
+                if va is None or vb is None:
+                    undefined += 1
+                    why = "root_undefined" if quantity == "runs_per_wicket" else "pair_value_undefined"
+                    reasons[why] += 1
+                else:
+                    vals.append(va - vb)
+            estimate = (ca[metric] - cb[metric]) if supported else None
+            reason = None
+            if not supported:
+                reason = "unsupported_point_context"
+            elif quantity == "runs_per_wicket" and (not ca.get("defined") or not cb.get("defined")):
+                reason = "point_root_undefined"
+            elif quantity == "runs_per_wicket" and len(vals) < math.ceil(requested * min_root_valid_fraction):
+                reason = "insufficient_paired_root_replicates"
+            elif not vals:
+                reason = "no_valid_paired_replicates"
+            output.append({
+                "axis": axis, "quantity": quantity,
+                "context_a": {"innings": a[0], "elo_state": a[1], "venue_state": a[2]},
+                "context_b": {"innings": b[0], "elo_state": b[1], "venue_state": b[2]},
+                "estimate": estimate,
+                "lower_95": _quantile(vals, .025) if vals and reason is None else None,
+                "upper_95": _quantile(vals, .975) if vals and reason is None else None,
+                "requested_replicates": requested, "valid_paired_replicates": len(vals),
+                "failed_fit_replicates": failed, "undefined_replicates": undefined,
+                "reason_counts": dict(reasons), "reason": reason,
+            })
+    return output
 
 
 def _bootstrap_refit(dev: Sequence[dict[str, Any]], contexts: dict[str, Any], spec: ModelSpec,
@@ -368,15 +476,34 @@ def _bootstrap_refit(dev: Sequence[dict[str, Any]], contexts: dict[str, Any], sp
     eligible = [cell for cell in point_cells
                 if cell.get("probability_difference_fixed_run") is not None]
     failures = 0
-    for _ in range(repetitions):
+    paired_replicates = []
+    reference_levels = Counter()
+    development_reference = {
+        name: sorted({str(row[name]) for row in dev if row.get(name) not in (None, "")})[0]
+        for name in CATEGORICAL
+        if any(row.get(name) not in (None, "") for row in dev)
+    }
+    changed_reference_levels = Counter()
+    primary_contexts = sorted({(cell["innings"], cell["elo_state"], cell["venue_state"])
+                               for cell in point_cells if cell.get("contrast") == "primary_1_to_2"})
+    null_context_values = {key: {"probability_difference_fixed_run": None, "runs_per_wicket": None,
+                                 "root_reason": "unsupported_point_context"}
+                           for key in primary_contexts}
+    for replicate_index in range(repetitions):
         sampled = [rng.choice(ids) for _ in ids]
         sample_rows = draw_match_bootstrap_rows(dev, sampled_match_ids=sampled)
         try:
             prepared, bs_spec, bs_decisions = _prepare_rows(
-                sample_rows, dev=sample_rows, interactions=interactions)
+                sample_rows, dev=sample_rows, interactions=interactions,
+                enforce_interaction_rank=True)
             fitted = fit_model(bs_spec, prepared)
-            bs_contexts = {**contexts,
-                           "interaction_operand_mean_sd": bs_decisions["interaction_operand_mean_sd"]}
+            encoder = fitted.named_steps["preprocessing"].named_transformers_["categorical"].named_steps["encoder"]
+            fitted_references = {name: str(levels[0]) for name, levels in zip(bs_spec.categorical_features, encoder.categories_)}
+            reference_levels[json.dumps(fitted_references, sort_keys=True)] += 1
+            for name, level in fitted_references.items():
+                if development_reference.get(name) != level:
+                    changed_reference_levels[name] += 1
+            bs_contexts = {**contexts, "interaction_operand_mean_sd": bs_decisions["interaction_operand_mean_sd"]}
 
             def context_at(cell: dict[str, Any], runs: float, wickets: int) -> dict[str, Any]:
                 return _context_row(
@@ -393,6 +520,7 @@ def _bootstrap_refit(dev: Sequence[dict[str, Any]], contexts: dict[str, Any], sp
             probabilities = predict_model(bs_spec, fitted, requests) if requests else []
             current: dict[tuple[int, int, int, int, str], dict[str, float]] = {}
             root_candidates = []
+            root_reasons = {}
             for index, cell in enumerate(eligible):
                 key = (cell["innings"], cell["elo_state"], cell["venue_state"],
                        cell["wickets_from"], cell["contrast"])
@@ -406,10 +534,16 @@ def _bootstrap_refit(dev: Sequence[dict[str, Any]], contexts: dict[str, Any], sp
                     "fixed_wicket_probability_difference": p_high-p_low,
                 }
                 if cell.get("defined"):
-                    upper = cell["fixed_wicket_run_max"] - cell["run_reference"]
+                    upper = cell["root_upper_delta"]
                     if upper >= 0:
                         root_candidates.append({"cell": cell, "key": key, "p0": p0,
                                                 "lo": 0.0, "hi": upper})
+                    else:
+                        root_reasons[key] = "starting_run_outside_supported_envelope"
+                        current[key]["runs_per_wicket"] = None
+                else:
+                    root_reasons[key] = cell.get("reason") or "point_root_undefined"
+                    current[key]["runs_per_wicket"] = None
             if root_candidates:
                 endpoints = [
                     context_at(candidate["cell"], candidate["cell"]["run_reference"] + delta,
@@ -428,6 +562,9 @@ def _bootstrap_refit(dev: Sequence[dict[str, Any]], contexts: dict[str, Any], sp
                     elif flo * fhi <= 0:
                         candidate["flo"] = flo
                         pending.append(candidate)
+                    else:
+                        current[candidate["key"]]["runs_per_wicket"] = None
+                        root_reasons[candidate["key"]] = "no_bracketed_nonnegative_root"
                 for _step in range(100):
                     active = [candidate for candidate in pending
                               if candidate["hi"] - candidate["lo"] > 0.01]
@@ -456,16 +593,39 @@ def _bootstrap_refit(dev: Sequence[dict[str, Any]], contexts: dict[str, Any], sp
                         candidate["lo"] + candidate["hi"]) / 2
             for key, measurements in current.items():
                 for metric, result in measurements.items():
-                    values[key][metric].append(result)
+                    if result is not None:
+                        values[key][metric].append(result)
+            context_values = dict(null_context_values)
+            for key, measurements in current.items():
+                if key[4] == "primary_1_to_2":
+                    context_values[key[:3]] = {
+                        "probability_difference_fixed_run": measurements.get("fixed_run_probability_difference"),
+                        "runs_per_wicket": measurements.get("runs_per_wicket"),
+                        "root_reason": root_reasons.get(key),
+                    }
+            paired_replicates.append({"status": "fit", "values": context_values})
         except (ValueError, ArithmeticError):
             failures += 1
+            paired_replicates.append({"status": "failed", "values": dict(null_context_values)})
     intervals = {}
     for key, metrics in values.items():
         intervals["|".join(map(str,key))] = {
             metric: {"lower_95":_quantile(vals,.025),"upper_95":_quantile(vals,.975),"valid_replicates":len(vals)}
-            for metric, vals in metrics.items() if vals
+            for metric, vals in metrics.items()
+            if vals
         }
-    return {"requested":repetitions,"valid":repetitions-failures,"failed":failures,"seed":seed,"estimand_intervals":intervals}
+    paired = _paired_context_differences(point_cells, paired_replicates)
+    ledger = [{"replicate": index, "status": rep["status"], "contexts": [
+        {"innings": key[0], "elo_state": key[1], "venue_state": key[2],
+         "fixed_run_probability_difference": vals.get("probability_difference_fixed_run"),
+         "runs_per_wicket": vals.get("runs_per_wicket"),
+         "root_reason": vals.get("root_reason")}
+        for key, vals in sorted(rep["values"].items())]} for index, rep in enumerate(paired_replicates)]
+    return {"requested":repetitions,"valid":repetitions-failures,"failed":failures,"seed":seed,
+            "estimand_intervals":intervals,"paired_context_differences":paired,
+            "bootstrap_context_values":ledger,"reference_level_distribution":dict(reference_levels),
+            "development_reference_levels":development_reference,
+            "changed_reference_level_counts":dict(changed_reference_levels)}
 
 
 def _validation(dev_rows: Sequence[dict[str, Any]], val_rows: Sequence[dict[str, Any]], *, reps: int, seed: int) -> dict[str, Any]:
@@ -488,7 +648,7 @@ def _validation(dev_rows: Sequence[dict[str, Any]], val_rows: Sequence[dict[str,
             report[name] = {"status": "undefined", "reason": "non_distinct_development_knots"}
             continue
         try:
-            fitted_rows,spec,decisions=_prepare_rows([*dev_rows,*val_rows],dev=dev_rows,interactions=terms,strengths=strength,spline_knots=spline_knots,boundary_dot=boundary,estimator=estimator)
+            fitted_rows,spec,decisions=_prepare_rows([*dev_rows,*val_rows],dev=dev_rows,interactions=terms,strengths=strength,spline_knots=spline_knots,boundary_dot=boundary,estimator=estimator,enforce_interaction_rank=True)
             train, val = fitted_rows[:len(dev_rows)], fitted_rows[len(dev_rows):]
             model=fit_model(spec,train)
             probabilities=predict_model(spec,model,val)
@@ -532,29 +692,38 @@ def _write_figure(cells: Sequence[dict[str, Any]], path: Path) -> None:
     matplotlib.use("Agg")
     import matplotlib.pyplot as plt
     primary = [r for r in cells if r.get("contrast") == "primary_1_to_2"]
-    rows = [r for r in primary if r.get("defined")]
-    fig, ax = plt.subplots(figsize=(10, max(2.8, 1.1 * len(rows) + 1.8)))
-    if rows:
-        labels = [
-            f"{'First' if r['innings'] else 'Chase'} · Elo {r['elo_difference']:+.0f}"
-            f" · prior venue {r['venue_prior_pp_runs_mean']:.1f} runs"
-            for r in rows
-        ]
-        for index, row in enumerate(rows):
-            interval = (row.get("bootstrap_ci") or {}).get("runs_per_wicket")
-            if interval:
-                ax.hlines(index, interval["lower_95"], interval["upper_95"],
-                          color="#235789", linewidth=2)
-            ax.scatter(row["runs_per_wicket"], index, color="#235789", s=42, zorder=3)
-        ax.set_yticks(range(len(rows)), labels)
-        ax.set_ylim(-0.6, len(rows) - 0.4)
-    else:
-        ax.text(.5, .5, "No supported nonnegative 1→2 wicket roots",
-                ha="center", va="center", transform=ax.transAxes)
-        ax.set_yticks([])
-    ax.set_xlabel("Extra first-10-over runs per additional wicket lost")
-    ax.set_title(f"Supported 1→2 wicket roots: {len(rows)} of {len(primary)} prespecified contexts")
-    ax.grid(axis="x", alpha=.25)
+    supported = [r for r in primary if r.get("probability_difference_fixed_run") is not None]
+    roots = [r for r in primary if r.get("defined") and r.get("runs_per_wicket") is not None]
+    labels = [f"{'First' if r['innings'] else 'Chase'} · Elo {r['elo_difference']:+.0f}"
+              f" · venue {r['venue_state']}" for r in supported]
+    fig, (prob_ax, root_ax) = plt.subplots(
+        1, 2, figsize=(13, max(3.5, .42 * len(supported) + 2.4)),
+        gridspec_kw={"width_ratios": [1.2, 1]},
+    )
+    for index, row in enumerate(supported):
+        interval = (row.get("bootstrap_ci") or {}).get("fixed_run_probability_difference")
+        if interval:
+            prob_ax.hlines(index, interval["lower_95"], interval["upper_95"],
+                           color="#235789", linewidth=2)
+        prob_ax.scatter(row["probability_difference_fixed_run"], index,
+                        color="#235789", s=24, zorder=3)
+    prob_ax.axvline(0, color="black", linewidth=.8, alpha=.5)
+    prob_ax.set_yticks(range(len(supported)), labels, fontsize=7)
+    prob_ax.set_xlabel("1→2 win-probability difference at fixed runs")
+    prob_ax.set_title(f"Supported fixed-run contrasts ({len(supported)}/{len(primary)})")
+    prob_ax.grid(axis="x", alpha=.25)
+    root_labels = [f"{'First' if r['innings'] else 'Chase'} · Elo {r['elo_difference']:+.0f}"
+                   f" · venue {r['venue_state']}" for r in roots]
+    for index, row in enumerate(roots):
+        interval = (row.get("bootstrap_ci") or {}).get("runs_per_wicket")
+        if interval:
+            root_ax.hlines(index, interval["lower_95"], interval["upper_95"],
+                           color="#235789", linewidth=2)
+        root_ax.scatter(row["runs_per_wicket"], index, color="#235789", s=24, zorder=3)
+    root_ax.set_yticks(range(len(roots)), root_labels, fontsize=7)
+    root_ax.set_xlabel("Extra runs per additional wicket lost")
+    root_ax.set_title(f"Finite supported roots ({len(roots)}); undefined {len(primary)-len(roots)}")
+    root_ax.grid(axis="x", alpha=.25)
     fig.tight_layout()
     fig.savefig(path, dpi=200)
     plt.close(fig)
@@ -596,7 +765,7 @@ def run_pipeline(input_path: str | Path, output_dir: str | Path, *, bootstrap_re
     cc_val=[r for r in cc if r["split"]=="validation"]
     cc_report={"rows":len(cc),"matches":len(cc_ids),"excluded_rows":len(rows)-len(cc),"excluded_matches":len(grouped)-len(cc_ids)}
     try:
-        cc_all,cc_spec,_=_prepare_rows([*cc_dev,*cc_val],dev=cc_dev,interactions=interactions)
+        cc_all,cc_spec,_=_prepare_rows([*cc_dev,*cc_val],dev=cc_dev,interactions=interactions,enforce_interaction_rank=True)
         cc_model=fit_model(cc_spec,cc_all[:len(cc_dev)])
         cc_prob=predict_model(cc_spec,cc_model,cc_all[len(cc_dev):])
         cc_labels=[int(r["batting_team_won"]) for r in cc_val]
@@ -614,7 +783,7 @@ def run_pipeline(input_path: str | Path, output_dir: str | Path, *, bootstrap_re
     spline={"status":"undefined","reason":"non_distinct_development_knots","knots":knots}
     if len(set(knots))==3:
         try:
-            spline_rows,spline_spec,spline_decisions=_prepare_rows(dev,dev=dev,interactions=interactions,spline_knots=knots)
+            spline_rows,spline_spec,spline_decisions=_prepare_rows(dev,dev=dev,interactions=interactions,spline_knots=knots,enforce_interaction_rank=True)
             spline_model=fit_model(spline_spec,spline_rows[:len(dev)])
             spline={"status":"fit","knots":knots,"decisions":spline_decisions,"development_rows":len(dev)}
         except (ValueError,KeyError) as exc: spline={"status":"undefined","knots":knots,"reason":str(exc)}
@@ -629,7 +798,9 @@ def run_pipeline(input_path: str | Path, output_dir: str | Path, *, bootstrap_re
     for r in all_pred: by[r["match_id"]].append(r)
     for mid, pair in sorted(by.items()): pairings.append({"match_id":mid,"innings":pair})
     manifest={"analysis":"SSAC27 amended-source unlocked cohort run-wicket tradeoff","source_table":str(input_path),"source_sha256":hashlib.sha256(input_path.read_bytes()).hexdigest(),"input_rows":len(rows),"development_rows":len(dev),"development_matches":len({r['match_id'] for r in dev}),"validation_rows":len(val),"validation_matches":len({r['match_id'] for r in val}),"locked_rows_read":0,"seed":seed,"primary_bootstrap_requested":bootstrap_repetitions,"validation_bootstrap_requested":validation_repetitions,"model":{"estimator":"L2 logistic C=1 liblinear max_iter=2000","primary":"six interactions, fit development only","interactions":[list(pair) for pair in interactions]},"reference_contexts":contexts,"interaction_decisions":decisions,"validation":validation,"development_refit_bootstrap":bootstrap,"spline_sensitivity":spline,"complete_case_sensitivity":cc_report,"venue_history":{"development_unavailable_rows":sum(_number(r,"venue_history_available")!=1 for r in dev),"validation_unavailable_rows":sum(_number(r,"venue_history_available")!=1 for r in val)},"claim_boundary":"Associational/predictive conditional contrasts; no causal effect. Both innings are paired complementary outcomes; match is inference cluster.","caveat":"Retrospective specification adopted after preliminary outcome modeling; amended September 29 source, not reproduction of absent September 10 archive."}
-    outputs={"analysis_manifest.json":manifest,"context_exchange_rates.json":cells,"probability_contrasts.csv":curves,"validation_pairings.json":pairings}
+    outputs={"analysis_manifest.json":manifest,"context_exchange_rates.json":cells,"probability_contrasts.csv":curves,"validation_pairings.json":pairings,
+             "paired_context_differences.json":bootstrap["paired_context_differences"],
+             "bootstrap_context_values.json":bootstrap["bootstrap_context_values"]}
     for filename,data in outputs.items():
         target=output_dir/filename
         if filename.endswith(".csv"):
@@ -641,7 +812,7 @@ def run_pipeline(input_path: str | Path, output_dir: str | Path, *, bootstrap_re
     _write_figure(cells,figure_path)
     manifest["artifact_sha256"]={
         name:hashlib.sha256((output_dir/name).read_bytes()).hexdigest()
-        for name in ("context_exchange_rates.json","probability_contrasts.csv","validation_pairings.json","primary_exchange_rates.png")
+        for name in ("context_exchange_rates.json","probability_contrasts.csv","validation_pairings.json","paired_context_differences.json","bootstrap_context_values.json","primary_exchange_rates.png")
     }
     (output_dir/"analysis_manifest.json").write_text(json.dumps(manifest,indent=2,allow_nan=False)+"\n",encoding="utf-8")
     return manifest

@@ -13,6 +13,7 @@ class ModelSpec:
     categorical_features: tuple[str, ...]
     interaction_features: tuple[tuple[str, str], ...] = ()
     estimator: str = "logistic"
+    categorical_reference: bool = False
 
     @property
     def interaction_names(self) -> tuple[str, ...]:
@@ -252,7 +253,10 @@ def fit_model(
     categorical_pipeline = Pipeline(
         [
             ("imputer", SimpleImputer(strategy="most_frequent")),
-            ("encoder", OneHotEncoder(handle_unknown="ignore")),
+            ("encoder", OneHotEncoder(
+                drop="first" if spec.categorical_reference else None,
+                handle_unknown="ignore",
+            )),
         ]
     )
     preprocessing = ColumnTransformer(

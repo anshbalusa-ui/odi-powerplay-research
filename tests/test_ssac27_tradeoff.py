@@ -1,12 +1,16 @@
 from __future__ import annotations
 
+import random
 import unittest
+from unittest.mock import patch
 from odi_powerplay.modeling import predict_model
 
 from odi_powerplay.tradeoff import (
     PRIMARY_INTERACTIONS,
     _fit_primary_model,
     _context_row,
+    _paired_context_differences,
+    _summaries,
     _prepare_rows,
     assert_unlocked_rows,
     draw_match_bootstrap_rows,
@@ -94,6 +98,16 @@ class TradeoffBehaviorTests(unittest.TestCase):
         self.assertAlmostEqual(prepared[1]["_interaction_4"], expected)
         self.assertNotEqual(prepared[1]["_interaction_4"], 0.0)
 
+    def test_interaction_alias_with_existing_run_column_fails_development_gate(self):
+        development = [
+            {"pp_runs": runs, "batting_first": 1}
+            for runs in (20, 28, 37, 49, 61, 72, 85)
+        ]
+        with self.assertRaisesRegex(ValueError, "rank_deficient_development_interactions"):
+            _prepare_rows(development, dev=development,
+                          interactions=(("pp_runs", "batting_first"),),
+                          enforce_interaction_rank=True)
+
 
     def test_three_knot_spline_has_natural_tail_and_rejects_rank_deficiency(self):
         dev = [{"pp_runs": value} for value in (0, 10, 20, 30, 40, 50)]
@@ -118,14 +132,14 @@ class TradeoffBehaviorTests(unittest.TestCase):
             "competition_type": "bilateral_series", "toss_decision": "bat",
             "year": 2023, "split": "development",
         }
+        rng = random.Random(817)
         development = [
-            {**base, "pp_runs": r, "pp_wickets": w, "batting_first": b,
-             "elo_difference": e, "venue_prior_pp_runs_mean": v,
-             "batting_team_won": y}
-            for r, w, b, e, v, y in (
-                (24, 0, 1, -70, 35, 1), (41, 1, 0, 0, 45, 0),
-                (56, 2, 1, 70, 55, 1), (78, 3, 0, -20, 50, 0),
-            )
+            {**base, "pp_runs": rng.randrange(18, 91),
+             "pp_wickets": rng.randrange(4), "batting_first": rng.randrange(2),
+             "elo_difference": rng.randrange(-85, 86),
+             "venue_prior_pp_runs_mean": rng.randrange(29, 75),
+             "batting_team_won": index % 2}
+            for index in range(64)
         ]
         validation = [
             {**base, "split": "validation", "year": 2024, "pp_runs": 95,
@@ -145,6 +159,143 @@ class TradeoffBehaviorTests(unittest.TestCase):
             predict_model(spec_b, model_b, prepared[:1])[0],
             places=12,
         )
+
+    def test_target_wicket_envelope_alone_bounds_supported_root_path(self):
+        rows = []
+        for wickets, high in ((1, 50), (2, 70)):
+            for index in range(20):
+                rows.append({
+                    "match_id": f"{wickets}-{index}", "batting_first": 1,
+                    "pp_wickets": wickets, "pp_runs": 47 if index < 10 else high,
+                    "elo_difference": -0.1 if index % 2 else 0.1,
+                    "venue_prior_pp_runs_mean": 39.9 if index % 2 else 40.1,
+                    "venue_history_available": 1, "batting_team_won_toss": 0,
+                    "venue": "Ground", "rule_era": "modern_2015_plus",
+                    "competition_type": "bilateral_series", "toss_decision": "bat",
+                })
+        context = {
+            "venue": "Ground", "rule_era": "modern_2015_plus",
+            "competition_type": "bilateral_series", "toss_decision": "bat",
+            "batting_team_won_toss": 0, "elo_states": [0.0] * 3,
+            "elo_mean": 0.0, "elo_sd": 1.0, "venue_states": [40.0] * 3,
+            "run_reference": 47, "interaction_operand_mean_sd": {},
+        }
+        probability = lambda row: 0.3 + .01 * row["pp_runs"] - .13 * row["pp_wickets"]
+        with patch("odi_powerplay.tradeoff._prob",
+                   side_effect=lambda _spec, _model, row: probability(row)), patch(
+            "odi_powerplay.tradeoff.predict_model",
+            side_effect=lambda _spec, _model, batch: [probability(row) for row in batch]
+        ):
+            cells, _ = _summaries(rows, context, None, None, PRIMARY_INTERACTIONS)
+        first = next(cell for cell in cells if cell["contrast"] == "primary_1_to_2"
+                     and cell["innings"] == 1)
+        self.assertLess(first["support_start"]["run_max"], 60)
+        self.assertGreater(first["support_target"]["run_max"], 60)
+        self.assertTrue(first["defined"])
+        self.assertAlmostEqual(first["runs_per_wicket"], 13, delta=0.01)
+
+    def test_starting_run_must_be_inside_both_wicket_strata(self):
+        rows = [
+            {
+                "match_id": f"{wickets}-{index}", "batting_first": 1,
+                "pp_wickets": wickets, "pp_runs": 20 + index % 5,
+                "elo_difference": (-1) ** index * .1,
+                "venue_prior_pp_runs_mean": 40 + (-1) ** index * .1,
+                "venue_history_available": 1, "batting_team_won_toss": 0,
+                "venue": "Ground", "rule_era": "modern_2015_plus",
+                "competition_type": "bilateral_series", "toss_decision": "bat",
+            }
+            for wickets in (1, 2) for index in range(20)
+        ]
+        context = {
+            "venue": "Ground", "rule_era": "modern_2015_plus",
+            "competition_type": "bilateral_series", "toss_decision": "bat",
+            "batting_team_won_toss": 0, "elo_states": [0.0] * 3,
+            "elo_mean": 0.0, "elo_sd": 1.0, "venue_states": [40.0] * 3,
+            "run_reference": 100, "interaction_operand_mean_sd": {},
+        }
+        cells, _ = _summaries(rows, context, None, None, PRIMARY_INTERACTIONS)
+        for cell in (row for row in cells if row["contrast"] == "primary_1_to_2"
+                     and row["innings"] == 1):
+            self.assertEqual(cell["reason"], "starting_run_outside_supported_envelope")
+            self.assertNotIn("probability_difference_fixed_run", cell)
+            self.assertFalse(cell["defined"])
+
+    def test_paired_context_intervals_use_identical_refit_and_count_undefined_roots(self):
+        cells = [
+            {
+                "innings": innings, "elo_state": elo, "venue_state": venue,
+                "wickets_from": 1, "contrast": "primary_1_to_2",
+                "probability_difference_fixed_run": -.1,
+                "runs_per_wicket": (14 if venue == 2 else 12)
+                if (innings, elo, venue) in ((1, 3, 2), (1, 3, 3)) else None,
+                "defined": (innings, elo, venue) in ((1, 3, 2), (1, 3, 3)),
+                "reason": None if (innings, elo, venue) in ((1, 3, 2), (1, 3, 3))
+                          else "no_bracketed_nonnegative_root",
+            }
+            for innings in (1, 0) for elo in (1, 2, 3) for venue in (1, 2, 3)
+        ]
+        def key(innings, elo, venue):
+            return innings, elo, venue, 1, "primary_1_to_2"
+        replicate_1 = {
+            key(1, 2, 2): {"fixed_run_probability_difference": .2},
+            key(0, 2, 2): {"fixed_run_probability_difference": .1},
+            key(1, 3, 2): {"fixed_run_probability_difference": .2,
+                            "runs_per_wicket": 16},
+            key(1, 3, 3): {"fixed_run_probability_difference": .1,
+                            "runs_per_wicket": 13},
+        }
+        replicate_2 = {
+            key(1, 2, 2): {"fixed_run_probability_difference": .8},
+            key(0, 2, 2): {"fixed_run_probability_difference": .7},
+            key(1, 3, 2): {"fixed_run_probability_difference": .8,
+                            "runs_per_wicket": 15},
+            key(1, 3, 3): {"fixed_run_probability_difference": .7},
+        }
+        records = _paired_context_differences(
+            cells, [replicate_1, replicate_2], min_root_valid_fraction=.8)
+        self.assertEqual(len(records), 90)
+        innings_difference = next(
+            record for record in records
+            if record["axis"] == "innings"
+            and record["quantity"] == "fixed_run_probability_difference"
+            and record["context_a"] == {"innings": 1, "elo_state": 2, "venue_state": 2}
+            and record["context_b"] == {"innings": 0, "elo_state": 2, "venue_state": 2}
+        )
+        self.assertEqual(innings_difference["requested_replicates"], 2)
+        self.assertEqual(innings_difference["valid_paired_replicates"], 2)
+        self.assertAlmostEqual(innings_difference["lower_95"], .1)
+        self.assertAlmostEqual(innings_difference["upper_95"], .1)
+        root_difference = next(
+            record for record in records
+            if record["axis"] == "venue"
+            and record["quantity"] == "runs_per_wicket"
+            and record["context_a"] == {"innings": 1, "elo_state": 3, "venue_state": 2}
+            and record["context_b"] == {"innings": 1, "elo_state": 3, "venue_state": 3}
+        )
+        self.assertEqual(root_difference["valid_paired_replicates"], 1)
+        self.assertEqual(root_difference["undefined_replicates"], 1)
+        self.assertIsNone(root_difference["lower_95"])
+        self.assertIsNone(root_difference["upper_95"])
+        complete_second = {
+            **replicate_2,
+            key(1, 3, 3): {
+                "fixed_run_probability_difference": .7, "runs_per_wicket": 11
+            },
+        }
+        complete_records = _paired_context_differences(
+            cells, [replicate_1, complete_second], min_root_valid_fraction=.8)
+        complete_root = next(
+            record for record in complete_records
+            if record["axis"] == "venue"
+            and record["quantity"] == "runs_per_wicket"
+            and record["context_a"] == root_difference["context_a"]
+            and record["context_b"] == root_difference["context_b"]
+        )
+        self.assertEqual(complete_root["valid_paired_replicates"], 2)
+        self.assertAlmostEqual(complete_root["estimate"], 2)
+        self.assertAlmostEqual(complete_root["lower_95"], 3.025)
+        self.assertAlmostEqual(complete_root["upper_95"], 3.975)
 
     def test_unlocked_guard_rejects_locked_period_without_reading_outcome(self):
         assert_unlocked_rows([{"match_date": "2024-12-31", "split": "validation"}])
