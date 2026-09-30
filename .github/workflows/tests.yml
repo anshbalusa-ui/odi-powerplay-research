@@ -21,7 +21,10 @@ jobs:
         with:
           python-version: "3.11"
 
-      - name: Run standard-library tests
+      - name: Install project and test dependencies
+        run: python -m pip install -e ".[dev]"
+
+      - name: Run repository tests
         run: python -m unittest discover -s tests -v
 
       - name: Compile Python sources
