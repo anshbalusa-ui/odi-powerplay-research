@@ -1,5 +1,9 @@
 # Transformation and Audit Log
 
+This log documents the earlier broad cohort and source-stated pitch pipeline. It is archival provenance, not a recipe or evidence summary for the current amended-source SSAC27 tradeoff release. Current release: `docs/ssac27_submission_source_of_truth.md`; exact numeric/model details: unchanged `docs/ssac27_numeric_handoff.md`. The current analysis uses 942 matches/1,884 paired innings (development 871/1,742, validation 71/142); pitch is excluded, and no 2025+ outcomes were loaded/scored. Do not treat pipeline stages below as executed current analysis.
+
+## Historical transformation trail (superseded for SSAC27)
+
 This file defines the required transformation trail. Each completed run should produce `artifacts/run_manifest.json` containing the code commit/hash, configuration hash, input checksums, timestamps, package versions, row counts, exclusions, and output checksums.
 
 | Step | Input | Transformation | Output | Required checks |
@@ -20,7 +24,7 @@ This file defines the required transformation trail. Each completed run should p
 | 14 | predictions | calculate metrics and match-cluster bootstrap CIs | metrics tables | fixed seed; failed bootstrap count |
 | 15 | fitted models + evaluation data | calibration and prespecified figures | figures/tables | labels/units; no causal language; pitch variables labeled as source-stated expectations |
 
-## Current preliminary model run
+## Historical preliminary model run (superseded for SSAC27)
 
 The September 2026 reproducible run fits one intercept baseline, six fixed logistic
 specifications, constrained Random Forest, and shallow XGBoost on 2015–2023 development

@@ -1,0 +1,97 @@
+# Pre-match pitch expectation measurement plan — 2026-09-27
+
+## Decision and boundary
+
+Replace the **future** explicit-source-only/human-reconciliation pitch analysis with a **distinct** model-estimated pre-match expected playing environment. Preserve all historical source rows, strict derivative, re-audit registry, human sample, scripts, and prior findings as provenance; do not overwrite them or blend old 0/1/2 fields into the new variables. This protocol amendment precedes any new pitch/outcome analysis. The 2025+ outcome lock remains absolute. After the measurement report and human worksheet are produced, stop for approval; do not fit or interpret pitch interactions.
+
+## Read-only audit synthesis
+
+- `data/manual/pitch_reports_verified.csv` has 243 unique verified source rows; `data/manual/pitch_code_reaudit.csv` flags 14 as `source_unavailable`, leaving 229 source-registry candidates (168 development, 10 validation, 51 locked by match date). Conservative latest-possible publication time excludes two additional date-only records as timing-ambiguous until stronger evidence exists: 227 timing-eligible candidates. This is **not** a live-source availability count. The historical human sample has 46 rows. No derived/raw cohort data is tracked in this clone; match-cohort totals cannot be independently reproduced until the fixed Cricsheet snapshot is regenerated.
+- `AGENTS.md`, `config/study.yaml`, `README.md`, research/pitch/SSAC docs and `scripts/run_pitch_interaction_analysis.py` encode the previous strict construct and human reliability gate. Preserve historical scripts and explicit-source derivative; label them legacy and give the new release separate paths/field names.
+- The verified report contains old codes, prior coder confidence and prose. Never give its raw rows or historical release/registry rows to an assessor. Intake must project strictly approved metadata, check timing against `match_start_times_verified.csv`, use the re-audit status only as a controller-side exclusion gate, and retrieve/verify original pre-match content independently. URL/title can themselves be contaminated: reject result-style or amended pages rather than mask later information.
+- Existing `build_model_table.py` and `modeling.py` have an old pitch-spec path. Do not repurpose it or run it at this gate. The only prespecified possible future primary modifier is categorical `overall_expected_environment`; sparse-cell diagnostics precede deciding a simpler model. No model-table mutation until approval.
+- Existing SSAC/abstract evidence and public-release tools must not be fed new pitch claims before audit. Keep generated full text and agent passes ignored; retain minimal supporting paraphrases and hashes, subject to rights review.
+
+## Architecture and test-first order
+
+1. Freeze `config/pitch_expectation_agent.json` v1: exact fields, categories, evidence, bounded inference, uncertainty, contamination, consensus and fixed thresholds (60/75). Hash exact UTF-8 bytes. Document amendment and no-outcome decision in `docs/pitch_expectation_method.md` and update `AGENTS.md` and `config/study.yaml` to separate old/new scopes.
+2. Write failing unit tests for strict allowlist and source/timing gates, rejection of old labels/outcomes/PP/post-match input, missing/unavailable and contaminated behavior, immutable prompt/source hashes, schema validation, model ID and pass isolation; then implement `src/odi_powerplay/pitch_expectation.py` and `scripts/build_pitch_expectation_inputs.py`. Source ingestion must never read processed outcome files. Preserve source URL/time/access/hash. The absence of a reviewed capture remains `not_retrieved`; actual verified failures yield `unavailable`, never a guessed class.
+3. Write failing tests for independent A/B/C JSONL pass manifests, no cross-pass access, no partial/changed-rubric releases, majority-per-field, three-way uncertainty, median confidence, all four gates, pairwise agreement and degenerate-kappa handling. Implement assessor adapter/script and deterministic consensus/diagnostic/audit-worksheet scripts. Keep every agent rubric and sanitized input identical, source text isolated per source, and output file separate. No fourth agent voting.
+4. Smoke on a tiny source subset: verify provenance, payload exclusion, valid schema, independence and unavailable handling without using outcomes. Only then assess all eligible accessible reports with frozen rubric. If no runnable model invocation or clean source text exists, do **not** fabricate passes or consensus: record a precise blocker and retain reusable pipeline.
+5. Compute measurement-only per-field/overall agreement, category/confidence/provider/year/split and sparse-cell counts, deterministic ~12–15-row human worksheet. No human audit status may be fabricated. If blocked with no complete passes, classify current viability `PITCH_EXPLORATORY_ONLY` with no substantive pitch analysis, and reassess on actual measurement quality when passes exist.
+6. Update documentation to identify the former 46-case recoding requirement as superseded for the **new construct**, not a completed reliability study. Preserve full-cohort artifacts and old analysis scripts. Run focused tests and a changed-path smoke, then full `python -m unittest discover -s tests -v`, `python -m compileall -q src scripts`, `git diff --check`, relevant pre-match source audits. Seek independent review; make small descriptive commits on `ssac27-agent-pitch-expectations`. Do not push/merge without authorization.
+
+## Source and model operational risks
+
+Published timestamps alone do not certify a currently served article is unamended or uncontaminated. The source may be unavailable (one checked verified source URL returned HTTP 404), and the clone does not contain licensed article bodies. Require independently retrieved safe contemporaneous text, reviewed per-source status, and stable content hashes before assessment. Assessment cannot be reproduced from only URL/title or prior coder paraphrases. OMP's subagent task interface does not expose model/reasoning routing or `fork_turns`; record observed model identity only, do not claim a requested model was used. Do not deliver empty or invented passes as complete measurement.
+
+## Operational continuation after the initial blocked handoff
+
+The installed Codex CLI can run an isolated authenticated `gpt-5.6-luna`
+high-reasoning smoke in a temporary working directory, without an
+`OPENAI_API_KEY`; the returned event identifies the requested model route but
+does not expose a separate provider build/version. Do not treat this probe as
+a production assessment.
+
+1. Add a local-only source retrieval stage over only the 227 timing-eligible
+   registry IDs. Fetch article HTML with verified TLS, record retrieval time
+   and SHA-256, parse article-scoped text plus publication/last-modified
+   metadata, and quarantine all pages without demonstrably pre-start article
+   content. Extract only short match-specific condition sentences; reject
+   result/score/live markers **before** any reviewer or assessor sees text.
+   Never bulk-copy source bodies into Git.
+2. Review separate sanitized candidate batches, preserving evidence/source
+   provenance and `needs_review`, `unavailable`, or
+   `contaminated_or_ambiguous` when safe content cannot be demonstrated.
+   Reviewers see no raw HTML, old labels, outcome or peer output. A source with
+   no safe content is not classified.
+3. Add an isolated Codex CLI adapter only if it records the requested model
+   route and CLI version (provider build unavailable), reasoning effort,
+   rubric/input hashes and structured outputs to distinct
+   A/B/C passes. Probe one safe source, then complete all assessable sources
+   with frozen rubric, not selective rows. Assessors run in separate temporary
+   directories and never receive peer pass files.
+4. Run mechanical consensus, measurement-only diagnostics and worksheet;
+   preserve `locked_test_scored=false`, commit code/docs and only rights-cleared
+   minimized release files. No pitch/outcome interpretation before human gate.
+
+## Outcome-blind source continuation (2026-09-28)
+
+The first five-source pass was superseded after an article-body re-screen; no
+prior assessment was selectively reused. Focal article JSON-LD and safe
+sentence-level filtering recovered candidates without relaxing the publication
+and last-modification-before-start rule. Three transient retrieval failures
+were retried using append-only original-source snapshots; sampled HTTP 403
+publishers still denied ordinary access and were not bypassed. Of 227
+timing-eligible registry IDs, 27 screened excerpts passed source review,
+67 are contaminated/ambiguous, 132 need further review, and one is unavailable;
+two additional registry IDs remain timing-ambiguous. The new 27-row hashed
+A/B/C run and 15-row unrated worksheet are local ignored artifacts under
+`artifacts/pitch_expectations/attempt_4/`. Six sources are 2025–26 reports,
+but no 2025+ outcomes were opened; no 2024 validation source passed review.
+Even with category variation, development-category cells are sparse and the
+human evidence audit is incomplete. Keep `PITCH_EXPLORATORY_ONLY` and stop
+before any new pitch/outcome interaction or abstract claim. See
+`docs/pitch_expectation_method.md` for the amended source protocol and exact
+measurement-only counts.
+
+## Frozen-source foundation audit (2026-09-29)
+
+The earlier 27-row model run is superseded. The uniform PE-006-v1
+live-original and two-anchor archived-original rule was applied without
+year/provider/category exceptions. All 227 cached originals and 16 exact
+pre-start archived replays were screened under the hardened focal-article
+parser; 30 independent excerpt reviews passed (26 live, four archived,
+including three 2024 validation records). The frozen source screen and
+sanitized input hashes are recorded in `docs/pitch_expectation_method.md`.
+The old passes cannot be recycled; no new A/B/C assessment or outcome
+modeling was performed during this foundation gate. Stop retrieval after the
+frozen original and prespecified archive paths; unresolved rows retain their
+explicit dispositions. A full new three-pass release and human review are
+separate later gates.
+
+The PE-007 identity decision requires provider-observed response model IDs for
+each fresh pass. The CLI cannot supply those IDs, no API credential is available,
+and the write-once manifest gate rejects requested-route-only passes. Keep
+measurement blocked until a provider-identifiable path is available; even a
+response model alias does not prove a particular provider-side build.

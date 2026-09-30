@@ -20,6 +20,19 @@ PITCH_FIELDS = (
     "two_paced_expected",
     "dew_expected",
 )
+RELIABILITY_FIELDS = PITCH_FIELDS
+RECONCILIATION_FIELDS = (*PITCH_FIELDS, "coder_confidence")
+RECONCILIATION_ID_FIELDS = (
+    "cricsheet_match_id",
+    "sample_sequence",
+    "match_date",
+    "event_name",
+    "competition_type",
+    "venue",
+    "city",
+    "source_url",
+    "source_title",
+)
 ALLOWED_VALUES = {
     "pitch_primary_category": {
         "batting_friendly",
@@ -1062,8 +1075,236 @@ def _verified_pitch_rows_by_match(
                     f"{coding_set}: verified match {match_id} has unsupported "
                     f"{field} value {value!r}"
                 )
+        confidence = str(row.get("coder_confidence", "")).strip()
+        if confidence not in ALLOWED_VALUES["coder_confidence"]:
+            raise ValueError(
+                f"{coding_set}: verified match {match_id} has unsupported "
+                f"coder_confidence value {confidence!r}"
+            )
         verified[match_id] = row
     return len(materialized), verified
+
+def _coding_status_counts(rows: Iterable[dict[str, Any]]) -> dict[str, int]:
+    counts = {
+        "received_rows": 0,
+        "codable_rows": 0,
+        "unavailable_rows": 0,
+        "excluded_rows": 0,
+        "unavailable_or_excluded_rows": 0,
+    }
+    for row in rows:
+        counts["received_rows"] += 1
+        if str(row.get("pre_match_verified", "")).strip() == "1":
+            counts["codable_rows"] += 1
+            continue
+        counts["unavailable_or_excluded_rows"] += 1
+        reason = str(row.get("exclusion_reason", "")).strip().casefold()
+        if "unavailable" in reason or "unable" in reason:
+            counts["unavailable_rows"] += 1
+        else:
+            counts["excluded_rows"] += 1
+    return counts
+
+
+def build_pitch_reliability_disagreements(
+    reference_rows: Iterable[dict[str, Any]],
+    recoded_rows: Iterable[dict[str, Any]],
+) -> list[dict[str, str]]:
+    """Return a raw-preserving paired worksheet for independently coded rows."""
+
+    reference_materialized = list(reference_rows)
+    recoded_materialized = list(recoded_rows)
+    _, reference = _verified_pitch_rows_by_match(
+        reference_materialized,
+        coding_set="reference",
+    )
+    _, recoded = _verified_pitch_rows_by_match(
+        recoded_materialized,
+        coding_set="recoded",
+    )
+    paired_ids = sorted(reference.keys() & recoded.keys())
+    output: list[dict[str, str]] = []
+    reconciliation_fields = (*RECONCILIATION_FIELDS, "short_paraphrased_note")
+    for match_id in paired_ids:
+        reference_coder = str(reference[match_id].get("coder_id", "")).strip()
+        recoded_coder = str(recoded[match_id].get("coder_id", "")).strip()
+        if reference_coder == recoded_coder:
+            raise ValueError(
+                f"match {match_id} was not independently coded: coder_id is "
+                f"{reference_coder!r} in both sets"
+            )
+        first = reference[match_id]
+        second = recoded[match_id]
+        row = {
+            field: str(
+                first.get(field, second.get(field, ""))
+            ).strip()
+            for field in RECONCILIATION_ID_FIELDS
+        }
+        row["sample_sequence"] = str(
+            first.get("sample_sequence", second.get("sample_sequence", ""))
+        ).strip()
+        disagreement_fields: list[str] = []
+        for field in reconciliation_fields:
+            first_value = str(first.get(field, "")).strip()
+            second_value = str(second.get(field, "")).strip()
+            row[f"coder1_{field}"] = first_value
+            row[f"coder2_{field}"] = second_value
+            if field in RELIABILITY_FIELDS and first_value != second_value:
+                disagreement_fields.append(field)
+            row[f"disagreement_{field}"] = (
+                "1" if first_value != second_value else "0"
+            )
+            row[f"reconciled_{field}"] = (
+                first_value if first_value == second_value else ""
+            )
+        row["disagreement_fields"] = ";".join(disagreement_fields)
+        row["disagreement_count"] = str(len(disagreement_fields))
+        row["reconciliation_status"] = (
+            "pending" if disagreement_fields else "no_change_required"
+        )
+        row["reconciled_changed_from_coder1"] = (
+            "0" if not disagreement_fields else ""
+        )
+        row["reconciled_by"] = ""
+        row["reconciled_at_utc"] = ""
+        row["reconciliation_note"] = ""
+        output.append(row)
+    return output
+
+
+def apply_pitch_reconciliation(
+    reference_rows: Iterable[dict[str, Any]],
+    reconciliation_rows: Iterable[dict[str, Any]],
+) -> list[dict[str, Any]]:
+    """Apply completed reconciliation values into a separate pitch release."""
+
+    reference_materialized = list(reference_rows)
+    reconciliation_materialized = list(reconciliation_rows)
+    reconciliation_by_id: dict[str, dict[str, Any]] = {}
+    for row in reconciliation_materialized:
+        match_id = str(row.get("cricsheet_match_id", "")).strip()
+        if not match_id:
+            raise ValueError("reconciliation row is missing cricsheet_match_id")
+        if match_id in reconciliation_by_id:
+            raise ValueError(f"duplicate reconciliation match ID {match_id}")
+        reconciliation_by_id[match_id] = row
+
+    output: list[dict[str, Any]] = []
+    for reference in reference_materialized:
+        match_id = str(reference.get("cricsheet_match_id", "")).strip()
+        reconciliation = reconciliation_by_id.get(match_id)
+        if reconciliation is None:
+            untouched = dict(reference)
+            untouched["reconciliation_release"] = "1"
+            untouched["reconciliation_status"] = (
+                "not_double_coded"
+                if str(reference.get("pre_match_verified", "")).strip() == "1"
+                else ""
+            )
+            untouched["reconciliation_changed_from_coder1"] = "0"
+            untouched["reconciled_by"] = ""
+            untouched["reconciled_at_utc"] = ""
+            untouched["reconciliation_note"] = ""
+            output.append(untouched)
+            continue
+        status = str(reconciliation.get("reconciliation_status", "")).strip()
+        if status not in {"pending", "no_change_required", "completed"}:
+            raise ValueError(
+                f"{match_id}: unsupported reconciliation_status {status!r}"
+            )
+        if status == "pending":
+            if not str(reconciliation.get("reconciled_by", "")).strip():
+                raise ValueError(f"{match_id}: pending reconciliation is missing reconciled_by")
+            if _parse_timestamp(reconciliation.get("reconciled_at_utc")) is None:
+                raise ValueError(
+                    f"{match_id}: pending reconciliation is missing reconciled_at_utc"
+                )
+            if not str(reconciliation.get("reconciliation_note", "")).strip():
+                raise ValueError(
+                    f"{match_id}: pending reconciliation is missing reconciliation_note"
+                )
+        merged = dict(reference)
+        changed = False
+        for field in PITCH_FIELDS:
+            reconciled_value = str(
+                reconciliation.get(f"reconciled_{field}", "")
+            ).strip()
+            if reconciled_value not in ALLOWED_VALUES[field]:
+                raise ValueError(
+                    f"{match_id}: unsupported reconciled {field} value "
+                    f"{reconciled_value!r}"
+                )
+            original_value = str(reference.get(field, "")).strip()
+            if reconciled_value != original_value:
+                changed = True
+            merged[field] = reconciled_value
+        merged["reconciliation_status"] = (
+            "completed" if status == "pending" else status
+        )
+        merged["reconciliation_changed_from_coder1"] = "1" if changed else "0"
+        merged["reconciled_by"] = str(
+            reconciliation.get("reconciled_by", "")
+        ).strip()
+        merged["reconciled_at_utc"] = str(
+            reconciliation.get("reconciled_at_utc", "")
+        ).strip()
+        merged["reconciliation_note"] = str(
+            reconciliation.get("reconciliation_note", "")
+        ).strip()
+        merged["reconciliation_release"] = "1"
+        output.append(merged)
+
+    unknown_ids = set(reconciliation_by_id) - {
+        str(row.get("cricsheet_match_id", "")).strip() for row in reference_materialized
+    }
+    if unknown_ids:
+        raise ValueError(
+            f"reconciliation contains a match outside the reference release: "
+            f"{min(unknown_ids)}"
+        )
+    return output
+
+
+def validate_reconciled_pitch_rows(
+    rows: Iterable[dict[str, Any]],
+) -> list[dict[str, str]]:
+    """Require a separately materialized reconciliation release before modeling."""
+
+    issues: list[dict[str, str]] = []
+    allowed_statuses = {"completed", "no_change_required", "not_double_coded"}
+    for row in rows:
+        if str(row.get("pre_match_verified", "")).strip() != "1":
+            continue
+        match_id = str(row.get("cricsheet_match_id", "")).strip()
+        if str(row.get("reconciliation_release", "")).strip() != "1":
+            issues.append(
+                {
+                    "cricsheet_match_id": match_id,
+                    "field": "reconciliation_release",
+                    "message": "verified pitch row is not from a reconciliation release",
+                }
+            )
+        status = str(row.get("reconciliation_status", "")).strip()
+        if status not in allowed_statuses:
+            issues.append(
+                {
+                    "cricsheet_match_id": match_id,
+                    "field": "reconciliation_status",
+                    "message": f"unsupported final reconciliation status: {status!r}",
+                }
+            )
+        for field in PITCH_FIELDS:
+            value = str(row.get(field, "")).strip()
+            if value not in ALLOWED_VALUES[field]:
+                issues.append(
+                    {
+                        "cricsheet_match_id": match_id,
+                        "field": field,
+                        "message": f"unsupported final pitch value: {value!r}",
+                    }
+                )
+    return issues
 
 
 def _categorical_agreement(
@@ -1120,6 +1361,30 @@ def _categorical_agreement(
         "cohen_kappa_weighting": weighting,
     }
 
+def _agreement_with_unstated(
+    first: list[str],
+    second: list[str],
+    metrics: dict[str, int | float | str | None],
+) -> dict[str, int | float | str | None]:
+    paired = len(first)
+    both_unstated = sum(not left and not right for left, right in zip(first, second, strict=True))
+    one_unstated = sum(bool(left) != bool(right) for left, right in zip(first, second, strict=True))
+    agreement_count = int(metrics["agreement_count"])
+    return {
+        "both_coded_pairs": int(metrics["comparable_pairs"]),
+        "both_unstated_pairs": both_unstated,
+        "one_unstated_pairs": one_unstated,
+        "missing_either": paired - int(metrics["comparable_pairs"]),
+        "unstated_agreement_pct": (
+            round(100 * both_unstated / paired, 6) if paired else None
+        ),
+        "agreement_pct_including_shared_unstated": (
+            round(100 * (agreement_count + both_unstated) / paired, 6)
+            if paired
+            else None
+        ),
+    }
+
 
 def pitch_intercoder_reliability(
     reference_rows: Iterable[dict[str, Any]],
@@ -1132,12 +1397,16 @@ def pitch_intercoder_reliability(
     if not 0 < minimum_double_coded_fraction <= 1:
         raise ValueError("minimum_double_coded_fraction must be in (0, 1]")
 
+    reference_materialized = list(reference_rows)
+    recoded_materialized = list(recoded_rows)
+    reference_status = _coding_status_counts(reference_materialized)
+    recoded_status = _coding_status_counts(recoded_materialized)
     reference_received, reference = _verified_pitch_rows_by_match(
-        reference_rows,
+        reference_materialized,
         coding_set="reference",
     )
     recoded_received, recoded = _verified_pitch_rows_by_match(
-        recoded_rows,
+        recoded_materialized,
         coding_set="recoded",
     )
     paired_ids = sorted(reference.keys() & recoded.keys())
@@ -1153,8 +1422,21 @@ def pitch_intercoder_reliability(
     field_metrics: dict[str, dict[str, int | float | str | None]] = {}
     total_comparable = 0
     total_agreements = 0
+    total_both_unstated = 0
+    total_disagreement_rows = 0
+    total_disagreement_fields = 0
     ordinal_fields = {"batting_ease", "pace_seam_support", "spin_support"}
-    for field in PITCH_FIELDS:
+    binary_fields = {"two_paced_expected", "dew_expected"}
+    for match_id in paired_ids:
+        disagreements = sum(
+            str(reference[match_id].get(field, "")).strip()
+            != str(recoded[match_id].get(field, "")).strip()
+            for field in RELIABILITY_FIELDS
+        )
+        total_disagreement_fields += disagreements
+        total_disagreement_rows += int(disagreements > 0)
+
+    for field in RELIABILITY_FIELDS:
         first = [str(reference[match_id].get(field, "")).strip() for match_id in paired_ids]
         second = [str(recoded[match_id].get(field, "")).strip() for match_id in paired_ids]
         metrics = _categorical_agreement(
@@ -1162,15 +1444,27 @@ def pitch_intercoder_reliability(
             second,
             ordered_labels=("0", "1", "2") if field in ordinal_fields else None,
         )
+        missing_metrics = _agreement_with_unstated(first, second, metrics)
         comparable = int(metrics["comparable_pairs"])
+        both_unstated = int(missing_metrics["both_unstated_pairs"])
         field_metrics[field] = {
             **metrics,
+            **missing_metrics,
             "paired_matches": len(paired_ids),
-            "missing_either": len(paired_ids) - comparable,
-            "completion_pct": (round(100 * comparable / len(paired_ids), 6) if paired_ids else 0.0),
+            "completion_pct": (
+                round(100 * comparable / len(paired_ids), 6) if paired_ids else 0.0
+            ),
+            "agreement_scale": (
+                "ordinal"
+                if field in ordinal_fields
+                else "binary"
+                if field in binary_fields
+                else "nominal"
+            ),
         }
         total_comparable += comparable
         total_agreements += int(metrics["agreement_count"])
+        total_both_unstated += both_unstated
 
     reference_count = len(reference)
     paired_count = len(paired_ids)
@@ -1179,6 +1473,8 @@ def pitch_intercoder_reliability(
     return {
         "reference_rows_received": reference_received,
         "recoded_rows_received": recoded_received,
+        "reference_status_counts": reference_status,
+        "recoded_status_counts": recoded_status,
         "reference_verified_matches": reference_count,
         "recoded_verified_matches": len(recoded),
         "paired_verified_matches": paired_count,
@@ -1193,10 +1489,29 @@ def pitch_intercoder_reliability(
         "meets_minimum_double_coding_target": (
             reference_count > 0 and paired_count >= minimum_pairs
         ),
+        "paired_rows_with_disagreement": total_disagreement_rows,
+        "total_disagreement_fields": total_disagreement_fields,
         "overall_comparable_items": total_comparable,
         "overall_agreement_count": total_agreements,
         "overall_agreement_pct": (
-            round(100 * total_agreements / total_comparable, 6) if total_comparable else None
+            round(100 * total_agreements / total_comparable, 6)
+            if total_comparable
+            else None
+        ),
+        "overall_shared_unstated_items": total_both_unstated,
+        "overall_unstated_agreement_pct": (
+            round(100 * total_both_unstated / (len(RELIABILITY_FIELDS) * paired_count), 6)
+            if paired_count
+            else None
+        ),
+        "overall_agreement_pct_including_shared_unstated": (
+            round(
+                100 * (total_agreements + total_both_unstated)
+                / (len(RELIABILITY_FIELDS) * paired_count),
+                6,
+            )
+            if paired_count
+            else None
         ),
         "fields": field_metrics,
     }

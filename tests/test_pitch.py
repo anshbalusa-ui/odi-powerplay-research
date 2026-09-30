@@ -11,6 +11,7 @@ sys.path.insert(0, str(ROOT / "src"))
 from odi_powerplay.pitch import (
     PITCH_QUEUE_FIELDS,
     PITCH_SET_ASIDE_FIELDS,
+    apply_pitch_reconciliation,
     build_compliant_pitch_release,
     apply_pitch_reaudit,
     build_blinded_pitch_reliability_sample,
@@ -18,6 +19,7 @@ from odi_powerplay.pitch import (
     build_pitch_collection_status,
     build_pitch_set_aside,
     build_pitch_collection_queue,
+    build_pitch_reliability_disagreements,
     espn_link_candidate,
     espn_linkage_summary,
     merge_pitch_conditions,
@@ -26,8 +28,9 @@ from odi_powerplay.pitch import (
     pitch_source_provider_summary,
     select_next_pitch_batch,
     validate_espn_linkage_rows,
-    validate_pitch_rows,
     validate_pitch_reaudit_registry,
+    validate_pitch_rows,
+    validate_reconciled_pitch_rows,
 )
 
 
@@ -672,6 +675,63 @@ class PitchPipelineTests(unittest.TestCase):
         self.assertEqual(batting_ease["cohen_kappa_weighting"], "linear")
         self.assertEqual(summary["fields"]["dew_expected"]["comparable_pairs"], 0)
         self.assertIsNone(summary["fields"]["dew_expected"]["cohen_kappa"])
+        self.assertEqual(summary["reference_status_counts"]["codable_rows"], 4)
+        self.assertEqual(summary["recoded_status_counts"]["unavailable_or_excluded_rows"], 0)
+        self.assertEqual(primary["both_unstated_pairs"], 0)
+        self.assertEqual(summary["fields"]["dew_expected"]["both_unstated_pairs"], 4)
+        self.assertEqual(summary["fields"]["dew_expected"]["unstated_agreement_pct"], 100.0)
+
+    def test_reliability_disagreement_worksheet_preserves_raw_and_applies_separately(
+        self,
+    ) -> None:
+        reference = self.verified_pitch_row()
+        recoded = {**reference, "coder_id": "coder-b", "pitch_primary_category": "spin"}
+
+        worksheet = build_pitch_reliability_disagreements([reference], [recoded])
+
+        self.assertEqual(len(worksheet), 1)
+        row = worksheet[0]
+        self.assertEqual(row["coder1_pitch_primary_category"], "pace_seam")
+        self.assertEqual(row["coder2_pitch_primary_category"], "spin")
+        self.assertEqual(row["disagreement_fields"], "pitch_primary_category")
+        self.assertEqual(row["reconciliation_status"], "pending")
+        self.assertEqual(row["reconciled_pitch_primary_category"], "")
+        row.update(
+            {
+                "reconciled_pitch_primary_category": "balanced",
+                "reconciliation_status": "completed",
+                "reconciled_by": "arbiter",
+                "reconciled_at_utc": "2026-09-20T00:00:00+00:00",
+                "reconciliation_note": "Source wording supports a balanced code.",
+            }
+        )
+
+        applied = apply_pitch_reconciliation([reference], [row])
+
+        self.assertEqual(applied[0]["pitch_primary_category"], "balanced")
+        self.assertEqual(applied[0]["reconciliation_changed_from_coder1"], "1")
+        self.assertEqual(applied[0]["reconciled_by"], "arbiter")
+        self.assertEqual(recoded["pitch_primary_category"], "spin")
+        self.assertEqual(applied[0]["reconciliation_release"], "1")
+        self.assertEqual(validate_reconciled_pitch_rows(applied), [])
+        self.assertTrue(validate_reconciled_pitch_rows([reference]))
+
+    def test_reliability_counts_unavailable_or_excluded_rows(self) -> None:
+        reference = self.verified_pitch_row()
+        recoded = {**reference, "coder_id": "coder-b"}
+        excluded = {
+            **reference,
+            "cricsheet_match_id": "unavailable-match",
+            "pre_match_verified": "0",
+            "coder_id": "",
+            "exclusion_reason": "source unavailable",
+        }
+
+        summary = pitch_intercoder_reliability([reference, excluded], [recoded])
+
+        self.assertEqual(summary["reference_status_counts"]["codable_rows"], 1)
+        self.assertEqual(summary["reference_status_counts"]["unavailable_rows"], 1)
+        self.assertEqual(summary["reference_status_counts"]["excluded_rows"], 0)
 
     def test_intercoder_reliability_requires_independent_coders(self) -> None:
         reference = self.verified_pitch_row()

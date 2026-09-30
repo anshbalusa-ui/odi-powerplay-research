@@ -1,0 +1,199 @@
+{
+  "analysis_scope": "amended_source_unlocked_2015_2024_only",
+  "artifact_version": 2,
+  "canonical_handoff": "docs/ssac27_numeric_handoff.md",
+  "cohort": {
+    "development": {
+      "matches": 871,
+      "rows": 1742
+    },
+    "matches": 942,
+    "rows": 1884,
+    "validation": {
+      "matches": 71,
+      "rows": 142
+    }
+  },
+  "evidence_ledger": [
+    {
+      "claim": "942 clean men's ODIs / 1,884 paired innings (871 development; 71 untouched 2024 validation).",
+      "claim_id": "cohort",
+      "source_artifact": "artifacts/ssac27_tradeoff/analysis_manifest.json",
+      "source_selector": "cohort and split counts",
+      "status": "allowed"
+    },
+    {
+      "claim": "At 47 runs and 1\u21922 wickets, 3 of 18 contexts have finite roots: 14.143 (4.124\u201318.450; 735/1,000), 13.248 (4.713\u201317.481; 758/1,000), and 29.763 (13.844\u201330.934; 563/1,000); 15 are undefined, not zero.",
+      "claim_id": "exchange_rate",
+      "source_artifact": "artifacts/ssac27_tradeoff/primary_model_metrics.json",
+      "source_selector": "primary_defined_roots",
+      "status": "allowed_associational"
+    },
+    {
+      "claim": "2024 six-term primary ROC-AUC 0.6626, log loss 0.6726; additive 0.6737 / 0.6650; four-term 0.6784 / 0.6669. The primary did not improve AUC or log loss.",
+      "claim_id": "validation",
+      "source_artifact": "artifacts/ssac27_tradeoff/validation_metrics.json",
+      "source_selector": "three frozen model metrics",
+      "status": "allowed_associational"
+    },
+    {
+      "claim": "45 paired comparisons / 90 status rows; only two point root differences, neither with a valid paired CI under the 80% joint-refit rule.",
+      "claim_id": "paired_context",
+      "source_artifact": "artifacts/ssac27_tradeoff/paired_context_differences.json",
+      "source_selector": "paired root-difference statuses",
+      "status": "allowed_with_caveat"
+    },
+    {
+      "claim": "At neutral Elo and median earlier-date venue scoring, 47 runs and 1\u21922 wickets: batting first 0.5046\u21920.3995 (\u221210.505 points; interval \u221215.473 to \u22127.215), chase 0.5578\u21920.4009 (\u221215.690; \u221220.614 to \u221212.698).",
+      "claim_id": "neutral_fixed_run",
+      "source_artifact": "artifacts/ssac27_tradeoff/context_exchange_rates.json",
+      "source_selector": "primary_1_to_2; elo_state=2; venue_state=2; innings=1,0",
+      "status": "allowed_associational"
+    },
+    {
+      "claim": "Neutral first-minus-chase wicket-loss probability contrast +5.185 percentage points (paired interval \u22120.457 to +11.182); interval includes zero, so no established innings-order difference.",
+      "claim_id": "neutral_paired",
+      "source_artifact": "artifacts/ssac27_tradeoff/paired_context_differences.json",
+      "source_selector": "innings; fixed_run_probability_difference; elo_state=2; venue_state=2",
+      "status": "allowed_with_caveat"
+    },
+    {
+      "claim": "Independent statistical QA passed; 1,000/1,000 development match refits and 2,000/2,000 validation match resamples per model, with no 2025+ outcome records read.",
+      "claim_id": "bootstrap_qa",
+      "source_artifact": "artifacts/ssac27_tradeoff/statistical_qa.json",
+      "source_selector": "pass; development_bootstrap; validation_bootstrap_counts_reconcile; locked_rows_read",
+      "status": "allowed"
+    },
+    {
+      "claim": "152 2025+ registry IDs were counted from metadata only; no such match records or outcomes opened, fit or scored.",
+      "claim_id": "locked_period",
+      "source_artifact": "artifacts/ssac27_tradeoff/statistical_qa.json",
+      "source_selector": "raw_manifest.locked_registry_match_count_metadata_only; locked_rows_read",
+      "status": "allowed_with_caveat"
+    },
+    {
+      "claim": "Any 2025+ match-outcome result or locked-test score is prohibited.",
+      "claim_id": "locked_outcome_result",
+      "source_artifact": "artifacts/ssac27_tradeoff/statistical_qa.json",
+      "source_selector": "locked_data_audit_scored; locked_rows_read",
+      "status": "blocked"
+    },
+    {
+      "claim": "Pitch\u2013outcome results are blocked: pitch is excluded; model-estimated pre-match expected playing environment is unapproved for outcome analysis.",
+      "claim_id": "pitch",
+      "source_artifact": "docs/ssac27_numeric_handoff.md",
+      "source_selector": "claim boundary",
+      "status": "blocked"
+    },
+    {
+      "claim": "Historical source-stated pre-match pitch effects are a separate re-audited derivative, not this model's pitch interaction.",
+      "claim_id": "historical_pitch",
+      "source_artifact": "docs/ssac27_numeric_handoff.md",
+      "source_selector": "claim boundary",
+      "status": "historical_only"
+    }
+  ],
+  "locked_test_outcomes_loaded": false,
+  "locked_test_scored": false,
+  "neutral_fixed_run_contrasts": {
+    "batting_first": {
+      "ci_lower": -0.15473425908035582,
+      "ci_upper": -0.07214577671968256,
+      "difference": -0.10505339847448503,
+      "probability_from": 0.5045760059800619,
+      "probability_to": 0.3995226075055769,
+      "valid_refits": 1000
+    },
+    "chase": {
+      "ci_lower": -0.20613577372494502,
+      "ci_upper": -0.12698082377423295,
+      "difference": -0.1569041066690507,
+      "probability_from": 0.5577578925254442,
+      "probability_to": 0.4008537858563935,
+      "valid_refits": 1000
+    }
+  },
+  "neutral_paired_context_difference": {
+    "estimate": 0.051850708194565664,
+    "lower_95": -0.004565454865029575,
+    "upper_95": 0.11181689916839137,
+    "valid_paired_replicates": 1000
+  },
+  "pitch_measurement": {
+    "model_estimated_expected_environment_outcome_analysis_approved": false,
+    "pitch_interaction_claim_allowed": false
+  },
+  "primary_estimand": {
+    "contexts_total": 18,
+    "defined_roots": 3,
+    "roots": [
+      {
+        "ci_lower": 4.713,
+        "ci_upper": 17.481,
+        "runs_per_wicket": 13.248,
+        "valid_refits": 758
+      },
+      {
+        "ci_lower": 4.124,
+        "ci_upper": 18.45,
+        "runs_per_wicket": 14.143,
+        "valid_refits": 735
+      },
+      {
+        "ci_lower": 13.844,
+        "ci_upper": 30.934,
+        "runs_per_wicket": 29.763,
+        "valid_refits": 563
+      }
+    ],
+    "starting_runs": 47,
+    "undefined_roots": 15,
+    "wickets_from": 1,
+    "wickets_to": 2
+  },
+  "release_manifest_sha256": "99574bd3b67b20ee68face49ad58e155c08811b5f6229a9e7b2084b3effdcdcf",
+  "source_artifacts": {
+    "artifacts/ssac27_tradeoff/analysis_manifest.json": "5c2a86f8fe549d30d0874a0d598d41334cbdfc308a7e44c9f56d7ef4d75edeee",
+    "artifacts/ssac27_tradeoff/context_exchange_rates.json": "13bae562755cbc4c9317b3bfd8a807d6f902f3937a29501f0337f91988582ac4",
+    "artifacts/ssac27_tradeoff/paired_context_differences.json": "98f5881dd74136eabcd8fdcdd90cd5a3ce829b547000ef4da40b51b81df7eee7",
+    "artifacts/ssac27_tradeoff/primary_model_metrics.json": "6bbd287f7797eb04f6e746cf0915b8a9c0054cdd1fdaf3d9b1e3568059bac813",
+    "artifacts/ssac27_tradeoff/release_manifest.json": "99574bd3b67b20ee68face49ad58e155c08811b5f6229a9e7b2084b3effdcdcf",
+    "artifacts/ssac27_tradeoff/sensitivity_summary.json": "2bc6dda40ca1d4fe8f1a609fe1515da8cde7833253751af66bdbbe4576161c03",
+    "artifacts/ssac27_tradeoff/statistical_qa.json": "69b8757d311ba4f004d4e04d25596a34c595c53458437a9eabd523e9539e86c6",
+    "artifacts/ssac27_tradeoff/validation_metrics.json": "1ca53651d4a014bad6d247378c167af162c9559f8979755ad7c6d7cd495c662b",
+    "docs/ssac27_numeric_handoff.md": "9c4fffc1bfb1c75734c9546f2a47ab4de9a9de7de74811a2e3ce64160ec4c909"
+  },
+  "title": "What Is a Powerplay Wicket Worth? Context-Dependent Run-Wicket Tradeoffs in ODI Cricket",
+  "validation_models": {
+    "additive_benchmark": {
+      "accuracy": 0.5986,
+      "brier_score": 0.2335,
+      "log_loss": 0.665,
+      "roc_auc": 0.6737,
+      "roc_auc_ci": [
+        0.5554,
+        0.7764
+      ]
+    },
+    "four_term_interaction": {
+      "accuracy": 0.6127,
+      "brier_score": 0.2334,
+      "log_loss": 0.6669,
+      "roc_auc": 0.6784,
+      "roc_auc_ci": [
+        0.5606,
+        0.781
+      ]
+    },
+    "six_term_primary": {
+      "accuracy": 0.5986,
+      "brier_score": 0.2368,
+      "log_loss": 0.6726,
+      "roc_auc": 0.6626,
+      "roc_auc_ci": [
+        0.5461,
+        0.7681
+      ]
+    }
+  }
+}

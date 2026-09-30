@@ -1,5 +1,12 @@
 # SSAC27 Submission Plan
 
+## Approved current abstract and evidence boundary (2026-09-29)
+
+The submission-ready abstract is `docs/ssac27_abstract_skeleton.md` (title plus body under 499 words; required Introduction, Methods, Results, Conclusion headings; no more than two assets). Its title and technical/plain-language question match `docs/research_question_and_introduction.md`. It reports 942 matches/1,884 paired innings from the corrected amended-source 2015–2024 release, 3 supported finite roots among 18 contexts (15 undefined, not zero), current 2024 validation comparisons, and the neutral paired probability contrast whose CI includes zero. The estimates are observational; there is no universal wicket price. Pitch is excluded and no pitch claim is made. No 2025+ outcomes were loaded or scored.
+
+Current evidence/navigation: `docs/ssac27_submission_source_of_truth.md`. Exact numeric/model specification: unchanged `docs/ssac27_numeric_handoff.md`. The September 29 amended archive is the available source of truth; original September 10 archive is unavailable and unreproduced.
+
+
 ## Role in the project
 
 The MIT Sloan Sports Analytics Conference 2027 Research Papers Competition is a near-term milestone for this research, not its only target. The broader ODI paper will continue after the abstract deadline and can expand the sample, features, and sensitivity analyses.
@@ -21,32 +28,38 @@ Official page: https://www.sloansportsconference.com/research-paper-competition
 
 Recheck the page immediately before submission in case instructions change.
 
-## Focused contribution
+## Focused contribution (revised 2026-09-29)
 
-Avoid framing the study as only another match-winner classifier. The stronger applied question is:
+The current SSAC27 primary result is the observational, context-dependent
+first-ten-over **run–wicket exchange rate**, numerically solved on the modeled
+match-win probability scale within development-data support. It uses the
+942-match outcome-unlocked amended-source 2015–2024 cohort, with 2024 held
+for temporal validation and both innings clustered by match. The original
+September 10 fixed ZIP is absent; no 2025+ match outcome is opened or scored.
+The source amendment, exact estimand, support/uncertainty and stop rules are in
+`docs/ssac27_powerplay_tradeoff_protocol.md`. Older pitch-centered milestones,
+historical model numbers and fixed-ZIP cohort claims below are **historical
+planning/provenance**, not completed results of the new primary analysis.
+Pitch measurement is excluded from the current submission analysis; no pitch-effect claim is approved. Any future pitch analysis would require a separately approved design and evidence gate. Current work does not estimate pitch interactions.
 
-> What makes a successful ODI powerplay after accounting for opposition strength and match context, and—among matches with verified pre-match reports—when do **pitch effects explicitly stated by those sources** change the best balance of aggression and wicket preservation?
+**Historical measurement amendment (2026-09-27):** The text below describes the earlier pitch-centered submission proposal, not the current SSAC27 analysis. The distinct future model-estimated pre-match expected playing environment method remains documented in `docs/pitch_expectation_method.md`, but no measurement approval or pitch–outcome finding is claimed here.
 
-The practical output is one coherent framework rather than two unrelated findings: a full-cohort description of successful powerplay profiles and a prespecified subgroup analysis using standardized source-stated pre-match pitch expectations.
+## Historical pitch-centered minimum viable SSAC analysis (superseded)
 
-**Measurement rule:** the project performs no independent pitch diagnosis. It does not infer spin from dryness, seam from grass/moisture, batting ease from hardness/flatness, or slow/two-paced behavior from wear/usage unless the eligible pre-match source explicitly states that expected playing effect. Physical surface descriptions may be retained as provenance only.
-
-## Minimum viable SSAC analysis
-
-### Required
+### Originally required under the prior pitch-primary plan
 
 - auditable Cricsheet extraction for all eligible men's ODIs from 2015 through the fixed data snapshot;
 - competition-type labels, with World Cups used only as a subgroup check;
 - complete cohort/exclusion flow;
 - leakage-safe pre-match Elo difference;
 - innings order and toss context;
-- verified source timing and a lean, source-audited, match-specific representation of **explicitly stated pre-match pitch effects**;
-- explicit-source-only re-audit of every legacy pitch code used in the final analysis;
+- verified source timing and an independently reviewed original-text, outcome-blind measurement of pre-match expected conditions;
+- frozen new rubric, three independent passes, mechanical consensus and small human evidence audit before any new pitch-outcome interpretation;
 - baseline plus interpretable logistic model;
 - one nonlinear challenger only after the logistic analysis is stable;
 - chronological evaluation with development through 2023, validation in 2024, and 2025 through the fixed 2026 snapshot held out;
 - ROC-AUC, log loss, Brier score, calibration, and match-clustered confidence intervals;
-- one source-stated-pitch-effect interaction figure if re-audit/reliability/coverage gates pass;
+- one expected-environment interaction figure only if new measurement viability, human approval and unlocked outcome analysis justify it;
 - one compact model-performance/calibration table or figure;
 - public repository with code, data-building instructions, permitted data, manifests, and results.
 
@@ -61,7 +74,7 @@ The practical output is one coherent framework rather than two unrelated finding
 
 Deferral means sequencing, not abandonment.
 
-## Current readiness gate
+## Historical readiness gate (not the revised primary result)
 
 As of the reproducible September 2026 run, the Cricsheet cohort, automated metric
 audit, pre-match team strength, prior-20 venue histories covering 997 of 1,094
@@ -80,22 +93,39 @@ re-audit is complete: 169 legacy rows are `passed_revised`, 45 are
 Independent double coding remains incomplete. The 2025–2026 locked test remains
 correctly unscored.
 
-Go/no-go decision: the full-cohort powerplay result and verified-pitch-report
-subgroup must remain visibly nested under one research question. Do not submit an
-interaction estimate as a final reliability-cleared finding until:
+Go/no-go decision: retain the full-cohort result as Finding 1. Historical
+human coding and reconciliation remain incomplete; the legacy pitch fit is not
+a final finding. The new expected-environment construct was amended **before**
+final pitch-outcome interpretation. Its measurement gate requires reviewed
+pre-match source text, blinded A/B/C assessments, frozen prompt and hashes,
+mechanical agreement and confidence diagnostics, sparse development/2024
+category counts and a human sanity-audit worksheet. **Stop for human approval
+at that gate.** No pitch Finding 2 or pitch figure is promised without a
+viable measured sample and subsequent unlocked analysis. The 2025+ outcome
+lock cannot compensate for missing source content.
 
-1. the compliant source-stated reference set is frozen;
-2. independent reliability passes on at least 20% of that set;
-3. coder reconciliation and agreement reporting are complete; and
-4. the ten-match pitch-subgroup validation design is judged adequate or replaced by
-   a prespecified alternative.
+## Historical pre-reliability prep run (superseded)
 
-Until then, retain the full-cohort result as Finding 1 and label the compliant
-pitch fit as a reproducible checkpoint. Never manufacture a pitch effect from
-physical surface wording, venue reputation, live/post-match commentary, or later
-outcomes, and never unlock test outcomes to compensate for missing pitch data.
+The reproducible prep branch now has canonical, machine-readable outputs for the
+unlocked 2015–2024 cohort: 942 matches and 1,884 team-innings, with 71 matches
+and 142 innings in 2024 validation. The fixed runs-and-wickets benchmark reached
+validation ROC-AUC 0.740 (95% match-clustered interval 0.642–0.822); the
+context-plus-powerplay model reached 0.708 and the prespecified interaction model
+0.710. A fixed model-standardized contrast was +0.082 across 38 to 57 runs at
+two wickets and −0.126 across one to two wickets at 47 runs; both are
+observational, not causal.
 
-## September 5–October 1 sprint
+The branch also adds an independent unlocked-cohort audit, exact pitch sparsity
+tables, a raw-preserving reliability/reconciliation workflow, a gated pitch
+interaction plan with reconciled-release hash provenance, a 499-word abstract
+validator, and a validated abstract skeleton. Pitch interaction estimates remain
+blocked: the outcome-blind pitch subset has 178 unlocked matches, 150 reported
+sparse cells at the diagnostic threshold, and no submitted second-coder
+judgments or completed reconciliation. The locked 2025+ outcomes remain
+unscored and absent from these evidence outputs.
+
+
+## Historical September 5–October 1 sprint plan
 
 | Dates | Deliverable | Go/no-go test |
 |---|---|---|
@@ -108,18 +138,21 @@ outcomes, and never unlock test outcomes to compensate for missing pitch data.
 | Sep 29–30 | write and revise sub-500-word abstract | all claims backed by frozen outputs |
 | Oct 1 | final rules check and submit before 11:59 p.m. ET | repository public and links verified |
 
-## Scope fallback ladder
+## Historical scope fallback ladder (not current approved scope)
 
-If compliant pitch-effect coverage becomes the bottleneck, reduce complexity transparently rather than inferring missing effects:
+If new expectation measurement or sample viability is the bottleneck, reduce scope transparently rather than inventing coverage:
 
-1. simplify the source-stated effect code to a smaller, high-reliability set of dimensions;
-2. use only reports/codes that pass timing and explicit-source-support checks;
-3. define a prespecified, stratified pitch-report subgroup that spans years and competition types;
-4. make individual sparse source-stated dimensions secondary while retaining the higher-coverage compliant primary source-stated category.
+1. keep the full-cohort powerplay result as Finding 1 if new expectation measurement is not viable;
+2. after independent model-assessment stability and source-content review,
+   simplify the new categorical modifier only on pre-outcome semantic/sparse
+   cell evidence, never on appealing associations;
+3. treat the pitch extension as exploratory when the new 2024 validation or
+   development categories cannot support prespecified interactions.
 
-Never fill missing pre-match pitch effects using post-match reports, venue history, or researcher interpretation of physical pitch descriptions.
+Never fill missing expected conditions using post-match reports, venue
+history, old pitch labels, or unsupported researcher inference.
 
-## Abstract shell
+## Historical abstract shell (superseded by `docs/ssac27_abstract_skeleton.md`)
 
 ### Introduction
 
@@ -127,21 +160,21 @@ State the industry problem, the inadequacy of raw powerplay benchmarks, and the 
 
 ### Methods
 
-State the cohort and sources, unit of analysis, leakage cutoff, contextual variables, chronological split, model types, and calibration/uncertainty methods. Explicitly state that final pitch variables are standardized from **source-stated pre-match expectations**, not independent researcher assessment of the surface.
+State the cohort, sources, unit of analysis, leakage cutoff, contextual variables, chronological split, model types, and calibration/uncertainty methods. If pitch results are actually approved, call their variables **model-estimated pre-match expected playing conditions**, not observed or true pitch behavior.
 
 ### Results
 
-Report a pitch-subgroup result only as a reproducibility checkpoint unless the
-independent reliability gate, reconciliation, and sample-size review pass. Never
-present the legacy 228-code smoke-test metrics as a final pitch result.
+Report a new pitch-subgroup result only after actual model assessments,
+mechanical stability diagnostics, human source/evidence audit, human approval
+and unlocked outcome analysis. Never present historical strict-code fits
+or synthetic technical smoke assessments as final pitch results.
 
 ### Conclusion
 
-State the full-cohort powerplay finding first. Add the verified-pitch-report
-interaction finding only if the compliant source-stated dataset, independent
-reliability, reconciliation, and sample-size gates pass; otherwise identify it as
-the prespecified incomplete subgroup analysis rather than reframing the paper as
-pitch-adjusted.
+State the full-cohort powerplay finding first. Add a new expectation-modified
+pitch finding only if the new measurement gate, human approval and subsequent
+unlocked pitch analysis support it; otherwise say that pitch expectations
+remain an incomplete prespecified subgroup extension.
 
 ## Submission-day checklist
 
@@ -149,9 +182,9 @@ pitch-adjusted.
 - all four required headings are present;
 - no promised or placeholder results;
 - no causal claim from observational evidence;
-- pitch variables used in results have passed explicit-source-only re-audit;
-- pitch variables are described as standardized source statements, not researcher pitch diagnosis;
-- no pitch interaction is presented as final before independent reliability and reconciliation;
+- new expectation variables are derived only from newly reviewed, pre-match source evidence, not historical coded labels;
+- pitch variables are described as uncertain pre-match expectations, not physical pitch truth;
+- no new pitch interaction is presented as final before three blinded passes, mechanical stability diagnostics, human evidence audit and approval;
 - no more than two combined figures/tables;
 - numbers match frozen repository outputs;
 - repository is public and opens without authentication;

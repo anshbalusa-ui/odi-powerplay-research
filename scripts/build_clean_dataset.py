@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import argparse
+import csv
 import hashlib
 import json
 import sys
@@ -62,7 +63,12 @@ def main() -> None:
     write_csv(primary, primary_path)
     write_csv(world_cup_subgroup, world_cup_path)
     write_csv(audit, audit_path)
-    write_csv(excluded, excluded_path)
+    if excluded:
+        write_csv(excluded, excluded_path)
+    else:
+        # A preselected, wholly clean subset still needs an auditable CSV.
+        with excluded_path.open("w", encoding="utf-8", newline="") as handle:
+            csv.DictWriter(handle, fieldnames=list(audit[0])).writeheader()
 
     exclusion_counts = Counter()
     for match in excluded:
@@ -98,7 +104,7 @@ def main() -> None:
         "world_cup_subgroup_team_innings_rows": len(world_cup_subgroup),
         "world_cup_subgroup_matches": len(world_cup_subgroup) // 2,
         "outputs": {
-            str(path.relative_to(PROJECT_ROOT)): file_sha256(path)
+            str(path.relative_to(PROJECT_ROOT) if path.is_relative_to(PROJECT_ROOT) else path): file_sha256(path)
             for path in (
                 all_path,
                 clean_path,

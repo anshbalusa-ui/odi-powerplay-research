@@ -1,0 +1,9 @@
+{
+  "abstract": "docs/ssac27_abstract_skeleton.md",
+  "canonical_evidence_values_present": 38,
+  "evidence": "artifacts/abstract/ssac27_evidence.json",
+  "figure_table_count": 0,
+  "issues": [],
+  "valid": true,
+  "word_count_including_title": 364
+}

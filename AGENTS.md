@@ -20,11 +20,11 @@ This repository is a research project, not only a prediction demo. Changes must 
 7. **Outcome-blind pitch collection:** source discovery/coding must not expose winner, powerplay score, wickets, final score, or other match outcomes.
 8. **No post-match evidence:** live commentary, result articles, post-match pitch descriptions, and later observed conditions cannot populate pre-match predictors.
 9. **Claim boundary:** this is retrospective observational research; use associational/predictive language, not causal claims.
-10. **Missingness:** missing source-stated pitch effects remain missing/unknown; never fabricate or backfill them.
+10. **Missingness:** legacy missing source-stated effects remain blank/unknown; new expectations remain uncertain or unavailable when pre-match evidence cannot support an assessment. Never fabricate either.
 
-## Critical pitch-measurement rule: source-stated effects only
+## Historical method: explicit source-stated effects only
 
-**Absolutely no independent researcher/agent pitch diagnosis is allowed.**
+**The following no-inference restriction applies to the historical explicit-source-only fields, not to the distinct new expectation variables.** Preserve this method and its outputs as provenance.
 
 The analytical pitch variables are standardized versions of **expected playing effects explicitly stated in eligible pre-match sources**. The agent/coder's job is to record what the source says, not to use cricket knowledge to decide how a physical surface should behave.
 
@@ -55,23 +55,30 @@ in `data/manual/pitch_code_reaudit.csv`: 169 rows passed revised, 45 passed
 unchanged, and 14 are source-unavailable. The strict analytical derivative
 excludes those 14 unavailable rows and applies only the re-audited fields.
 
-For any final pitch-effect paper claim:
+For any claim explicitly using the **historical source-stated pitch-effect derivative**:
 
 1. use the compliant derivative, never the mixed-status input;
-2. confirm that every nonblank analytical pitch-effect value is explicitly
-   supported by the source;
+2. confirm that every nonblank historical effect value is explicitly supported by the source;
 3. retain source-unavailable rows as excluded rather than inferred `unknown`;
-4. run the independent double-coding reliability sample using the same strict rule;
-5. reconcile and report reliability before presenting a final pitch interaction.
+4. do not claim that incomplete human recoding established reliability or reconciliation.
+5. keep historical reliability and reconciliation scripts/files intact for provenance.
 
 Do not describe the 228 original fields as fully compliant source-stated effects;
 describe the re-audited derivative and its exclusions precisely.
 
-## Pitch provenance and reliability
+## Historical pitch provenance and human reliability
 
-For every coded report retain the Cricsheet match ID, source URL/title, publication time, verified scheduled start, access time, coder ID, confidence, source-stated codes, and a short paraphrase. Do not copy large source passages.
+For every historical coded report retain the Cricsheet match ID, source URL/title, publication time, verified scheduled start, access time, coder ID, confidence, source-stated codes, and a short paraphrase. Do not copy large source passages.
 
-Independent recoders must follow the same explicit-source-only rule. Reliability measures agreement in standardizing source statements, not agreement in independently judging the physical pitch.
+Historical independent recoders follow the same explicit-source-only rule. No completed 46-report human reliability estimate is claimed.
+
+## New method: model-estimated pre-match expected playing environment
+
+This is a **different construct**, not a recoding of historical pitch fields. A bounded cricket inference from independently verified pre-match source content and context is permitted; physical cues never mechanically guarantee a category. Contradictory or weak evidence warrants `uncertain` and lower confidence. No source may be assessed if unavailable, amended/contaminated after play, or not demonstrably published before verified scheduled start.
+
+Only the positive-allowlisted, hashed payload in `src/odi_powerplay/pitch_expectation.py` may reach an assessor. Do not send outcomes, powerplay metrics, old codes, prior coder paraphrases/confidence, old evidence notes, post-match material, or peer assessments. Record model identity/version, rubric hash, source hash and assessor/run identity. Three independent passes produce deterministic majority-per-field consensus; confidence is their median. Freeze the rubric and thresholds before seeing pitch/outcome associations. Independent model-assessment agreement measures stability, **not** true pitch accuracy or human intercoder reliability. A small human evidence sanity audit replaces the unfinished historical 46-row recoding requirement **for this new method only**.
+
+No pitch-outcome analysis or interpretation until the new measurement release, leakage audit and human worksheet are inspected and approved. Never score 2025+ outcomes during measurement.
 
 ## Venue history
 
@@ -85,8 +92,8 @@ Rolling venue-history variables are prior scoring-environment summaries only. Th
 - Keep generated raw/interim/processed datasets out of Git unless the repository's documented release policy explicitly allows a minimized derived release.
 - Never overwrite raw source snapshots; retain URL, retrieval timestamp, and checksum/manifest.
 - Raise on duplicate match-level context rows rather than silently multiplying team-innings rows.
-- Any model feature allowlist must reject raw source prose, physical surface descriptors, outcome fields, future information, and researcher-inferred pitch labels.
+- Model feature allowlists must reject source prose, physical descriptors, outcome/future information, and old pitch labels as model features; new categorical expectations are permitted only in a separately reviewed future model table, never substituted for historical effect fields.
 
 ## Required documentation language
 
-Prefer **`source-stated pre-match pitch effects`**, **`source-stated pitch behavior`**, or **`verified pre-match report expectations`** when describing analytical variables that have passed the current explicit-source-only rule. Do not imply that the researchers directly measured or independently assessed the physical pitch.
+Use **`source-stated pre-match pitch effects`** only for the historical explicit-source derivative. Use **`model-estimated pre-match expected playing environment`** or **`pre-match expected playing conditions`** for the new distinct variables; they are neither ground-truth pitch conditions nor direct physical measurements.

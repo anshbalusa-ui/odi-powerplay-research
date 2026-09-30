@@ -1,4 +1,15 @@
-# Preliminary Results
+# Results
+
+## Current corrected SSAC27 release (2026-09-29)
+
+This is the current submission narrative; all results below the historical boundary are superseded preliminary work and must not be cited as current evidence. The authoritative current navigation/evidence map is `docs/ssac27_submission_source_of_truth.md`; exact numerical detail is controlled by unchanged `docs/ssac27_numeric_handoff.md`. The amended-source release has 942 clean matches/1,884 paired innings: development 871/1,742 (2015–2023), temporal validation 71/142 (2024). A further 152 registry IDs dated 2025+ were counted from metadata only; no 2025+ match records or outcomes were opened or scored. The September 29 amended official archive is the only available source amendment; the original September 10 archive is unavailable and was not reproduced.
+
+The primary estimand is the nonnegative bounded $d$ solving $p(R+d,W+1,C)=p(R,W,C)$ at $R=47$, wickets 1→2. A six-interaction L2 logistic model supports only three finite roots among 18 contexts: 14.143 (95% CI 4.124–18.450; 735/1,000 valid refits), 13.248 (4.713–17.481; 758/1,000), and 29.763 (13.844–30.934; 563/1,000). The other 15 are undefined, not zero. At neutral Elo/median venue, the wicket contrast is −10.505 percentage points batting first and −15.690 chasing; paired first-minus-chase is +5.185 (95% CI −0.457,+11.182), including zero.
+
+2024 validation: primary AUC .6626 (95% CI .5461–.7681), log loss .6726, Brier .2368; additive benchmark AUC .6737, log loss .6650, Brier .2335; four-term interaction AUC .6784, log loss .6669, Brier .2334. The primary did not improve AUC or log loss. There are 45 paired comparisons/90 status rows, but only two paired point root differences and neither has a valid paired CI (joint refit validity below 80%). Pitch was completely excluded; no causal, universal wicket-price, or pitch claim is warranted. These are associations, and unsupported roots are not zero.
+
+## Superseded preliminary narrative (archival; not current findings)
+
 
 ## Status
 
@@ -15,7 +26,7 @@ analytical release contains 229 rows and excludes the 14 unavailable sources.
 Independent double-coding must still pass before a pitch interaction is treated
 as a final reliability-cleared result.
 
-The current measurement rule is strict: analytical pitch variables may standardize
+The historical pitch-measurement rule was strict: analytical pitch variables standardized
 only expected playing effects explicitly stated by eligible pre-match sources.
 Physical descriptions such as dry, dusty, grassy, green, moist, hard, cracked,
 worn, tacky, or used are provenance only unless the source itself explicitly states

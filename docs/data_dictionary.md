@@ -1,5 +1,9 @@
 # Data Dictionary
 
+This dictionary records historical and general pipeline schemas; do not assume every listed table or pitch field is part of the current submission model. Current corrected SSAC27 release: 942 amended-source matches/1,884 paired innings (development 871/1,742; 2024 validation 71/142). Pitch variables are excluded; no 2025+ outcomes were loaded or scored. See `docs/ssac27_submission_source_of_truth.md` and unchanged `docs/ssac27_numeric_handoff.md` for the approved current feature/evidence boundary.
+
+## Historical and general pipeline schemas
+
 ## Dataset levels
 
 | Dataset | Grain | Purpose |
@@ -112,25 +116,27 @@ The tracked release contains 243 verified scheduled starts.
 
 `data/manual/pitch_reports_verified.csv` contains 243 rows that passed source,
 publication-time, match-start, cohort-identity, and structural validation. The
-first 228 were produced under the earlier codebook and the 15 batch-24 rows under
-the current rule. Their strict analytical dispositions are recorded separately
-in `data/manual/pitch_code_reaudit.csv`.
+first 228 were produced under an earlier codebook and the 15 batch-24 rows under
+the then-current strict rule. Their **historical** analytical dispositions are
+recorded separately in `data/manual/pitch_code_reaudit.csv`.
 
-`data/processed/pitch_reports_compliant.csv` contains the 229 rows currently
-eligible for strict pitch-effect modeling: 214 accepted legacy rows and all 15
-current-standard rows. Fourteen source-unavailable legacy rows are excluded by
-the release builder.
+`data/processed/pitch_reports_compliant.csv` contains the 229 rows eligible
+for the historical strict source-stated derivative: 214 accepted legacy rows
+and all 15 current-standard rows. Fourteen source-unavailable legacy rows
+are excluded by the historical builder. This is **not** the new expectation release.
 
 `data/manual/pitch_set_aside.csv` contains no pitch codes or outcomes; it records
 the search query and reason a reviewed match needs later follow-up.
 `artifacts/tables/pitch_collection_status.csv` covers all 1,094 eligible matches
 with `verified`, `set_aside`, or `unreviewed` source-collection status.
 
-### Current measurement rule for final analytical pitch variables
+### Historical explicit-source-only measurement rule
 
-Every final analytical pitch variable must be a **standardization of an expected
-playing effect explicitly stated by the eligible pre-match source**. The researcher
-does not independently diagnose the pitch.
+The following fields describe the preserved historical strict derivative.
+Historical effects must standardize only expected effects explicitly stated
+by eligible pre-match sources; the historical researcher does not infer pitch
+behavior from physical surface descriptions. The distinct new assessment below
+deliberately uses bounded inference and must not reuse these legacy values.
 
 Physical descriptions such as `dry`, `dusty`, `grassy`, `green`, `moist`, `hard`,
 `cracked`, `worn`, `tacky`, or `used` may appear in the short provenance note, but
@@ -145,7 +151,7 @@ nonblank values in the compliant release have source evidence; unsupported
 values were blanked or removed. Fourteen rows whose source could not be
 re-opened are excluded from that release.
 
-| Variable | Type | Definition under current rule |
+| Variable | Type | Definition under historical strict rule |
 |---|---|---|
 | `espn_match_id_candidate` | string/nullable | numeric Cricsheet ID copied as an unverified candidate; never assumed correct |
 | `espn_legacy_match_url_candidate` | URL/nullable | unfetched legacy ESPN navigation candidate generated from the probable ID |
@@ -173,6 +179,32 @@ re-opened are excluded from that release.
 Physical surface descriptors are provenance only. They are not primary or secondary
 model fields and cannot be used to derive a playing-effect code unless the source
 explicitly states that effect.
+
+### New model-estimated pre-match expectation fields
+
+`data/processed/pitch_expectation_consensus.csv` is a **separate, generated**
+release only after verified original-source captures and complete independent
+A/B/C assessments. It is not available merely because the 229-row historical
+derivative exists. Exact rubric: `config/pitch_expectation_agent.json`; protocol:
+`docs/pitch_expectation_method.md`. No old `pitch_primary_category`,
+`original_*`, `reaudited_*`, coder note/confidence, PP metric or outcome field
+may enter the new assessor payload or model features.
+
+| Variable | Type | Interpretation |
+|---|---|---|
+| `batting_expectation` | category | expected difficulty/neutrality/favorability of batting, or `uncertain` |
+| `pace_seam_expectation` | category | expected pace/seam help `low`, `neutral`, `high`, or `uncertain` |
+| `spin_expectation` | category | expected spin help `low`, `neutral`, `high`, or `uncertain` |
+| `slow_two_paced_expectation` | category | expected slow/two-paced likelihood `unlikely`, `possible`, `likely`, or `uncertain` |
+| `overall_expected_environment` | category | `batting_favorable`, `balanced`, `pace_seam_favorable`, `spin_slow_favorable`, or `uncertain` |
+| `confidence` | integer 0–100 | median source-support confidence across three independent assessments |
+| `primary_eligible`, `broad_eligible`, `high_confidence_eligible`, `unanimous_eligible` | binary | frozen measurement-only majority/confidence/unanimity gates, not outcome-based selection |
+| `source_hash`, `prompt_hash`, `rubric_version` | SHA-256/string | original reviewed content and exact frozen rubric provenance |
+
+Category fields describe a model-estimated **pre-match expectation**, never
+the physical pitch's observed or objective behavior. Separate pass records
+include assessor/model/version, reasoning effort, run ID, timestamp, short
+evidence and rationale; raw reviewed text stays ignored.
 
 ## Pitch-code re-audit fields
 
@@ -245,11 +277,13 @@ source-stated pitch effects.
 | `analysis_eligible_primary` | binary | passes core cleaning and the 2015-forward men's ODI primary rules; no event restriction |
 | `source_snapshot_id` | string | hash/date identifier for raw-source manifest |
 
-## Final-model anti-leakage and measurement allowlist
+## Historical pitch-enabled model allowlist (not the corrected SSAC27 model)
 
-The final training matrix may contain only approved powerplay, **re-audited
-source-stated pre-match pitch-effect**, historical venue, pre-match team strength,
-toss, innings order, venue/grouping, year, and competition-type features. Match ID
-is a grouping key, not a predictor. Outcome, winner, margin, result method, full
-innings total, later-match data, generic hourly weather variables, raw physical
-surface descriptors, and any researcher-inferred pitch labels are prohibited.
+In the older pitch-enabled design, the training matrix could contain only approved
+powerplay, **re-audited source-stated pre-match pitch effects**, historical venue,
+pre-match team strength, toss, innings order, venue/grouping, year, and
+competition-type features. Match ID was a grouping key, not a predictor. Outcome,
+winner, margin, result method, full innings total, later-match data, generic
+hourly weather, raw physical descriptors, and researcher-inferred pitch labels
+were prohibited. The corrected SSAC27 primary model excludes **all** pitch fields;
+its separate exact feature allowlist and audit are in the corrected release.

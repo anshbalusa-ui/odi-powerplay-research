@@ -1,33 +1,46 @@
-# What Makes a Successful ODI Powerplay?
+# What Is a Powerplay Wicket Worth? Context-Dependent Run-Wicket Tradeoffs in ODI Cricket
 
 [![Tests](https://github.com/anshbalusa-ui/odi-powerplay-research/actions/workflows/tests.yml/badge.svg)](https://github.com/anshbalusa-ui/odi-powerplay-research/actions/workflows/tests.yml)
 
-Reproducible Python research pipeline for an **associational** study of which first-10-over ODI batting profiles are linked to winning, how much they add beyond opposition strength and match context, and whether those relationships vary by **source-stated pre-match pitch behavior**.
+Reproducible Python research pipeline for an **observational** study of the context-dependent powerplay run–wicket exchange rate in men's ODIs. Separately, the repo preserves historical source-stated pre-match pitch effects and an unapproved model-estimated pre-match expected playing environment measurement track.
+
+**Current SSAC27 release:** The [submission source of truth](docs/ssac27_submission_source_of_truth.md) is the current title, question, claim boundary and Figure 1/Table 1 input sheet; [numerical handoff](docs/ssac27_numeric_handoff.md) contains the verified corrected numbers. The official September 29 amended-source analysis has 942 clean 2015–2024 matches (1,884 paired innings), with 871/1,742 in development and 71/142 in untouched 2024 validation. Its 1→2 wicket exchange at 47 runs has three finite roots across 18 contexts; 15 are undefined, not zero. The primary six-term 2024 AUC is 0.6626 versus 0.6737 additive and 0.6784 four-term; it does **not** improve held-out AUC or log loss. Results are conditional associations, not causal advice or a universal wicket price. Pitch is excluded. The older 1,094-match and 0.740 AUC outputs below are explicitly historical, not current submission evidence.
 
 ## Research scope
 
-The primary cohort is **all clean men's ODIs from 2015 through the fixed Cricsheet snapshot**, regardless of competition type. It includes bilateral series, World Cups, Champions Trophies, continental cups, multi-team series, and qualification pathways. It does not mix Tests or T20s into the analysis.
+The historical primary-cohort definition is clean men's ODIs from 2015 through the original fixed Cricsheet snapshot, regardless of competition type. The SSAC27 amended-source analysis is restricted to the 942 prespecified, outcome-unlocked 2015–2024 registry matches, not the absent original snapshot or any 2025+ match. Neither analysis pools Tests or T20s.
 
 World Cups are a labeled subgroup and sensitivity analysis, not the main dataset. A broader historical ODI cohort can be used as a second sensitivity analysis with explicit era controls; it is not silently pooled into the modern primary analysis.
 
 ## Two-track deliverables
 
-- **SSAC27 milestone:** finish a results-complete, reproducible analysis from the broad modern-ODI cohort for the abstract deadline on October 1, 2026 at 11:59 p.m. ET. The submission is a milestone, not the endpoint of the research.
-- **Full research paper:** continue expanding the cohort, source-stated pitch-effect coding, robustness analyses, and paper after the SSAC abstract is submitted, regardless of the competition decision.
+- **SSAC27 milestone:** the corrected amended-source, results-complete unlocked tradeoff analysis supports an observational abstract for the October 1, 2026, 11:59 p.m. ET deadline. Submission remains a milestone, not the endpoint of the research.
+- **Full research paper:** continue expanding the cohort, separately audited pre-match expectation measurement, robustness analyses, and paper after the SSAC abstract is submitted, regardless of the competition decision.
 
-The SSAC version will emphasize one applied question: what makes a successful ODI powerplay, and when does the best balance of aggression and wicket preservation change? The full cohort estimates powerplay-outcome associations; the verified-pitch-report subset is a prespecified effect-modification analysis within that same question. See `docs/ssac27_submission_plan.md`.
+The SSAC27 paper now centers on an observational, context-dependent **powerplay run–wicket exchange rate** on the match win-probability scale. The amended-source 942-match unlocked ODI cohort—not the small pitch-report subset—supports this primary question. Pitch is a separate secondary measurement extension, excluded from this analysis; see the frozen `docs/ssac27_powerplay_tradeoff_protocol.md`.
 
 ## Primary research question
 
-> Among men's One Day International cricket matches, how are powerplay runs, wickets lost, boundary percentage, and dot-ball percentage associated with the batting team's probability of winning after accounting for pre-match opposition strength, innings order, toss, venue, year, and competition type—and, within the verified-pitch-report subgroup, how do those associations vary by **pitch effects explicitly stated in eligible pre-match sources**?
+> Among men's ODIs, how many additional first-ten-over runs are associated with the same modeled match win probability as losing one additional wicket, and how does that run-wicket exchange rate vary with innings order, pre-match team strength, and prior venue scoring environment?
 
-The wording is intentionally **associated with**, not **causes**. This is observational data.
+In plain language: **What is a powerplay wicket worth in runs, and does that value change with match context?** This is a conditional model-standardized association, **not** a causal instruction to sacrifice wickets. The primary 1→2 wicket exchange is solved from predicted probabilities within observed development-data support and reported with whole-match uncertainty. Match-specific pitch expectations remain secondary and unapproved for outcome analysis.
+
+The new pitch-expectation measurement is **not yet an effect-modification
+result**. The hardened outcome-blind source screen has 30 independently
+reviewed excerpts (26 live originals, four pre-start archived originals),
+including three 2024 validation reports. Earlier 27-row assessor passes are
+superseded; the revised 30-row input release has not been assessed. Fresh
+passes require provider-observed response model IDs; the available CLI exposes
+only requested routes, and no API credential is configured locally. The human
+evidence audit remains unrated. No new pitch/outcome interaction has been run
+or approved. See `docs/pitch_expectation_method.md` for source exclusions
+and the separate historical pitch release.
 
 ## Unit of analysis
 
 One row represents one batting-team innings in one match. The outcome is `batting_team_won`. A match normally contributes two rows, so resampling, confidence intervals, and cross-validation must group by `match_id`.
 
-## What is already implemented
+## What is already implemented (current analysis and separately retained historical pipeline)
 
 - A standard-library Cricsheet JSON extractor for first-10-over runs, wickets,
   run rate, boundary-ball percentage, dot-ball percentage, match context, and outcome.
@@ -41,8 +54,9 @@ One row represents one batting-team innings in one match. The outcome is `battin
   comparisons across 40 innings with zero discrepancies.
 - Date-batched pre-match Elo and rolling prior-20 win rates computed from all
   available clean history without same-day or future leakage.
-- Date-batched prior-20 venue powerplay histories covering 997 of 1,094 primary
-  matches without using same-day or future performances.
+- In the **historical September 10 pipeline**, date-batched prior-20 venue
+  powerplay histories covered 997 of 1,094 primary matches without same-day
+  or future performances; this is not the corrected SSAC27 analysis cohort.
 - A hashed, feature-allowlisted model table with development (through 2023),
   temporal-validation (2024), and locked-test (2025+) partitions.
 - Fixed nested logistic models, constrained Random Forest and XGBoost challengers,
@@ -65,19 +79,37 @@ One row represents one batting-team innings in one match. The outcome is `battin
 - Pitch/source-timing templates, research design, data dictionary, pitch-effect codebook,
   transformation log, paper outline, and execution roadmap.
 
+### Historical September 10 snapshot (superseded for SSAC27)
+
+The counts in the following paragraph and historical source/pitch tooling above
+are provenance from the older broad-cohort run, **not** the amended-source
+942-match SSAC27 result or an eligible abstract claim.
+
 For the Cricsheet snapshot retrieved on September 10, 2026, the pipeline found
 3,182 matches, retained 2,742 in the core clean dataset, and selected 1,094 matches
 (2,188 team-innings) for the 2015-forward men's ODI primary cohort. The World Cup
 subgroup contains 110 matches; it is not the primary sample.
 
-## Planned pipeline
+The original September 10 Cricsheet ZIP (recorded SHA-256
+`28350ee04a2ee710f959de939eb2240f737e684a2f7f93e00f3c2be26e4f415e`)
+is absent in this clone. The new SSAC27 tradeoff protocol explicitly amends
+the source to an official September 29 ZIP (SHA-256
+`f8423531b24183bc2cfc1e3e27f9bd29ad7c4d5a4bdc2469bf681d7fe2f5c5ce`)
+and opens only 942 outcome-unlocked 2015–2024 registry matches. The verified
+amended cohort has 871 development matches and 71 validation matches,
+two innings each. This is **not** a reproduction of the missing September 10
+archive; no 2025+ match outcomes were opened or scored.
+
+## Separately proposed pitch-measurement pipeline (not the SSAC27 primary analysis)
+
+This extension requires blinded measurement and human approval before any
+separate outcome analysis; it is not part of the corrected tradeoff release.
 
 ```text
 Cricsheet JSON -> match/innings table -> rolling team and venue history
-                                      \
-eligible pre-match source-stated pitch effects -> audited merge -> leakage-safe model table
-
-model table -> chronological splits -> logistic/RF/XGBoost -> calibration/CI/plots
+verified pre-match source -> reviewed safe text -> 3 blind assessor passes
+                                      -> mechanical expectation consensus
+measurement audit + human worksheet -> human approval -> separate pitch model
 ```
 
 ## Quick start
@@ -86,53 +118,115 @@ Use Python 3.11. Dataset construction and audits use the standard library; model
 training uses the pinned project dependencies. On macOS, XGBoost also requires
 `brew install libomp`.
 
+The SSAC27 **locked-safe amended-source** path below refuses to materialize
+any 2025+ match member. The download URL is mutable: if its SHA-256 differs
+from the frozen September 29 archive, the extractor fails closed; acquire
+the identified archive instead. It will also refuse to overwrite an existing
+raw release. Do **not** use the historical full-archive downloader/extractor
+or legacy `scripts/reproduce.py` for a locked SSAC27 analysis.
+
 ```bash
 python3.11 -m venv .venv
 .venv/bin/python -m pip install -e .
-python -m unittest discover -s tests -v
-python scripts/download_cricsheet.py --output-dir data/raw/cricsheet
-python scripts/extract_cricsheet.py \
-  --input-dir data/raw/cricsheet \
-  --output data/interim/powerplay_innings.csv
-python scripts/build_clean_dataset.py
-python scripts/build_team_strength.py
-python scripts/build_venue_conditions.py
-python scripts/build_compliant_pitch_release.py
-python scripts/build_model_table.py \
-  --pitch-input data/processed/pitch_reports_compliant.csv \
-  --match-start-input data/manual/match_start_times_verified.csv
-python scripts/audit_powerplay_metrics.py
-python scripts/audit_extraction.py
-python scripts/build_hand_audit_sample.py
-python scripts/build_pitch_collection_queue.py
-python scripts/build_match_start_queue.py
-python scripts/audit_match_start_times.py
-python scripts/audit_espn_linkage.py
-python scripts/audit_pitch_reaudit.py
-python scripts/select_pitch_batch.py --output data/manual/pitch_batch_working.csv
-python scripts/build_pitch_reliability_sample.py \
-  --input data/processed/pitch_reports_compliant.csv
-.venv/bin/python scripts/train_models.py --fit-without-locked-test
-.venv/bin/python scripts/evaluate_models.py
-.venv/bin/python scripts/make_figures.py
-.venv/bin/python scripts/reproduce.py --skip-download
+test ! -e data/raw/cricsheet/odis_json_20260929.zip &&
+  curl -fL https://cricsheet.org/downloads/odis_json.zip \
+    -o data/raw/cricsheet/odis_json_20260929.zip
+.venv/bin/python scripts/materialize_ssac27_unlocked_raw.py
+.venv/bin/python scripts/build_clean_dataset.py \
+  --input-dir data/raw/cricsheet/unlocked_20260929
+.venv/bin/python scripts/build_team_strength.py
+.venv/bin/python scripts/build_venue_conditions.py
+.venv/bin/python scripts/build_model_table.py
+.venv/bin/python scripts/audit_full_cohort_analysis.py \
+  --summary-output artifacts/ssac27_tradeoff/data_audit.json
+.venv/bin/python scripts/run_ssac27_tradeoff_pipeline.py
+.venv/bin/python scripts/audit_ssac27_tradeoff_results.py
+.venv/bin/python scripts/release_ssac27_tradeoff_results.py
+.venv/bin/python -m unittest discover -s tests -v
+.venv/bin/python -m compileall -q src scripts
 ```
+
+For an already materialized raw release, start at
+`scripts/build_clean_dataset.py`; check its `source_manifest.json` against the
+frozen archive and registry before use. The default tradeoff command runs
+1,000 whole-match development refits and 2,000 fixed-prediction 2024 match
+resamples per model; pilot runs with smaller `--bootstrap-repetitions` or
+`--validation-repetitions` are **not** final uncertainty estimates.
+The final local release is ignored under `artifacts/ssac27_tradeoff/`:
+it includes all 54 labeled context cells, same-refit paired context
+differences, fit/validation/uncertainty summaries, a coefficient table,
+match-paired 2024 predictions, numerical curves, independent QA, release
+hashes, and the supported-results figure. The committed
+`docs/ssac27_numeric_handoff.md` records aggregate results, limitations
+and reproducibility commands. Repository policy in `docs/limitations.md`
+keeps derived model artifacts, predictions, and figures out of Git pending
+third-party rights review; the release builder does not publish raw data.
+
+
+## Historical SSAC27 pre-reliability preparation outputs (superseded)
+
+This section records an earlier branch's unlocked, preliminary pipeline.
+Its 0.740/0.708/0.710 AUC and older marginal contrasts are **not** current
+SSAC27 abstract evidence. The corrected tradeoff release and the tracked
+aggregate abstract evidence are governed by the
+[submission source of truth](docs/ssac27_submission_source_of_truth.md).
+
+- `scripts/audit_full_cohort_analysis.py` independently audits the 2015–2024
+  cohort, metric invariants, match pairing, and non-pitch feature allowlist.
+- `scripts/build_ssac_full_cohort_results.py` writes canonical validation model
+  outputs; `scripts/build_powerplay_marginal_results.py` writes
+  model-standardized runs/wickets contrasts with an observational guardrail.
+- `scripts/diagnose_pitch_sparsity.py` reports historical strict pitch-code cells;
+  it is not a diagnostic for the new expectation variables.
+- `scripts/audit_pitch_reliability.py`,
+  `scripts/reconcile_pitch_reliability.py` and
+  `scripts/run_pitch_interaction_analysis.py` remain historical
+  explicit-source/human-reconciliation tools. The incomplete 46-row human
+  recoding is superseded **for the new construct**, not claimed as completed.
+  The legacy runner cannot be used as the new expectation analysis.
+- `scripts/build_ssac_abstract_support.py` now builds the corrected tradeoff
+  evidence and ledger from the verified amended-source release;
+  `scripts/validate_ssac_abstract.py` validates the current
+  `docs/ssac27_abstract_skeleton.md` against that evidence under the
+  499-word SSAC limit. The release must exist locally; missing/altered QA
+  or files fail closed.
+
+Generated tables and figures are intentionally ignored by Git; tracked abstract
+evidence carries source hashes in its manifest. The public-repository audit still
+requires a separate source-license/terms review for tracked pitch provenance.
+
 
 Generated primary/cohort datasets are ignored by Git and reproduced from the
 checksummed raw snapshot. The tracked hand-audit and pitch-queue templates contain
 no source prose and no secret data.
 
-## Source-stated pitch-effect data and analysis
+## New pre-match expectation measurement
 
-The **current rule** is strict: each accepted pre-match report may populate analytical pitch fields only from **playing effects explicitly stated by that source**. The intended fields are one primary category (`batting_friendly`, `balanced`, `pace_seam`, `spin`, `slow_two_paced`, or `unknown`) plus explicitly stated batting-ease, pace/seam-support, spin-support, bounce, two-paced, and dew expectations.
+See [`docs/pitch_expectation_method.md`](docs/pitch_expectation_method.md).
+`config/pitch_expectation_agent.json` freezes the allowed categorical expectation
+variables, bounded inference, uncertainties, consensus and thresholds. Assessor
+inputs are projected from verified pre-match metadata plus **newly retrieved,
+independently reviewed original-source text**; old pitch codes, prior coder notes,
+powerplay/outcome data and post-match information are excluded. Three independent
+passes and deterministic consensus precede a small human evidence audit. The new
+method does **not** claim true pitch behavior or human intercoder reliability.
+No new pitch interaction is interpreted before the measurement gate and approval.
 
-**The project performs zero independent pitch diagnosis.** Physical descriptions such as dry, dusty, grassy, green, moist, hard, cracked, worn, tacky, or used may be retained in the short provenance paraphrase, but they are never converted by the researcher into pitch-effect variables. For example, `dry` does not become `spin`, and `grass` does not become `pace_seam`, unless the eligible pre-match source itself explicitly states that expected playing effect. If the source does not state the effect, the corresponding field remains blank or `unknown`.
+## Historical source-stated pitch-effect data and analysis
+
+The **historical rule** is strict: each accepted report populates legacy fields
+only from playing effects explicitly stated by that source.
+
+**The historical scheme performs zero independent pitch diagnosis.** Physical
+descriptions such as dry or green are never converted into historical effect
+fields. The new expectation scheme permits bounded, source-grounded inference;
+its variables are distinct and cannot be mixed with these historical fields.
 
 ### Expanded 243-report release: re-audit complete
 
 The auditable input file contains 243 source- and timing-verified reports. The
 first 228 were coded under an earlier codebook; the 15 batch-24 rows were coded
-under the current rule. Every legacy row now has a recorded disposition in
+under the then-current historical strict rule. Every legacy row now has a recorded disposition in
 `data/manual/pitch_code_reaudit.csv`: 169 `passed_revised`, 45
 `passed_unchanged`, and 14 `source_unavailable`, alongside 15
 `current_standard` rows. The registry has zero validation issues.
@@ -164,12 +258,12 @@ matches are listed in `data/manual/pitch_set_aside.csv`, and 494 remain
 explicitly unreviewed. Verified source/timing coverage is 243/1,094
 (22.212066%); the compliant analytical release is 229/1,094.
 
-The current blinded assignment is the 46-row
+The historical blinded assignment is the 46-row
 `data/manual/pitch_reliability_sample_template.csv`, a deterministic 20% sample
-of the 229-row compliant reference set. It retains source documents and match
-identity but omits every first-coder pitch judgment. A genuinely independent
-human second coder, reconciliation, and reliability report remain outstanding;
-the repository tracks that blocker in issue #3.
+of the 229-row historical compliant reference set. Independent human second
+coding/reconciliation was **not completed**. This requirement has been retired
+for the new expectation construct; neither human kappa nor reconciliation
+is fabricated.
 
 The minimized tracked releases are `data/manual/pitch_reports_verified.csv`,
 `data/manual/pitch_code_reaudit.csv`, and
@@ -199,25 +293,29 @@ predated play. Start-time and source-provenance fields are audit metadata only:
 they are never joined into the model table and are explicitly prohibited as
 predictors.
 
-The strict source-stated pitch-effect analysis is now materialized from the
-229-row compliant release; its 14 source-unavailable legacy rows are excluded.
-Independent double-coding and reconciliation remain incomplete. The
-2025–2026 locked-test outcomes remain unscored.
+The historical strict derivative has 229 rows after excluding the 14
+source-unavailable legacy rows. The new model-estimated expectation release
+must be built independently from freshly reviewed source captures; its
+assessment coverage and category distributions cannot be inherited from those
+legacy rows. The 2025–2026 locked-test outcomes remain unscored.
 
 Do not automate bulk collection from ESPNcricinfo under the terms reviewed for
 this project. ESPN live commentary and post-match reporting are ineligible because
 they disclose match information unavailable at the prediction timestamp. Use only
 documented pre-match evidence, retain provenance and short original paraphrases,
-and report source coverage across years, venues, competition types, and outcomes.
+and report source coverage across years, providers, venues and competition types; assessors never receive outcome fields.
 
 ## Reproducibility rules
 
 - Never modify raw files after download; use dated/checksummed source manifests.
-- Keep original pitch-report URLs and short paraphrased notes alongside effect codes.
-- Never infer a pitch effect from a physical surface descriptor that the source did not explicitly connect to that effect.
-- The completed legacy re-audit is recorded in `data/manual/pitch_code_reaudit.csv`;
-  source-unavailable rows stay excluded and any future rows must follow the current rule.
-- Version the pitch-effect codebook before double-coding begins.
+- Keep original pitch-report URLs and short paraphrased notes with the
+  **historical** effect codes, never inside the new assessor payload.
+- Apply the no-inference rule only to the historical explicit-source derivative;
+  the distinct new expectation rubric permits bounded source-grounded inference.
+- Preserve the completed historical re-audit in
+  `data/manual/pitch_code_reaudit.csv`; exclude its 14 source-unavailable rows.
+- Version and hash the new rubric before any blinded three-pass assessment;
+  a rubric change invalidates all prior new-method passes.
 - Derive team strength using only matches before the focal match date.
 - Keep both rows from a match in the same split/fold.
 - Fit preprocessing inside each training fold.
@@ -226,7 +324,7 @@ and report source coverage across years, venues, competition types, and outcomes
 
 ## Key documents
 
-- `AGENTS.md` — non-negotiable agent/coder rules, including explicit-source-only pitch coding
+- `AGENTS.md` — historical explicit-source and distinct new expectation policies
 - `docs/research_design.md` — hypotheses, cohort, leakage rules, modeling, evaluation, and robustness checks
 - `docs/results.md` — preliminary cohort, powerplay, and 2024 validation findings
 - `docs/limitations.md` — interpretation boundaries, data constraints, and external blockers
@@ -242,7 +340,16 @@ and report source coverage across years, venues, competition types, and outcomes
 
 ## Data-source attribution
 
-Match data: one fixed, checksummed Cricsheet JSON archive. The auditable pitch
+Match data: the historical project names one fixed, checksummed Cricsheet
+JSON archive; the current unlocked SSAC27 analysis instead uses a separately
+identified and checked September 29 archive. Neither raw ZIP nor generated
+model tables are committed. Source: https://cricsheet.org/downloads/ .
+The Cricsheet Register's https://cricsheet.org/register/ ODC-By notice
+covers the **Register**, not automatically the separate ODI match ZIP.
+The public download page inspected here did not establish the match ZIP's
+redistribution terms; confirm applicable match-data rights and preserve
+attribution/notices before releasing any derived dataset.
+The auditable pitch
 input contains 243 individually cited non-ESPN pre-match reports from 35
 normalized provider hostnames. Its strict derivative contains 229 rows after
 excluding 14 source-unavailable legacy reports; every retained effect is

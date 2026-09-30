@@ -1,0 +1,42 @@
+{
+  "version": "1.0.0",
+  "agent_instruction": "You are an independent, outcome-blind cricket analyst. Assess only the supplied verified pre-match source content; return exactly one JSON object with every output_schema key, no extra keys or markdown. Do not use external knowledge of this match's result, other assessors, or any historical labels. Abstain with uncertain when support is inadequate; never fabricate evidence.",
+  "construct": "Model-estimated pre-match expected playing environment under uncertainty, not observed or true pitch behavior.",
+  "interpretation": "What a knowledgeable cricket analyst could reasonably have expected before the scheduled match start from this verified contemporaneous report alone.",
+  "allowed_inputs": ["cricsheet_match_id", "match_date", "event_name", "competition_type", "venue", "city", "team_1", "team_2", "source_url", "source_title", "published_at_utc", "accessed_at_utc", "scheduled_start_utc", "source_text", "source_hash"],
+  "forbidden_inputs": ["match winner", "batting_team_won", "powerplay statistics", "boundary and dot percentages", "innings/final scores", "chase result", "result text", "scorecard", "live commentary", "post-match reports", "subsequent pitch observations", "previous pitch categories/codes", "original_*", "reaudited_*", "coder confidence", "effect_evidence_note", "human double coding and reconciliation"],
+  "output_schema": {
+    "batting_expectation": ["difficult", "neutral", "favorable", "uncertain"],
+    "pace_seam_expectation": ["low", "neutral", "high", "uncertain"],
+    "spin_expectation": ["low", "neutral", "high", "uncertain"],
+    "slow_two_paced_expectation": ["unlikely", "possible", "likely", "uncertain"],
+    "overall_expected_environment": ["batting_favorable", "balanced", "pace_seam_favorable", "spin_slow_favorable", "uncertain"],
+    "confidence": "integer 0..100",
+    "evidence": "one short source-grounded paraphrase; no copied long passage",
+    "reasoning_basis": ["explicit_playing_effect_statement", "physical_surface_description", "contextual_pre_match_inference"],
+    "rationale": "one short explanation of evidence-to-expectation reasoning"
+  },
+  "inference_policy": "Bounded contextual cricket inference from the entire pre-match report is permitted. Dry, dusty, worn, cracked, green, moist, grassy, hard, flat, tacky and other cues can inform but never deterministically set a category. No external match/result knowledge. Conflicting signals lower confidence; do not force complete coverage.",
+  "uncertainty_policy": "Use uncertain for weak, absent, equivocal or contradictory support; neutral/balanced only when the source supports an actual middle expectation, not as a missing-data default.",
+  "confidence_definition": "0..100 judgment of how strongly the verified pre-match source supports this joint assessment, not probability of realizing the expected behavior or winning.",
+  "evidence_requirement": "Faithful short paraphrase of the supplied source text, identifying concrete pre-match cues. Never quote extended copyrighted passages or invent evidence.",
+  "reasoning_basis_definitions": {
+    "explicit_playing_effect_statement": "Source itself forecasts a playing effect.",
+    "physical_surface_description": "Source describes surface characteristics without necessarily spelling out the effect.",
+    "contextual_pre_match_inference": "Source states relevant contemporaneous venue, weather or boundary context. Do not use match outcomes."
+  },
+  "contamination_rules": "If source unavailable, temporally unverified, amended after start, or containing live/post-match/result/scorecard data, abstain entirely: source_status unavailable or contaminated_or_ambiguous; do not provide a classification.",
+  "examples": [
+    "Dry/worn surface alone may suggest turn or slower play but is not a guarantee; short boundaries and explicit good-scoring language may conflict, lowering confidence.",
+    "Green/moist conditions may suggest seam movement, but use uncertain if timing or evidence is ambiguous.",
+    "No playing-environment evidence means uncertain, not neutral or balanced."
+  ],
+  "consensus": {
+    "categorical": "per-field >=2 of 3 exact values; otherwise uncertain",
+    "confidence": "median of 3 integer confidences",
+    "primary": "overall field has >=2/3 agreement and median confidence >=60",
+    "broad": "overall field has >=2/3 agreement",
+    "high_confidence": "overall field has >=2/3 agreement and median confidence >=75",
+    "unanimous": "3/3 exact agreement on every categorical field"
+  }
+}

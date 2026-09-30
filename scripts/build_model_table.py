@@ -15,7 +15,7 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "src"))
 
 from odi_powerplay.model_table import build_model_table, validate_feature_allowlist  # noqa: E402
-from odi_powerplay.pitch import validate_pitch_rows  # noqa: E402
+from odi_powerplay.pitch import validate_pitch_rows, validate_reconciled_pitch_rows  # noqa: E402
 from odi_powerplay.start_times import (  # noqa: E402
     build_match_start_queue,
     validate_match_start_rows,
@@ -47,6 +47,11 @@ def main() -> int:
     )
     parser.add_argument("--pitch-input", type=Path)
     parser.add_argument("--match-start-input", type=Path)
+    parser.add_argument(
+        "--require-reconciled-pitch",
+        action="store_true",
+        help="Require a separately materialized pitch reconciliation release.",
+    )
     parser.add_argument(
         "--feature-config",
         type=Path,
@@ -93,6 +98,8 @@ def main() -> int:
             eligible_match_ids={row["match_id"] for row in innings_rows},
             match_start_by_id=verified_match_start_map(start_time_rows),
         )
+        if args.require_reconciled_pitch:
+            issues.extend(validate_reconciled_pitch_rows(pitch_rows))
         if issues:
             fields = sorted({issue["field"] for issue in issues})
             raise ValueError(
@@ -150,10 +157,17 @@ def main() -> int:
         "feature_config_sha256": hashlib.sha256(args.feature_config.read_bytes()).hexdigest(),
         "strength_table_sha256": hashlib.sha256(args.strength_input.read_bytes()).hexdigest(),
         "venue_table_sha256": hashlib.sha256(args.venue_input.read_bytes()).hexdigest(),
+        "reconciled_pitch_release": bool(
+            args.pitch_input and args.require_reconciled_pitch
+        ),
     }
     if args.pitch_input:
         manifest["pitch_model_table_sha256"] = hashlib.sha256(
             args.pitch_output.read_bytes()
+        ).hexdigest()
+        manifest["pitch_input"] = str(args.pitch_input)
+        manifest["pitch_input_sha256"] = hashlib.sha256(
+            args.pitch_input.read_bytes()
         ).hexdigest()
     args.manifest_output.write_text(
         json.dumps(manifest, indent=2, sort_keys=True) + "\n",

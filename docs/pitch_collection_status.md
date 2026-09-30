@@ -1,9 +1,11 @@
-# Pitch-Report Collection Status
+# Historical Pitch-Report Collection Status
 
-Last updated: 2026-09-13
+This file records the earlier pitch-collection program and its 1,094-match queue. It is not the current cohort/result: current submission uses the amended-source 942-match 2015–2024 release, excludes pitch entirely, and makes no pitch claim. Current evidence navigation is `docs/ssac27_submission_source_of_truth.md`; exact numeric details are in unchanged `docs/ssac27_numeric_handoff.md`. The contents below are retained as collection provenance and must not be read as current submission scope or sample counts.
 
-The current primary cohort contains 1,094 men's ODIs (2,188 team-innings) from
-2015 through the checksummed Cricsheet snapshot. `build_pitch_collection_queue.py`
+## Original collection status (archival, updated 2026-09-13)
+
+The historical pitch-collection cohort contained 1,094 men's ODIs (2,188 team-innings)
+from the earlier checksummed Cricsheet snapshot. `build_pitch_collection_queue.py`
 creates one deterministic, outcome-blind source row per match. Twenty-four
 25-match batches have now been reviewed: 243 non-ESPN reports passed source and
 timing validation, while 357 reviewed matches were set aside with explicit reasons.
