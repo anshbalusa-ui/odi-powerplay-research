@@ -1,0 +1,43 @@
+# SSAC27 numerical handoff — amended-source unlocked analysis
+
+## Scope and provenance
+
+- Study: retrospective observational/predictive associations, **not** causal compensation or a fully preregistered analysis. The estimand and grid were frozen before these new fits, but earlier 2015–2024 outcome modeling had occurred.
+- Source: official September 29, 2026 Cricsheet ODI ZIP SHA-256 `f8423531b24183bc2cfc1e3e27f9bd29ad7c4d5a4bdc2469bf681d7fe2f5c5ce`; frozen outcome-blind registry SHA-256 `294470beb778b0007453a5c3ab0a35f094881bc941eef45bb4e9daa6662960eb`. The original September 10 ZIP SHA-256 `28350ee04a2ee710f959de939eb2240f737e684a2f7f93e00f3c2be26e4f415e` is unavailable. This is **not** its reproduction. Selected 942 unlocked match members matched the available August archive byte-for-byte, not the unavailable original.
+- Cohort: 942 clean 2015–2024 men's ODI matches; 1,884 paired team innings; 0 exclusions **within the preselected registry subset**. Development through 2023: 871 matches/1,742 innings. Temporal validation 2024: 71 matches/142 innings. World Cup subgroup: 110 matches. Earlier-date venue history: 748 matches/1,496 innings; cold start: 194 matches/388 innings. A further 152 registry IDs dated 2025+ were counted using metadata only; zero such match records opened, scored or fit.
+- Data audit: 942 matches/1,884 innings checked, zero pairing/powerplay metric issues or forbidden model predictors; both outcomes are complementary per match. Source/input/table/audit manifests and SHAs appear in `docs/ssac27_tradeoff_data_audit.md` and the ignored machine-readable artifacts.
+
+## Primary six-interaction model and supported exchange rates
+
+- Fixed L2 logistic, `C=1`, `liblinear`; six run/wicket interactions with innings order, pre-match Elo difference and strictly earlier-date prior-venue mean PP runs. Fits development only; medians, scaling, category mapping and missingness learned from development. Conditional target: additional first-ten-over runs associated with equal predicted win probability when wickets lost change **1→2**, with starting runs 47. Baseline context fixes other predictors at development modes/medians. Match-resampled model refits: seed `20250905`, 1,000 requested / 1,000 valid / 0 failed.
+- The 18 frozen contexts cross first/chase, Elo difference −107.473 / 0 / +107.473, and prior-venue mean PP runs 43.141 / 47.908 / 53.014. Only **2 of 18** primary 1→2 rates have a nonnegative root within matched wicket-stratum support; the other 16 have no bracketed nonnegative root. Do not give a cohort-wide average price, extrapolate a price for chase/even-strength states or suppress undefined cells.
+
+| Innings | Elo difference | Prior-venue PP mean | Additional runs per wicket, 1→2 | 95% match-bootstrap interval | Defined refits / 1,000 |
+|---|---:|---:|---:|---:|---:|
+| Batting first | +107.473 | 47.908 | 14.152 | 4.137–18.425 | 734 |
+| Batting first | +107.473 | 53.014 | 13.248 | 4.672–17.456 | 757 |
+
+These are **conditional percentile intervals among refits with a supported root**; 266 and 243 refits, respectively, lacked a bracketed root. The interval is not unconditional evidence that a root exists. Independent refitting reproduced the root equality with maximum predicted-probability discrepancy `2.77e-5`. The 0→1 wicket sensitivity has 6 defined contexts, all batting first (13.251–19.576 runs across their six grid cells); no 2→3 wicket sensitivity has a defined root. All 54 exact cell statuses, reasons, and conditional intervals are in `context_exchange_rates.json`.
+
+**Modeled fixed-run probability contrasts at 47 runs (1 wicket minus 2 wickets):** at neutral Elo and prior-venue mean 47.908, first-innings win probability changes 0.5050 → 0.3998, difference **−10.51 percentage points** (95% development-refit interval −15.48 to −7.22); chase changes 0.5581 → 0.4012, **−15.69 points** (−20.61 to −12.69). For batting first, Elo +107.473 and prior venue 47.908, 0.6021 → 0.5039, **−9.82 points** (−15.87 to −4.81). At prior venue 53.014 in the latter context, 0.6122 → 0.5053, **−10.69 points** (−17.27 to −5.86). These are model-standardized **associations**, not effects of sacrificing wickets. Between-context point differences are descriptive: the release reports cell-wise uncertainty, not a joint paired-bootstrap interval for subtracting two cell estimates. Do not claim a statistically resolved first/chase or venue interaction from these marginal intervals.
+
+## Temporal validation and sensitivities
+
+All validation figures use the same 71 2024 matches (142 innings), except complete case; frozen development fits only. AUC CIs resample the **71 matches**, carrying both innings, 2,000/2,000 valid fixed-prediction replicates for each listed model. Calibration intercept, slope, reliability bins and full metric CIs are in `analysis_manifest.json`.
+
+| Development-only model | 2024 ROC AUC (95% interval) | Log loss | Brier | Accuracy ≥0.50 | Calibration slope |
+|---|---:|---:|---:|---:|---:|
+| Additive benchmark | 0.6733 (0.5546–0.7760) | 0.6651 | 0.2335 | 0.6056 | 0.568 |
+| Four-term innings/Elo | 0.6788 (0.5612–0.7820) | 0.6670 | 0.2335 | 0.6197 | 0.556 |
+| Six-term primary | 0.6626 (0.5451–0.7677) | 0.6727 | 0.2368 | 0.5986 | 0.536 |
+
+The six-term model did **not** improve 2024 AUC or log loss over either prespecified comparison; do not choose another primary estimand based on this validation. Its slope is 0.536 (95% match-bootstrap interval 0.168–1.008), based on only 71 matches; calibration is uncertain.
+
+Sensitivity **fit status**: prior-20 win-rate strength AUC 0.6721; boundary/dot scoring-process AUC 0.6703; single development-knot restricted cubic spline AUC 0.6574 (knots 31, 47, 68); Random Forest AUC 0.6382; XGBoost AUC 0.6310. The complete-case six-term fit retains 742 matches/1,484 innings, excludes 200 matches/400 innings, and validates on 64 matches/128 innings (AUC 0.6406). The P1 challengers are diagnostic comparisons, not a leaderboard or a rationale to change the primary model. Venue history is a strictly earlier-date scoring summary, **not** the focal prepared pitch.
+
+## Pitch boundary, artifacts and blockers
+
+- No pitch predictor or pitch–outcome interaction enters this tradeoff fit. New **model-estimated pre-match expected playing environment** measurement has not passed human approval and is not a reported outcome analysis. PE-008 source expansion is proposed/unfrozen; no new source search was executed. Historical **source-stated pre-match pitch effects** remain a distinct re-audited derivative, not interchangeable with these variables.
+- Frozen-spec implementation caveat: the shared `fit_model` pipeline's `OneHotEncoder(handle_unknown="ignore")` retains **all** categorical indicators while fitting an L2-penalized intercept; the written specification requested a dropped reference level. Thus encoded coefficients are not reference-level contrasts and the reported penalized predictions correspond to this disclosed coding, not the reference-dropped alternative. No alternative fit or validation-based recoding was substituted after viewing results. The release also does not compute joint paired-bootstrap intervals for *between-context differences*; only individual context contrasts have intervals. Treat context heterogeneity as descriptive until those protocol deviations are resolved for a later frozen release.
+- Reproduce: README locked-safe quickstart; run `scripts/run_ssac27_tradeoff_pipeline.py` once on the unlocked table, then `scripts/audit_ssac27_tradeoff_results.py`. Generated release is ignored by Git at `artifacts/ssac27_tradeoff/`: `analysis_manifest.json` (SHA-256 `ee44fdbd3315b20e84b2d30eccfc148761d951fb0d76f185fa40001660201b4c`), `context_exchange_rates.json`, `probability_contrasts.csv`, `validation_pairings.json`, `primary_model_parameters.json` (SHA-256 `7a59b6c3e450e3752db51da5728cb4b4aaf80c7ffe52f1a723fef1a932eba352`), `statistical_qa.json`, `data_audit.json`, and visually inspected `primary_exchange_rates.png`. The analysis manifest records component hashes; the QA report independently verifies them and validates match pairing, chronology, fitted-root residuals and bootstrap counts.
+- Verified checks: 171 full repository unit tests passed; `compileall -q src scripts` passed; full 1,000-refit/2,000-validation CLI smoke completed and independent artifact/fit QA passed. Original September 10 ZIP unavailable, so its historical full-snapshot results cannot be reverified here. Raw ZIP and match-level tables are ignored; third-party Cricsheet distribution rights remain to be checked before redistributing their bytes. The 2025+ locked outcomes remain intentionally unopened.

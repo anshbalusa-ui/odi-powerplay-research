@@ -128,6 +128,7 @@ test ! -e data/raw/cricsheet/odis_json_20260929.zip &&
 .venv/bin/python scripts/audit_full_cohort_analysis.py \
   --summary-output artifacts/ssac27_tradeoff/data_audit.json
 .venv/bin/python scripts/run_ssac27_tradeoff_pipeline.py
+.venv/bin/python scripts/audit_ssac27_tradeoff_results.py
 .venv/bin/python -m unittest discover -s tests -v
 .venv/bin/python -m compileall -q src scripts
 ```
@@ -138,6 +139,13 @@ frozen archive and registry before use. The default tradeoff command runs
 1,000 whole-match development refits and 2,000 fixed-prediction 2024 match
 resamples per model; pilot runs with smaller `--bootstrap-repetitions` or
 `--validation-repetitions` are **not** final uncertainty estimates.
+The final ignored release is in `artifacts/ssac27_tradeoff/`: the analysis
+manifest, all 54 labeled context cells, 2024 match-paired predictions,
+probability curves, primary model parameters, statistical QA report, and
+supported-root figure. `docs/ssac27_numeric_handoff.md` records the exact
+amended-source counts, estimates and limitations without substituting for
+these machine-readable outputs.
+
 
 ## SSAC27 pre-reliability preparation outputs
 
