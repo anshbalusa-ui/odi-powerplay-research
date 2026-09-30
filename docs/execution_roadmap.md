@@ -1,5 +1,11 @@
 # Execution Roadmap
 
+The corrected submission is the amended-source, 2015–2024 context-dependent run-wicket tradeoff analysis, not the earlier pitch-centered roadmap. Its title/question, corrected cohort, model, validation, uncertainty and evidence links are in `docs/ssac27_submission_source_of_truth.md` and unchanged `docs/ssac27_numeric_handoff.md`. Current abstract: `docs/ssac27_abstract_skeleton.md`. Only three of 18 supported roots are finite; unsupported roots are not zero. Pitch is excluded. The original September 10 archive is unavailable/unreproduced; amended September 29 controls. 2025+ outcomes were not loaded or scored.
+
+All roadmap content below is retained as historical planning only; its pitch gates, cohort counts and proposed tests are not approved current analysis scope.
+
+## Historical pitch-centered roadmap (superseded)
+
 ## Delivery strategy
 
 The project has two linked timelines:

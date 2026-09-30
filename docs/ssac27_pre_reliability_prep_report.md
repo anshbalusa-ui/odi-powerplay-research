@@ -1,3 +1,7 @@
+## Historical evidence boundary — superseded by corrected release
+
+This report and its output claims predate the corrected amended-source tradeoff release. In particular, the 1,094-match cohort, +0.082/−0.126 contrasts, and 0.740/0.708/0.710 validation AUCs below are historical and must never be used as current submission claims. Current release is 942 matches/1,884 paired innings, with three supported finite exchange-rate roots, corrected validation metrics, and pitch excluded. See `docs/ssac27_submission_source_of_truth.md` and unchanged `docs/ssac27_numeric_handoff.md`. The September 10 archive is unavailable and unreproduced; no 2025+ outcomes were loaded or scored.
+
 # SSAC27 Pre-Reliability Prep Report
 
 ## Status

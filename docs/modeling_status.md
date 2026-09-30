@@ -1,4 +1,13 @@
-# Preliminary Modeling Status
+# Modeling Status
+
+## Current corrected SSAC27 model status (2026-09-29)
+
+Current primary analysis: amended-source 2015–2024 release, 942 matches/1,884 paired innings; 871/1,742 development through 2023 and 71/142 untouched 2024 validation. The corrected 2025+ registry metadata count is 152 match IDs; no outcomes were loaded or scored. The original September 10 fixed ZIP is unavailable and unreproduced; amended official September 29 archive controls. The current submission source/evidence map is `docs/ssac27_submission_source_of_truth.md`; exact technical details are in unchanged `docs/ssac27_numeric_handoff.md`.
+
+The primary model is six-interaction L2 logistic regression. At 47 runs, wickets 1→2, the estimand solves $p(R+d,W+1,C)=p(R,W,C)$ for a nonnegative bounded run increment. Only 3/18 contexts yield finite supported roots (14.143, 13.248, 29.763); 15 are undefined, not zero. Primary 2024 AUC .6626 (95% CI .5461–.7681), log loss .6726, Brier .2368; additive AUC .6737/log loss .6650/Brier .2335; four-term interaction AUC .6784/log loss .6669/Brier .2334. The primary did not improve AUC or log loss. The paired neutral-context contrast is +5.185 percentage points (95% CI −0.457,+11.182), including zero. Pitch is excluded; no causal or universal price claim.
+
+## Historical preliminary model status (superseded; provenance only)
+
 
 ## Scope and lock state
 
@@ -13,7 +22,7 @@ double-coding has not passed, and only ten compliant matches fall in the 2024
 validation year. The pitch interaction run is therefore a reproducibility and
 sample-size checkpoint, not a reliability-cleared published result.
 
-**Current measurement rule:** final pitch-report variables may standardize only
+**Historical pitch measurement rule:** final pitch-report variables were standardized only
 expected playing effects explicitly stated by eligible pre-match sources. The
 researchers do not independently diagnose the surface and do not infer spin from
 dryness, pace/seam from grass or moisture, batting ease from hardness/flatness, or

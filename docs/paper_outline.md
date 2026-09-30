@@ -1,15 +1,26 @@
 # Paper Outline
 
+## Current SSAC27 paper direction (2026-09-29)
+
+**Title:** *What Is a Powerplay Wicket Worth? Context-Dependent Run-Wicket Tradeoffs in ODI Cricket*
+
+The paper's primary question is: Among men's ODIs, how many additional first-ten-over runs are associated with the same modeled match win probability as losing one additional wicket, and how does that exchange rate vary with innings order, pre-match team strength, and prior venue scoring environment? In plain language: **What is a powerplay wicket worth in runs, and does that value change with match context?**
+
+The current abstract reports the corrected amended-source cohort (942 matches/1,884 paired innings; development 871/1,742 and 2024 validation 71/142), the bounded 47-run, wickets-1→2 exchange-rate estimand, only supported finite roots, and 2024 validation comparisons. The only three finite roots among 18 supported contexts are reported; undefined roots are not zero. The observational paired contrast CI includes zero. Pitch is excluded, and no causal or universal wicket-price claim is allowed. No 2025+ outcomes are opened or scored.
+
+Use `docs/ssac27_submission_source_of_truth.md` for current evidence/navigation and unchanged `docs/ssac27_numeric_handoff.md` for exact numeric detail. The outline below is the old pitch-centered manuscript plan, retained as archival planning material and not current submission scope.
+
+## Historical paper outline (superseded)
+
+
 This outline is for the full paper. The SSAC27 abstract is a focused extract with actual results from the same broad modern-ODI design, not a separate World-Cup-only study. Its separate plan is in `docs/ssac27_submission_plan.md`.
 
-## Current drafting status
+## Historical drafting status (superseded)
 
-The cohort, powerplay extraction, pre-match team and venue histories,
-chronological model table, 2024 validation, uncertainty estimates, preliminary
-figures, the 243-match source- and timing-verified pitch-report collection, and
-the completed legacy code re-audit are reproducible. `docs/results.md` contains
-the current quantitative narrative and `docs/limitations.md` fixes its
-interpretation boundary.
+This historical outline described cohort construction, powerplay extraction,
+pre-match team/venue histories, preliminary figures, and pitch-report collection.
+Those materials are archival in `docs/results.md`; they do not describe current
+SSAC27 submission scope.
 
 The **historical** strict analytical pitch release contains 229 rows: 214
 accepted legacy rows and 15 current-standard rows. Fourteen historically

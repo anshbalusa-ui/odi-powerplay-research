@@ -1,6 +1,15 @@
 # Limitations and External Blockers
 
-## Current evidence boundary
+## Current corrected-release limitations (2026-09-29)
+
+The current submission analysis is an observational, context-dependent run-wicket tradeoff study, not the earlier pitch-primary project. It uses 942 amended-source matches/1,884 paired innings (871/1,742 development through 2023; 71/142 temporal validation in 2024). The validation sample is only 71 match clusters, so estimates remain uncertain. Only 3 of 18 supported run-wicket roots are finite; the other 15 are undefined, not zero. A finite model root is conditional on the specified model and support, not a universal or causal wicket price.
+
+The neutral-context paired first-minus-chase probability contrast is +5.185 percentage points (95% CI −0.457,+11.182), which includes zero; evidence does not establish an innings-order difference. Primary validation AUC .6626/log loss .6726 did not improve on additive AUC .6737/log loss .6650. Pitch was completely excluded, so no pitch-measurement or pitch-interaction conclusion is permitted. No 2025+ match outcomes were loaded or scored. See `docs/ssac27_submission_source_of_truth.md` and unchanged `docs/ssac27_numeric_handoff.md`.
+
+All limitations below were written for earlier cohort/model/pitch plans. Preserve them as provenance only; do not treat their counts, gates, or proposed results as current-release facts.
+
+
+## Historical evidence boundary (superseded)
 
 The implemented analysis is results-complete for a full-cohort 2024 temporal
 validation that includes a historical venue-scoring proxy and a separate
@@ -68,7 +77,7 @@ not be treated as stable league tables.
 
 ## Pre-match pitch reports and ESPNcricinfo
 
-Current reproducible source/timing coverage is **243 of 1,094 primary matches
+Historical source/timing coverage was **243 of 1,094 primary matches
 (22.212066%)**. All 243 are non-ESPN, match-specific pre-match reports with
 verified publication timing. The strict re-audited analytical release contains
 229 rows; 14 legacy rows whose sources could not be re-opened are excluded.

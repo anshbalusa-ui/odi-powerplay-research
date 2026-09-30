@@ -1,5 +1,13 @@
 # Source Notes
 
+This file preserves source and rights provenance from the historical pitch-centered
+pipeline, including its 1,094-match source queue; it does **not** define current
+SSAC27 submission scope. The current amended-source 942-match run–wicket
+analysis excludes pitch predictors and 2025+ outcome records. See
+[`ssac27_submission_source_of_truth.md`](ssac27_submission_source_of_truth.md)
+for current submission claims and [`ssac27_numeric_handoff.md`](ssac27_numeric_handoff.md)
+for the corrected source amendment and numeric evidence.
+
 ## Cricsheet
 
 - Downloads: https://cricsheet.org/downloads/
@@ -11,14 +19,14 @@
 
 Use the official JSON format, record the snapshot date/checksum, and attribute Cricsheet in the paper. Cricsheet's site notes that some matches may be withheld, so the cohort description must report actual available counts rather than assuming complete coverage.
 
-## Pitch-first scope decision
+## Historical pitch-first scope decision (superseded for SSAC27)
 
 - Pitch hardness/moisture and performance: https://journals.sta.uwi.edu/ojs/index.php/ta/article/view/971/0
 - Water content, compaction, bounce, pace, and turn: https://journals.sta.uwi.edu/ojs/index.php/wije/article/view/7735
 - Cricket-ball swing and humidity: https://journals.sagepub.com/doi/abs/10.1177/1754337119872874
 - ICC ODI playing-condition note on dew: https://www.icc-cricket.com/news/mens-odi-match-clause-12-start-of-play-cessation-of-play
 
-The primary design does not collect generic hourly temperature, humidity, precipitation, cloud cover, wind speed, or dew point. Those variables do not directly describe the surface behavior at the center of the research question, while published cricket-ball research reports no significant effect of humidity in isolation on swing. The pitch code instead focuses on expected batting ease, pace/seam support, spin support, bounce, and two-paced behavior. An explicit pre-match dew expectation may be retained as a secondary condition because ODI playing conditions recognize dew as a match factor.
+The historical pitch-centered design did not collect generic hourly temperature, humidity, precipitation, cloud cover, wind speed, or dew point. Those variables did not directly describe the surface behavior at the center of that earlier research question, while published cricket-ball research reports no significant effect of humidity in isolation on swing. The historical source-stated pitch code focused on explicitly expected batting ease, pace/seam support, spin support, bounce, and two-paced behavior. An explicit pre-match dew expectation could be retained as a secondary condition because ODI playing conditions recognize dew as a match factor. None of these measurements enters the corrected SSAC27 tradeoff analysis.
 
 ## ESPNcricinfo
 

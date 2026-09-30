@@ -1,5 +1,12 @@
 # SSAC27 Submission Plan
 
+## Approved current abstract and evidence boundary (2026-09-29)
+
+The submission-ready abstract is `docs/ssac27_abstract_skeleton.md` (title plus body under 499 words; required Introduction, Methods, Results, Conclusion headings; no more than two assets). Its title and technical/plain-language question match `docs/research_question_and_introduction.md`. It reports 942 matches/1,884 paired innings from the corrected amended-source 2015–2024 release, 3 supported finite roots among 18 contexts (15 undefined, not zero), current 2024 validation comparisons, and the neutral paired probability contrast whose CI includes zero. The estimates are observational; there is no universal wicket price. Pitch is excluded and no pitch claim is made. No 2025+ outcomes were loaded or scored.
+
+Current evidence/navigation: `docs/ssac27_submission_source_of_truth.md`. Exact numeric/model specification: unchanged `docs/ssac27_numeric_handoff.md`. The September 29 amended archive is the available source of truth; original September 10 archive is unavailable and unreproduced.
+
+
 ## Role in the project
 
 The MIT Sloan Sports Analytics Conference 2027 Research Papers Competition is a near-term milestone for this research, not its only target. The broader ODI paper will continue after the abstract deadline and can expand the sample, features, and sensitivity analyses.
@@ -33,12 +40,9 @@ The source amendment, exact estimand, support/uncertainty and stop rules are in
 `docs/ssac27_powerplay_tradeoff_protocol.md`. Older pitch-centered milestones,
 historical model numbers and fixed-ZIP cohort claims below are **historical
 planning/provenance**, not completed results of the new primary analysis.
-Pitch expectations are secondary measurement only until blinded discovery,
-three compliant passes, human evidence audit and approval exist. PE-008 is
-proposed but not executable without an independently approved machine-only
-search-result quarantine gate.
+Pitch measurement is excluded from the current submission analysis; no pitch-effect claim is approved. Any future pitch analysis would require a separately approved design and evidence gate. Current work does not estimate pitch interactions.
 
-**Amended measurement rule (2026-09-27):** permit bounded inference from source-grounded, reviewed pre-match text; preserve uncertainty, outcome blindness and independent model-assessment stability. Never present estimated expectations as actual pitch truth. See `docs/pitch_expectation_method.md`.
+**Historical measurement amendment (2026-09-27):** The text below describes the earlier pitch-centered submission proposal, not the current SSAC27 analysis. The distinct future model-estimated pre-match expected playing environment method remains documented in `docs/pitch_expectation_method.md`, but no measurement approval or pitch–outcome finding is claimed here.
 
 ## Historical pitch-centered minimum viable SSAC analysis (superseded)
 
@@ -100,7 +104,7 @@ at that gate.** No pitch Finding 2 or pitch figure is promised without a
 viable measured sample and subsequent unlocked analysis. The 2025+ outcome
 lock cannot compensate for missing source content.
 
-## Pre-reliability prep run
+## Historical pre-reliability prep run (superseded)
 
 The reproducible prep branch now has canonical, machine-readable outputs for the
 unlocked 2015–2024 cohort: 942 matches and 1,884 team-innings, with 71 matches
@@ -121,7 +125,7 @@ judgments or completed reconciliation. The locked 2025+ outcomes remain
 unscored and absent from these evidence outputs.
 
 
-## September 5–October 1 sprint
+## Historical September 5–October 1 sprint plan
 
 | Dates | Deliverable | Go/no-go test |
 |---|---|---|
@@ -134,7 +138,7 @@ unscored and absent from these evidence outputs.
 | Sep 29–30 | write and revise sub-500-word abstract | all claims backed by frozen outputs |
 | Oct 1 | final rules check and submit before 11:59 p.m. ET | repository public and links verified |
 
-## Scope fallback ladder
+## Historical scope fallback ladder (not current approved scope)
 
 If new expectation measurement or sample viability is the bottleneck, reduce scope transparently rather than inventing coverage:
 
@@ -148,7 +152,7 @@ If new expectation measurement or sample viability is the bottleneck, reduce sco
 Never fill missing expected conditions using post-match reports, venue
 history, old pitch labels, or unsupported researcher inference.
 
-## Abstract shell
+## Historical abstract shell (superseded by `docs/ssac27_abstract_skeleton.md`)
 
 ### Introduction
 

@@ -1,8 +1,10 @@
-# What Makes a Successful ODI Powerplay?
+# What Is a Powerplay Wicket Worth? Context-Dependent Run-Wicket Tradeoffs in ODI Cricket
 
 [![Tests](https://github.com/anshbalusa-ui/odi-powerplay-research/actions/workflows/tests.yml/badge.svg)](https://github.com/anshbalusa-ui/odi-powerplay-research/actions/workflows/tests.yml)
 
 Reproducible Python research pipeline for an **observational** study of the context-dependent powerplay run–wicket exchange rate in men's ODIs. Separately, the repo preserves historical source-stated pre-match pitch effects and an unapproved model-estimated pre-match expected playing environment measurement track.
+
+**Current SSAC27 release:** The [submission source of truth](docs/ssac27_submission_source_of_truth.md) is the current title, question, claim boundary and Figure 1/Table 1 input sheet; [numerical handoff](docs/ssac27_numeric_handoff.md) contains the verified corrected numbers. The official September 29 amended-source analysis has 942 clean 2015–2024 matches (1,884 paired innings), with 871/1,742 in development and 71/142 in untouched 2024 validation. Its 1→2 wicket exchange at 47 runs has three finite roots across 18 contexts; 15 are undefined, not zero. The primary six-term 2024 AUC is 0.6626 versus 0.6737 additive and 0.6784 four-term; it does **not** improve held-out AUC or log loss. Results are conditional associations, not causal advice or a universal wicket price. Pitch is excluded. The older 1,094-match and 0.740 AUC outputs below are explicitly historical, not current submission evidence.
 
 ## Research scope
 
@@ -12,16 +14,16 @@ World Cups are a labeled subgroup and sensitivity analysis, not the main dataset
 
 ## Two-track deliverables
 
-- **SSAC27 milestone:** finish a results-complete, reproducible analysis from the broad modern-ODI cohort for the abstract deadline on October 1, 2026 at 11:59 p.m. ET. The submission is a milestone, not the endpoint of the research.
+- **SSAC27 milestone:** the corrected amended-source, results-complete unlocked tradeoff analysis supports an observational abstract for the October 1, 2026, 11:59 p.m. ET deadline. Submission remains a milestone, not the endpoint of the research.
 - **Full research paper:** continue expanding the cohort, separately audited pre-match expectation measurement, robustness analyses, and paper after the SSAC abstract is submitted, regardless of the competition decision.
 
-The SSAC27 paper now centers on an observational, context-dependent **powerplay run–wicket exchange rate** on the match win-probability scale. The full modern ODI cohort—not the small pitch-report subset—supports this primary question. Pitch is a separate secondary measurement extension and cannot block the main paper. See the committed `docs/ssac27_powerplay_tradeoff_protocol.md`.
+The SSAC27 paper now centers on an observational, context-dependent **powerplay run–wicket exchange rate** on the match win-probability scale. The amended-source 942-match unlocked ODI cohort—not the small pitch-report subset—supports this primary question. Pitch is a separate secondary measurement extension, excluded from this analysis; see the frozen `docs/ssac27_powerplay_tradeoff_protocol.md`.
 
 ## Primary research question
 
-> Among men's ODIs, how many additional first-ten-over runs are associated with the same modeled match win probability as preserving one more wicket, and how does that run–wicket exchange rate vary with innings order, pre-match team strength, and earlier-date venue scoring environment?
+> Among men's ODIs, how many additional first-ten-over runs are associated with the same modeled match win probability as losing one additional wicket, and how does that run-wicket exchange rate vary with innings order, pre-match team strength, and prior venue scoring environment?
 
-This is a conditional association, **not** a causal instruction to sacrifice wickets. The primary 1→2 wicket exchange is solved from predicted probabilities within observed development-data support and reported with whole-match uncertainty. Match-specific pitch expectations remain secondary and unapproved for outcome analysis.
+In plain language: **What is a powerplay wicket worth in runs, and does that value change with match context?** This is a conditional model-standardized association, **not** a causal instruction to sacrifice wickets. The primary 1→2 wicket exchange is solved from predicted probabilities within observed development-data support and reported with whole-match uncertainty. Match-specific pitch expectations remain secondary and unapproved for outcome analysis.
 
 The new pitch-expectation measurement is **not yet an effect-modification
 result**. The hardened outcome-blind source screen has 30 independently
@@ -38,7 +40,7 @@ and the separate historical pitch release.
 
 One row represents one batting-team innings in one match. The outcome is `batting_team_won`. A match normally contributes two rows, so resampling, confidence intervals, and cross-validation must group by `match_id`.
 
-## What is already implemented
+## What is already implemented (current analysis and separately retained historical pipeline)
 
 - A standard-library Cricsheet JSON extractor for first-10-over runs, wickets,
   run rate, boundary-ball percentage, dot-ball percentage, match context, and outcome.
@@ -52,8 +54,9 @@ One row represents one batting-team innings in one match. The outcome is `battin
   comparisons across 40 innings with zero discrepancies.
 - Date-batched pre-match Elo and rolling prior-20 win rates computed from all
   available clean history without same-day or future leakage.
-- Date-batched prior-20 venue powerplay histories covering 997 of 1,094 primary
-  matches without using same-day or future performances.
+- In the **historical September 10 pipeline**, date-batched prior-20 venue
+  powerplay histories covered 997 of 1,094 primary matches without same-day
+  or future performances; this is not the corrected SSAC27 analysis cohort.
 - A hashed, feature-allowlisted model table with development (through 2023),
   temporal-validation (2024), and locked-test (2025+) partitions.
 - Fixed nested logistic models, constrained Random Forest and XGBoost challengers,
@@ -76,6 +79,12 @@ One row represents one batting-team innings in one match. The outcome is `battin
 - Pitch/source-timing templates, research design, data dictionary, pitch-effect codebook,
   transformation log, paper outline, and execution roadmap.
 
+### Historical September 10 snapshot (superseded for SSAC27)
+
+The counts in the following paragraph and historical source/pitch tooling above
+are provenance from the older broad-cohort run, **not** the amended-source
+942-match SSAC27 result or an eligible abstract claim.
+
 For the Cricsheet snapshot retrieved on September 10, 2026, the pipeline found
 3,182 matches, retained 2,742 in the core clean dataset, and selected 1,094 matches
 (2,188 team-innings) for the 2015-forward men's ODI primary cohort. The World Cup
@@ -91,7 +100,10 @@ amended cohort has 871 development matches and 71 validation matches,
 two innings each. This is **not** a reproduction of the missing September 10
 archive; no 2025+ match outcomes were opened or scored.
 
-## Planned pipeline
+## Separately proposed pitch-measurement pipeline (not the SSAC27 primary analysis)
+
+This extension requires blinded measurement and human approval before any
+separate outcome analysis; it is not part of the corrected tradeoff release.
 
 ```text
 Cricsheet JSON -> match/innings table -> rolling team and venue history
@@ -151,10 +163,13 @@ keeps derived model artifacts, predictions, and figures out of Git pending
 third-party rights review; the release builder does not publish raw data.
 
 
-## SSAC27 pre-reliability preparation outputs
+## Historical SSAC27 pre-reliability preparation outputs (superseded)
 
-The current branch also materializes the abstract-ready, unlocked analysis
-without opening the locked 2025+ outcomes:
+This section records an earlier branch's unlocked, preliminary pipeline.
+Its 0.740/0.708/0.710 AUC and older marginal contrasts are **not** current
+SSAC27 abstract evidence. The corrected tradeoff release and the tracked
+aggregate abstract evidence are governed by the
+[submission source of truth](docs/ssac27_submission_source_of_truth.md).
 
 - `scripts/audit_full_cohort_analysis.py` independently audits the 2015–2024
   cohort, metric invariants, match pairing, and non-pitch feature allowlist.
@@ -169,9 +184,12 @@ without opening the locked 2025+ outcomes:
   explicit-source/human-reconciliation tools. The incomplete 46-row human
   recoding is superseded **for the new construct**, not claimed as completed.
   The legacy runner cannot be used as the new expectation analysis.
-- `scripts/build_ssac_abstract_support.py` and
-  `scripts/validate_ssac_abstract.py` build and validate the evidence-backed
-  `docs/ssac27_abstract_skeleton.md` under the 499-word SSAC limit.
+- `scripts/build_ssac_abstract_support.py` now builds the corrected tradeoff
+  evidence and ledger from the verified amended-source release;
+  `scripts/validate_ssac_abstract.py` validates the current
+  `docs/ssac27_abstract_skeleton.md` against that evidence under the
+  499-word SSAC limit. The release must exist locally; missing/altered QA
+  or files fail closed.
 
 Generated tables and figures are intentionally ignored by Git; tracked abstract
 evidence carries source hashes in its manifest. The public-repository audit still

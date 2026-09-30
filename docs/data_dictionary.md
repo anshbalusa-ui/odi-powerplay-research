@@ -1,5 +1,9 @@
 # Data Dictionary
 
+This dictionary records historical and general pipeline schemas; do not assume every listed table or pitch field is part of the current submission model. Current corrected SSAC27 release: 942 amended-source matches/1,884 paired innings (development 871/1,742; 2024 validation 71/142). Pitch variables are excluded; no 2025+ outcomes were loaded or scored. See `docs/ssac27_submission_source_of_truth.md` and unchanged `docs/ssac27_numeric_handoff.md` for the approved current feature/evidence boundary.
+
+## Historical and general pipeline schemas
+
 ## Dataset levels
 
 | Dataset | Grain | Purpose |
@@ -273,11 +277,13 @@ source-stated pitch effects.
 | `analysis_eligible_primary` | binary | passes core cleaning and the 2015-forward men's ODI primary rules; no event restriction |
 | `source_snapshot_id` | string | hash/date identifier for raw-source manifest |
 
-## Final-model anti-leakage and measurement allowlist
+## Historical pitch-enabled model allowlist (not the corrected SSAC27 model)
 
-The final training matrix may contain only approved powerplay, **re-audited
-source-stated pre-match pitch-effect**, historical venue, pre-match team strength,
-toss, innings order, venue/grouping, year, and competition-type features. Match ID
-is a grouping key, not a predictor. Outcome, winner, margin, result method, full
-innings total, later-match data, generic hourly weather variables, raw physical
-surface descriptors, and any researcher-inferred pitch labels are prohibited.
+In the older pitch-enabled design, the training matrix could contain only approved
+powerplay, **re-audited source-stated pre-match pitch effects**, historical venue,
+pre-match team strength, toss, innings order, venue/grouping, year, and
+competition-type features. Match ID was a grouping key, not a predictor. Outcome,
+winner, margin, result method, full innings total, later-match data, generic
+hourly weather, raw physical descriptors, and researcher-inferred pitch labels
+were prohibited. The corrected SSAC27 primary model excludes **all** pitch fields;
+its separate exact feature allowlist and audit are in the corrected release.

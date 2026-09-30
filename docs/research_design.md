@@ -1,5 +1,18 @@
 # Research Design and Analysis Plan
 
+## Current SSAC27 design (amended-source release, 2026-09-29)
+
+**Title:** *What Is a Powerplay Wicket Worth? Context-Dependent Run-Wicket Tradeoffs in ODI Cricket*
+
+**Primary question:** Among men's ODIs, how many additional first-ten-over runs are associated with the same modeled match win probability as losing one additional wicket, and how does the run-wicket exchange rate vary with innings order, pre-match team strength, and prior venue scoring environment? Plain-language version: **What is a powerplay wicket worth in runs, and does that value change with match context?**
+
+The primary estimand is the nonnegative bounded root $d$ in $p(R+d,W+1,C)=p(R,W,C)$ at 47 runs and wickets 1→2. The analysis is observational, not causal; unsupported roots are undefined rather than zero. The corrected amended-source sample is 942 matches/1,884 paired innings (development 871/1,742 through 2023; 2024 validation 71/142). A six-interaction L2 logistic model is primary. Pitch measurements are excluded; no pitch effect claim is part of this analysis. The 2025+ outcomes remain unopened and unscored.
+
+Refer to unchanged `docs/ssac27_numeric_handoff.md` for full numeric/model/support detail and `docs/ssac27_submission_source_of_truth.md` for current evidence/navigation. Everything below is the earlier pitch-primary design retained as historical provenance, not the approved current design.
+
+## Historical design and analysis plan (superseded)
+
+
 ## 1. Study identity
 
 **Working title:** *What Makes a Successful ODI Powerplay? Aggression, Wicket Preservation, Opposition Strength, and Pre-Match Expected Playing Conditions*
