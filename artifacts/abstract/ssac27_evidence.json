@@ -1,202 +1,199 @@
 {
-  "abstract_requirements": {
-    "headings": [
-      "Introduction",
-      "Methods",
-      "Results",
-      "Conclusion"
-    ],
-    "maximum_tables_and_figures_combined": 2,
-    "requires_actual_results": true,
-    "word_limit_including_title": 499
-  },
-  "actionable_powerplay": {
-    "runs_low_to_high_at_middle_wickets": {
-      "difference": 0.08229918667511871,
-      "high_probability": 0.46231780877236234,
-      "high_runs": 57,
-      "low_probability": 0.38001862209724363,
-      "low_runs": 38,
-      "middle_wickets": 2
-    },
-    "wickets_low_to_high_at_middle_runs": {
-      "difference": -0.1261544782854876,
-      "high_probability": 0.4184477393747483,
-      "high_wickets": 2,
-      "low_probability": 0.5446022176602359,
-      "low_wickets": 1,
-      "middle_runs": 47
-    }
-  },
-  "analysis_scope": "primary_mens_odi_2015_through_2024_unlocked",
-  "artifact_version": 1,
+  "analysis_scope": "amended_source_unlocked_2015_2024_only",
+  "artifact_version": 2,
+  "canonical_handoff": "docs/ssac27_numeric_handoff.md",
   "cohort": {
-    "boundary_pct": {
-      "maximum": 35.0,
-      "mean": 11.285386,
-      "median": 11.666667,
-      "minimum": 0.0
-    },
-    "dot_ball_pct": {
-      "maximum": 91.666667,
-      "mean": 65.678521,
-      "median": 66.666667,
-      "minimum": 31.666667
+    "development": {
+      "matches": 871,
+      "rows": 1742
     },
     "matches": 942,
-    "powerplay_runs": {
-      "maximum": 118.0,
-      "mean": 48.534501,
-      "median": 47.0,
-      "minimum": 9.0
-    },
-    "powerplay_wickets": {
-      "maximum": 6.0,
-      "mean": 1.426752,
-      "median": 1.0,
-      "minimum": 0.0
-    },
-    "rows": 1884
+    "rows": 1884,
+    "validation": {
+      "matches": 71,
+      "rows": 142
+    }
   },
   "evidence_ledger": [
     {
-      "claim": "The unlocked primary cohort contains 942 matches and 1884 team-innings from 2015 through 2024.",
+      "claim": "942 clean men's ODIs / 1,884 paired innings (871 development; 71 untouched 2024 validation).",
       "claim_id": "cohort",
-      "source_artifact": "/Users/anshbalusa/Documents/Codex/2026-08-24/github-plugin-github-openai-curated-remote/work/odi-powerplay-research/artifacts/tables/ssac_full_cohort_results.json",
-      "source_selector": "cohort_descriptives.unlocked_primary_total",
+      "source_artifact": "artifacts/ssac27_tradeoff/analysis_manifest.json",
+      "source_selector": "cohort and split counts",
       "status": "allowed"
     },
     {
-      "claim": "Temporal validation covers 71 matches and 142 innings from 2024.",
+      "claim": "At 47 runs and 1\u21922 wickets, 3 of 18 contexts have finite roots: 14.143 (4.124\u201318.450; 735/1,000), 13.248 (4.713\u201317.481; 758/1,000), and 29.763 (13.844\u201330.934; 563/1,000); 15 are undefined, not zero.",
+      "claim_id": "exchange_rate",
+      "source_artifact": "artifacts/ssac27_tradeoff/primary_model_metrics.json",
+      "source_selector": "primary_defined_roots",
+      "status": "allowed_associational"
+    },
+    {
+      "claim": "2024 six-term primary ROC-AUC 0.6626, log loss 0.6726; additive 0.6737 / 0.6650; four-term 0.6784 / 0.6669. The primary did not improve AUC or log loss.",
       "claim_id": "validation",
-      "source_artifact": "/Users/anshbalusa/Documents/Codex/2026-08-24/github-plugin-github-openai-curated-remote/work/odi-powerplay-research/artifacts/tables/ssac_full_cohort_results.json",
-      "source_selector": "cohort_descriptives.validation",
+      "source_artifact": "artifacts/ssac27_tradeoff/validation_metrics.json",
+      "source_selector": "three frozen model metrics",
+      "status": "allowed_associational"
+    },
+    {
+      "claim": "45 paired comparisons / 90 status rows; only two point root differences, neither with a valid paired CI under the 80% joint-refit rule.",
+      "claim_id": "paired_context",
+      "source_artifact": "artifacts/ssac27_tradeoff/paired_context_differences.json",
+      "source_selector": "paired root-difference statuses",
+      "status": "allowed_with_caveat"
+    },
+    {
+      "claim": "At neutral Elo and median earlier-date venue scoring, 47 runs and 1\u21922 wickets: batting first 0.5046\u21920.3995 (\u221210.505 points; interval \u221215.473 to \u22127.215), chase 0.5578\u21920.4009 (\u221215.690; \u221220.614 to \u221212.698).",
+      "claim_id": "neutral_fixed_run",
+      "source_artifact": "artifacts/ssac27_tradeoff/context_exchange_rates.json",
+      "source_selector": "primary_1_to_2; elo_state=2; venue_state=2; innings=1,0",
+      "status": "allowed_associational"
+    },
+    {
+      "claim": "Neutral first-minus-chase wicket-loss probability contrast +5.185 percentage points (paired interval \u22120.457 to +11.182); interval includes zero, so no established innings-order difference.",
+      "claim_id": "neutral_paired",
+      "source_artifact": "artifacts/ssac27_tradeoff/paired_context_differences.json",
+      "source_selector": "innings; fixed_run_probability_difference; elo_state=2; venue_state=2",
+      "status": "allowed_with_caveat"
+    },
+    {
+      "claim": "Independent statistical QA passed; 1,000/1,000 development match refits and 2,000/2,000 validation match resamples per model, with no 2025+ outcome records read.",
+      "claim_id": "bootstrap_qa",
+      "source_artifact": "artifacts/ssac27_tradeoff/statistical_qa.json",
+      "source_selector": "pass; development_bootstrap; validation_bootstrap_counts_reconcile; locked_rows_read",
       "status": "allowed"
     },
     {
-      "claim": "The fixed runs+wickets benchmark had validation ROC-AUC 0.740 (95% interval 0.642\u20130.822).",
-      "claim_id": "model",
-      "source_artifact": "/Users/anshbalusa/Documents/Codex/2026-08-24/github-plugin-github-openai-curated-remote/work/odi-powerplay-research/artifacts/tables/ssac_full_cohort_results.json",
-      "source_selector": "validation_models[model=powerplay_benchmark]",
-      "status": "allowed_associational"
+      "claim": "152 2025+ registry IDs were counted from metadata only; no such match records or outcomes opened, fit or scored.",
+      "claim_id": "locked_period",
+      "source_artifact": "artifacts/ssac27_tradeoff/statistical_qa.json",
+      "source_selector": "raw_manifest.locked_registry_match_count_metadata_only; locked_rows_read",
+      "status": "allowed_with_caveat"
     },
     {
-      "claim": "Adding pre-match context to powerplay runs and wickets yielded validation ROC-AUC 0.708; the pre-specified interaction model yielded 0.710.",
-      "claim_id": "adjusted_model",
-      "source_artifact": "/Users/anshbalusa/Documents/Codex/2026-08-24/github-plugin-github-openai-curated-remote/work/odi-powerplay-research/artifacts/tables/ssac_full_cohort_results.json",
-      "source_selector": "validation_models[m1_context_powerplay,m2_prespecified_interactions]",
-      "status": "allowed_associational"
-    },
-    {
-      "claim": "Model-standardized predicted probability changed by +0.082 across the empirical interquartile run contrast at middle wickets, and by -0.126 across the empirical interquartile wicket contrast at middle runs.",
-      "claim_id": "actionable",
-      "source_artifact": "/Users/anshbalusa/Documents/Codex/2026-08-24/github-plugin-github-openai-curated-remote/work/odi-powerplay-research/artifacts/tables/powerplay_marginal_results.json",
-      "source_selector": "contrasts",
-      "status": "allowed_associational"
-    },
-    {
-      "claim": "Pitch interaction results are blocked: the outcome-blind pitch subset has 178 unlocked matches, but independent reliability and reconciliation are not cleared.",
-      "claim_id": "pitch_status",
-      "source_artifact": "/Users/anshbalusa/Documents/Codex/2026-08-24/github-plugin-github-openai-curated-remote/work/odi-powerplay-research/artifacts/tables/pitch_sparsity_diagnostics.json",
-      "source_selector": "matches_by_split",
+      "claim": "Any 2025+ match-outcome result or locked-test score is prohibited.",
+      "claim_id": "locked_outcome_result",
+      "source_artifact": "artifacts/ssac27_tradeoff/statistical_qa.json",
+      "source_selector": "locked_data_audit_scored; locked_rows_read",
       "status": "blocked"
+    },
+    {
+      "claim": "Pitch\u2013outcome results are blocked: pitch is excluded; model-estimated pre-match expected playing environment is unapproved for outcome analysis.",
+      "claim_id": "pitch",
+      "source_artifact": "docs/ssac27_numeric_handoff.md",
+      "source_selector": "claim boundary",
+      "status": "blocked"
+    },
+    {
+      "claim": "Historical source-stated pre-match pitch effects are a separate re-audited derivative, not this model's pitch interaction.",
+      "claim_id": "historical_pitch",
+      "source_artifact": "docs/ssac27_numeric_handoff.md",
+      "source_selector": "claim boundary",
+      "status": "historical_only"
     }
   ],
-  "interpretation": "All substantive estimates are observational associations.",
   "locked_test_outcomes_loaded": false,
   "locked_test_scored": false,
-  "models": {
-    "m1_context_powerplay": {
-      "accuracy_at_0_5": 0.6408450704225352,
-      "brier_score": 0.21832252695961818,
-      "brier_score_lower_95": 0.18104249928899174,
-      "brier_score_upper_95": 0.2595100548748559,
-      "log_loss": 0.6246453346711133,
-      "log_loss_lower_95": 0.5362830813847023,
-      "log_loss_upper_95": 0.7238822328048641,
-      "model": "m1_context_powerplay",
-      "roc_auc": 0.7081928188851419,
-      "roc_auc_lower_95": 0.59667724657806,
-      "roc_auc_upper_95": 0.8087829795675461,
-      "validation_matches": 71,
-      "validation_rows": 142
+  "neutral_fixed_run_contrasts": {
+    "batting_first": {
+      "ci_lower": -0.15473425908035582,
+      "ci_upper": -0.07214577671968256,
+      "difference": -0.10505339847448503,
+      "probability_from": 0.5045760059800619,
+      "probability_to": 0.3995226075055769,
+      "valid_refits": 1000
     },
-    "m2_prespecified_interactions": {
-      "accuracy_at_0_5": 0.6549295774647887,
-      "brier_score": 0.21857657978563425,
-      "brier_score_lower_95": 0.1807205403176821,
-      "brier_score_upper_95": 0.26091395144953733,
-      "log_loss": 0.6271332604181107,
-      "log_loss_lower_95": 0.5369466180055583,
-      "log_loss_upper_95": 0.7295444329392121,
-      "model": "m2_prespecified_interactions",
-      "roc_auc": 0.7099781789327514,
-      "roc_auc_lower_95": 0.5968855385836144,
-      "roc_auc_upper_95": 0.8087879389010116,
-      "validation_matches": 71,
-      "validation_rows": 142
-    },
-    "powerplay_benchmark": {
-      "accuracy_at_0_5": 0.6971830985915493,
-      "brier_score": 0.2118100444682702,
-      "brier_score_lower_95": 0.1896366317341148,
-      "brier_score_upper_95": 0.23746856768547792,
-      "log_loss": 0.6133949053328791,
-      "log_loss_lower_95": 0.5657086602348036,
-      "log_loss_upper_95": 0.6683002849996282,
-      "model": "powerplay_benchmark",
-      "roc_auc": 0.7395358063876215,
-      "roc_auc_lower_95": 0.6415319381075183,
-      "roc_auc_upper_95": 0.8220690339218408,
-      "validation_matches": 71,
-      "validation_rows": 142
+    "chase": {
+      "ci_lower": -0.20613577372494502,
+      "ci_upper": -0.12698082377423295,
+      "difference": -0.1569041066690507,
+      "probability_from": 0.5577578925254442,
+      "probability_to": 0.4008537858563935,
+      "valid_refits": 1000
     }
   },
+  "neutral_paired_context_difference": {
+    "estimate": 0.051850708194565664,
+    "lower_95": -0.004565454865029575,
+    "upper_95": 0.11181689916839137,
+    "valid_paired_replicates": 1000
+  },
   "pitch_measurement": {
-    "matches_by_split": {
-      "development": 168,
-      "locked_test": 51,
-      "validation": 10
-    },
-    "pitch_interaction_claim_allowed": false,
-    "reconciliation_status": "not_cleared",
-    "reliability_status": "not_cleared",
-    "sparse_cell_count": 150,
-    "unlocked_matches": 178
+    "model_estimated_expected_environment_outcome_analysis_approved": false,
+    "pitch_interaction_claim_allowed": false
   },
+  "primary_estimand": {
+    "contexts_total": 18,
+    "defined_roots": 3,
+    "roots": [
+      {
+        "ci_lower": 4.713,
+        "ci_upper": 17.481,
+        "runs_per_wicket": 13.248,
+        "valid_refits": 758
+      },
+      {
+        "ci_lower": 4.124,
+        "ci_upper": 18.45,
+        "runs_per_wicket": 14.143,
+        "valid_refits": 735
+      },
+      {
+        "ci_lower": 13.844,
+        "ci_upper": 30.934,
+        "runs_per_wicket": 29.763,
+        "valid_refits": 563
+      }
+    ],
+    "starting_runs": 47,
+    "undefined_roots": 15,
+    "wickets_from": 1,
+    "wickets_to": 2
+  },
+  "release_manifest_sha256": "99574bd3b67b20ee68face49ad58e155c08811b5f6229a9e7b2084b3effdcdcf",
   "source_artifacts": {
-    "/Users/anshbalusa/Documents/Codex/2026-08-24/github-plugin-github-openai-curated-remote/work/odi-powerplay-research/artifacts/tables/full_cohort_analysis_audit.json": "15b87713a9d40405589e651fa658c37defd600d2a3edfbf8952cba49ef37ba6c",
-    "/Users/anshbalusa/Documents/Codex/2026-08-24/github-plugin-github-openai-curated-remote/work/odi-powerplay-research/artifacts/tables/pitch_sparsity_diagnostics.json": "b866363e1c36d294b3a96060db2edb24e994e4c65b683d7f264b8f0e0677a374",
-    "/Users/anshbalusa/Documents/Codex/2026-08-24/github-plugin-github-openai-curated-remote/work/odi-powerplay-research/artifacts/tables/powerplay_marginal_results.json": "88486d7015790af06126584a9bb6c2c4cd88f6f8888adc56fa8708c104e065d3",
-    "/Users/anshbalusa/Documents/Codex/2026-08-24/github-plugin-github-openai-curated-remote/work/odi-powerplay-research/artifacts/tables/ssac_full_cohort_results.json": "9d4cb1715d293b8c53d90aa1512f735064c0b3cc1a79332d25fcca8ed91bd55a"
+    "artifacts/ssac27_tradeoff/analysis_manifest.json": "5c2a86f8fe549d30d0874a0d598d41334cbdfc308a7e44c9f56d7ef4d75edeee",
+    "artifacts/ssac27_tradeoff/context_exchange_rates.json": "13bae562755cbc4c9317b3bfd8a807d6f902f3937a29501f0337f91988582ac4",
+    "artifacts/ssac27_tradeoff/paired_context_differences.json": "98f5881dd74136eabcd8fdcdd90cd5a3ce829b547000ef4da40b51b81df7eee7",
+    "artifacts/ssac27_tradeoff/primary_model_metrics.json": "6bbd287f7797eb04f6e746cf0915b8a9c0054cdd1fdaf3d9b1e3568059bac813",
+    "artifacts/ssac27_tradeoff/release_manifest.json": "99574bd3b67b20ee68face49ad58e155c08811b5f6229a9e7b2084b3effdcdcf",
+    "artifacts/ssac27_tradeoff/sensitivity_summary.json": "2bc6dda40ca1d4fe8f1a609fe1515da8cde7833253751af66bdbbe4576161c03",
+    "artifacts/ssac27_tradeoff/statistical_qa.json": "69b8757d311ba4f004d4e04d25596a34c595c53458437a9eabd523e9539e86c6",
+    "artifacts/ssac27_tradeoff/validation_metrics.json": "1ca53651d4a014bad6d247378c167af162c9559f8979755ad7c6d7cd495c662b",
+    "docs/ssac27_numeric_handoff.md": "9c4fffc1bfb1c75734c9546f2a47ab4de9a9de7de74811a2e3ce64160ec4c909"
   },
-  "title": "What Makes a Successful ODI Powerplay?",
-  "validation": {
-    "boundary_pct": {
-      "maximum": 30.0,
-      "mean": 11.103286,
-      "median": 10.0,
-      "minimum": 1.666667
+  "title": "What Is a Powerplay Wicket Worth? Context-Dependent Run-Wicket Tradeoffs in ODI Cricket",
+  "validation_models": {
+    "additive_benchmark": {
+      "accuracy": 0.5986,
+      "brier_score": 0.2335,
+      "log_loss": 0.665,
+      "roc_auc": 0.6737,
+      "roc_auc_ci": [
+        0.5554,
+        0.7764
+      ]
     },
-    "dot_ball_pct": {
-      "maximum": 86.666667,
-      "mean": 67.816901,
-      "median": 68.333333,
-      "minimum": 46.666667
+    "four_term_interaction": {
+      "accuracy": 0.6127,
+      "brier_score": 0.2334,
+      "log_loss": 0.6669,
+      "roc_auc": 0.6784,
+      "roc_auc_ci": [
+        0.5606,
+        0.781
+      ]
     },
-    "matches": 71,
-    "powerplay_runs": {
-      "maximum": 100.0,
-      "mean": 47.302817,
-      "median": 47.0,
-      "minimum": 18.0
-    },
-    "powerplay_wickets": {
-      "maximum": 5.0,
-      "mean": 1.619718,
-      "median": 1.5,
-      "minimum": 0.0
-    },
-    "rows": 142
+    "six_term_primary": {
+      "accuracy": 0.5986,
+      "brier_score": 0.2368,
+      "log_loss": 0.6726,
+      "roc_auc": 0.6626,
+      "roc_auc_ci": [
+        0.5461,
+        0.7681
+      ]
+    }
   }
 }
