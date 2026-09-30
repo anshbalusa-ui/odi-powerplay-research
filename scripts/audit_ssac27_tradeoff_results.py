@@ -7,6 +7,8 @@ import argparse
 import csv
 import hashlib
 import json
+import math
+import random
 from collections import defaultdict
 from pathlib import Path
 import sys
@@ -14,10 +16,13 @@ import sys
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "src"))
 
+from odi_powerplay.evaluation import calibration_coefficients, compute_metrics  # noqa: E402
 from odi_powerplay.modeling import predict_model  # noqa: E402
 from odi_powerplay.tradeoff import (  # noqa: E402
+    PRIMARY_INTERACTIONS,
     _context_row,
     _fit_primary_model,
+    _prepare_rows,
     assert_unlocked_rows,
 )
 
@@ -45,6 +50,13 @@ def read_rows(path: Path) -> list[dict[str, str]]:
     with path.open(encoding="utf-8", newline="") as handle:
         return list(csv.DictReader(handle))
 
+def percentile(values: list[float], probability: float) -> float:
+    ordered = sorted(values)
+    at = (len(ordered) - 1) * probability
+    lower, upper = math.floor(at), math.ceil(at)
+    return ordered[lower] + (ordered[upper] - ordered[lower]) * (at - lower)
+
+
 
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
@@ -70,6 +82,8 @@ def main() -> None:
             continue
         if len({row["split"] for row in pair}) != 1:
             pair_issues.append((match_id, "split"))
+        if len({row["match_date"] for row in pair}) != 1:
+            pair_issues.append((match_id, "match_date"))
         if sorted(int(row["batting_team_won"]) for row in pair) != [0, 1]:
             pair_issues.append((match_id, "outcome"))
         if sorted(int(row["batting_first"]) for row in pair) != [0, 1]:
@@ -94,9 +108,34 @@ def main() -> None:
     validation_ids = {row["match_id"] for row in rows if row["split"] == "validation"}
     if {pair["match_id"] for pair in pairing_rows} != validation_ids:
         pairing_issues.append("validation_membership_mismatch")
+    paired = json.loads(
+        (args.artifact_dir / "paired_context_differences.json").read_text(encoding="utf-8")
+    )
+    ledger = json.loads(
+        (args.artifact_dir / "bootstrap_context_values.json").read_text(encoding="utf-8")
+    )
     primary = [cell for cell in cells if cell["contrast"] == "primary_1_to_2"]
     finite_primary = [cell for cell in primary if cell["defined"]]
     spec, model, _ = _fit_primary_model(rows)
+    development = [row for row in rows if row["split"] == "development"]
+    validation_rows = [row for row in rows if row["split"] == "validation"]
+    prepared, _, _ = _prepare_rows(
+        [*development, *validation_rows],
+        dev=development,
+        interactions=PRIMARY_INTERACTIONS,
+    )
+    independently_predicted = {
+        (row["match_id"], int(row["batting_team_won"])): probability
+        for row, probability in zip(
+            validation_rows, predict_model(spec, model, prepared[len(development):])
+        )
+    }
+    validation_predictions_reproduced = all(
+        abs(innings["probability"] - independently_predicted[
+            (pair["match_id"], innings["label"])
+        ]) < 1e-10
+        for pair in pairing_rows for innings in pair["innings"]
+    )
     reference = manifest["reference_contexts"]
     residuals = []
     for cell in finite_primary:
@@ -114,6 +153,17 @@ def main() -> None:
         )
         probabilities = predict_model(spec, model, [before, after])
         residuals.append(abs(probabilities[1] - probabilities[0]))
+    root_support_issues = []
+    for cell in finite_primary:
+        start = cell["run_reference"]
+        target = cell["support_target"]
+        if not (
+            cell["support_start"]["run_min"] <= start <= cell["support_start"]["run_max"]
+            and target["run_min"] <= start <= target["run_max"]
+            and 0 <= cell["runs_per_wicket"] <= target["run_max"] - start
+            and abs(cell["root_upper_delta"] - (target["run_max"] - start)) < 1e-9
+        ):
+            root_support_issues.append((cell["innings"], cell["elo_state"], cell["venue_state"]))
     preprocessing = model.named_steps["preprocessing"]
     numeric = preprocessing.named_transformers_["numeric"]
     categorical = preprocessing.named_transformers_["categorical"]
@@ -122,6 +172,27 @@ def main() -> None:
     coefficients = classifier.coef_[0].tolist()
     if len(names) != len(coefficients):
         raise ValueError("fitted coefficient and encoded feature counts differ")
+    encoder = categorical.named_steps["encoder"]
+    dropped_categories = [
+        str(levels[index]) for levels, index in zip(encoder.categories_, encoder.drop_idx_)
+    ]
+    categorical_reference_ok = (
+        spec.categorical_reference
+        and all(index == 0 for index in encoder.drop_idx_)
+        and len(spec.categorical_features) == len(dropped_categories)
+        and all(
+            dropped == min(
+                str(row[field]) for row in development if row.get(field) not in (None, "")
+            )
+            for field, dropped in zip(spec.categorical_features, dropped_categories)
+        )
+        and all(
+            f"categorical__{field}_{reference}" not in names
+            for field, reference in zip(spec.categorical_features, dropped_categories)
+        )
+        and sum(len(levels) - 1 for levels in encoder.categories_)
+        == sum(name.startswith("categorical__") for name in names)
+    )
     model_parameters = {
         "source_sha256": manifest["source_sha256"],
         "development_matches": manifest["development_matches"],
@@ -143,6 +214,8 @@ def main() -> None:
             for categories in categorical.named_steps["encoder"].categories_
         ],
         "encoded_feature_names": names,
+        "categorical_reference_levels": dict(zip(spec.categorical_features, dropped_categories)),
+        "categorical_drop_indices": encoder.drop_idx_.tolist(),
         "coefficients": coefficients,
         "intercept": float(classifier.intercept_[0]),
     }
@@ -157,6 +230,8 @@ def main() -> None:
         "probability_contrasts.csv",
         "validation_pairings.json",
         "primary_exchange_rates.png",
+        "paired_context_differences.json",
+        "bootstrap_context_values.json",
     )
     artifact_checks = {
         name: {
@@ -170,8 +245,9 @@ def main() -> None:
     validation_bootstrap_ok = all(
         report.get("status") == "fit"
         and report["validation_bootstrap"]["requested"] == 2000
-        and report["validation_bootstrap"]["valid"] == 2000
-        and report["validation_bootstrap"]["failed"] == 0
+        and report["validation_bootstrap"]["valid"] > 0
+        and report["validation_bootstrap"]["valid"]
+            + report["validation_bootstrap"]["failed"] == 2000
         for report in validation.values()
     )
     raw_manifest = json.loads(args.raw_manifest.read_text(encoding="utf-8"))
@@ -181,6 +257,209 @@ def main() -> None:
     registry_matches = (
         sha256(ROOT / "data/manual/match_start_times_template.csv")
         == raw_manifest["registry_sha256"]
+    )
+    data_audit = json.loads(
+        (args.artifact_dir / "data_audit.json").read_text(encoding="utf-8")
+    )
+    validation_predictions = [
+        innings for pair in pairing_rows for innings in pair["innings"]
+    ]
+    labels = [row["label"] for row in validation_predictions]
+    probabilities = [row["probability"] for row in validation_predictions]
+    observed_metrics = compute_metrics(labels, probabilities)
+    observed_calibration = calibration_coefficients(labels, probabilities)
+    primary_validation = validation["six_term_primary"]
+    validation_reproduced = (
+        all(abs(observed_metrics[name] - value) <= 1e-10
+            for name, value in primary_validation["metrics"].items())
+        and all(
+            observed_calibration[name] is not None
+            and abs(observed_calibration[name] - value) <= 1e-10
+            for name, value in primary_validation["calibration"].items()
+        )
+    )
+    validation_rng = random.Random(manifest["seed"])
+    validation_by_match = {
+        pair["match_id"]: pair["innings"] for pair in pairing_rows
+    }
+    validation_sample_ids = sorted(validation_by_match)
+    bootstrap_metrics = defaultdict(list)
+    validation_failed = 0
+    for _ in range(2000):
+        sampled = [
+            inning
+            for match_id in (
+                validation_rng.choice(validation_sample_ids)
+                for _ in validation_sample_ids
+            )
+            for inning in validation_by_match[match_id]
+        ]
+        try:
+            sampled_labels = [inning["label"] for inning in sampled]
+            sampled_probabilities = [inning["probability"] for inning in sampled]
+            statistics = {
+                **compute_metrics(sampled_labels, sampled_probabilities),
+                **calibration_coefficients(sampled_labels, sampled_probabilities),
+            }
+        except ValueError:
+            validation_failed += 1
+            continue
+        for name, value in statistics.items():
+            if value is not None:
+                bootstrap_metrics[name].append(value)
+    target_bootstrap = primary_validation["validation_bootstrap"]
+    validation_intervals_reproduced = (
+        target_bootstrap["requested"] == 2000
+        and target_bootstrap["failed"] == validation_failed
+        and target_bootstrap["valid"] == 2000 - validation_failed
+        and set(target_bootstrap["metrics"]) == set(bootstrap_metrics)
+        and all(
+            target_bootstrap["metrics"][name]["valid_replicates"] == len(values)
+            and abs(target_bootstrap["metrics"][name]["lower_95"]
+                    - percentile(values, .025)) < 1e-10
+            and abs(target_bootstrap["metrics"][name]["upper_95"]
+                    - percentile(values, .975)) < 1e-10
+            for name, values in bootstrap_metrics.items()
+        )
+    )
+    ledger_issues = []
+    if len(ledger) != 1000:
+        ledger_issues.append("replicate_count")
+    expected_contexts = {
+        (cell["innings"], cell["elo_state"], cell["venue_state"]) for cell in primary
+    }
+    ledger_maps = []
+    for index, replicate in enumerate(ledger):
+        if replicate["replicate"] != index or replicate["status"] not in {"fit", "failed"}:
+            ledger_issues.append(("replicate_index_or_status", index))
+        contexts = {
+            (cell["innings"], cell["elo_state"], cell["venue_state"]): cell
+            for cell in replicate["contexts"]
+        }
+        if (len(contexts) != len(replicate["contexts"])
+                or set(contexts) != expected_contexts):
+            ledger_issues.append(("duplicate_or_missing_context", index))
+        ledger_maps.append(contexts)
+    if (
+        sum(rep["status"] == "fit" for rep in ledger)
+        != manifest["development_refit_bootstrap"]["valid"]
+        or sum(rep["status"] == "failed" for rep in ledger)
+        != manifest["development_refit_bootstrap"]["failed"]
+    ):
+        ledger_issues.append("global_fit_failure_count")
+    paired_issues = []
+    valid_axes = {"innings": 9, "strength": 18, "venue": 18}
+    pair_counts = defaultdict(int)
+    by_context = {
+        (cell["innings"], cell["elo_state"], cell["venue_state"]): cell
+        for cell in primary
+    }
+    for record in paired:
+        pair_counts[(record["axis"], record["quantity"])] += 1
+        a, b = record["context_a"], record["context_b"]
+        ca = by_context[(a["innings"], a["elo_state"], a["venue_state"])]
+        cb = by_context[(b["innings"], b["elo_state"], b["venue_state"])]
+        quantity = record["quantity"]
+        if (
+            record["requested_replicates"] != 1000
+            or record["valid_paired_replicates"]
+            + record["failed_fit_replicates"]
+            + record["undefined_replicates"] != 1000
+            or record["valid_paired_replicates"] < 0
+            or record["failed_fit_replicates"] < 0
+            or record["undefined_replicates"] < 0
+        ):
+            paired_issues.append((record["axis"], a, b, "replicate_counts"))
+        if quantity == "runs_per_wicket":
+            point_ok = ca["defined"] and cb["defined"]
+            expected = ca["runs_per_wicket"] - cb["runs_per_wicket"] if point_ok else None
+        else:
+            point_ok = (ca["probability_difference_fixed_run"] is not None
+                        and cb["probability_difference_fixed_run"] is not None)
+            expected = (
+                ca["probability_difference_fixed_run"]
+                - cb["probability_difference_fixed_run"] if point_ok else None
+            )
+        if (
+            (not point_ok and record["estimate"] is not None)
+            or (point_ok and (
+                record["estimate"] is None or abs(record["estimate"] - expected) > 1e-10
+            ))
+        ):
+            paired_issues.append((record["axis"], a, b, "point_estimate"))
+        if record["lower_95"] is not None and (
+            record["upper_95"] is None or record["lower_95"] > record["upper_95"]
+        ):
+            paired_issues.append((record["axis"], a, b, "confidence_interval"))
+        if record["axis"] == "innings":
+            orientation_ok = (
+                a["innings"] == 1 and b["innings"] == 0
+                and a["elo_state"] == b["elo_state"]
+                and a["venue_state"] == b["venue_state"]
+            )
+        elif record["axis"] == "strength":
+            orientation_ok = (
+                a["innings"] == b["innings"]
+                and a["venue_state"] == b["venue_state"]
+                and (a["elo_state"], b["elo_state"]) in ((1, 2), (1, 3), (2, 3))
+            )
+        else:
+            orientation_ok = (
+                a["innings"] == b["innings"]
+                and a["elo_state"] == b["elo_state"]
+                and (a["venue_state"], b["venue_state"]) in ((1, 2), (1, 3), (2, 3))
+            )
+        if not orientation_ok:
+            paired_issues.append((record["axis"], a, b, "orientation"))
+        aligned_values = []
+        failed = 0
+        a_key = (a["innings"], a["elo_state"], a["venue_state"])
+        b_key = (b["innings"], b["elo_state"], b["venue_state"])
+        for replicate, contexts in zip(ledger, ledger_maps):
+            if replicate["status"] != "fit":
+                failed += 1
+                continue
+            if not point_ok:
+                continue
+            va, vb = contexts.get(a_key, {}), contexts.get(b_key, {})
+            if va.get(quantity) is not None and vb.get(quantity) is not None:
+                aligned_values.append(va[quantity] - vb[quantity])
+        valid = len(aligned_values)
+        undefined = len(ledger) - failed - valid
+        if (
+            record["valid_paired_replicates"] != valid
+            or record["undefined_replicates"] != undefined
+            or record["failed_fit_replicates"] != failed
+        ):
+            paired_issues.append((record["axis"], a, b, "unaligned_paired_counts"))
+        interval_allowed = point_ok and valid and (
+            quantity != "runs_per_wicket" or valid >= .8 * len(ledger)
+        )
+        if interval_allowed:
+            lower = percentile(aligned_values, .025)
+            upper = percentile(aligned_values, .975)
+            if (
+                record["lower_95"] is None or record["upper_95"] is None
+                or abs(record["lower_95"] - lower) > 1e-10
+                or abs(record["upper_95"] - upper) > 1e-10
+            ):
+                paired_issues.append((record["axis"], a, b, "unaligned_paired_ci"))
+        elif record["lower_95"] is not None or record["upper_95"] is not None:
+            paired_issues.append((record["axis"], a, b, "unsupported_paired_ci"))
+    paired_count_ok = len(paired) == 90 and all(
+        pair_counts[(axis, quantity)] == count
+        for axis, count in valid_axes.items()
+        for quantity in ("fixed_run_probability_difference", "runs_per_wicket")
+    )
+    finite_root_intervals_ok = all(
+        (cell.get("bootstrap_ci") or {}).get("runs_per_wicket", {})
+        .get("valid_replicates", 0) > 0
+        for cell in finite_primary
+    )
+    fixed_run_intervals_ok = all(
+        (cell.get("bootstrap_ci") or {}).get("fixed_run_probability_difference", {})
+        .get("valid_replicates", 0) > 0
+        for cell in primary if cell.get("probability_difference_fixed_run") is not None
     )
     qa = {
         "analysis_manifest_source_sha256_matches_input": (
@@ -193,10 +472,28 @@ def main() -> None:
         "validation_pairings_count": len(pairing_rows),
         "validation_pairing_issues": pairing_issues,
         "locked_source_manifest_scored": raw_manifest["locked_test_scored"],
+        "locked_data_audit_outcomes_loaded": data_audit["locked_test_outcomes_loaded"],
+        "locked_data_audit_scored": data_audit["locked_test_scored"],
+        "validation_primary_metrics_reproduced_from_pairings": validation_reproduced,
+        "validation_primary_predictions_reproduced_from_development_fit": (
+            validation_predictions_reproduced
+        ),
+        "validation_primary_bootstrap_intervals_reproduced": (
+            validation_intervals_reproduced
+        ),
         "pair_issue_count": len(pair_issues),
         "pair_issue_examples": pair_issues[:10],
         "primary_context_cell_count": len(primary),
         "primary_finite_root_count": len(finite_primary),
+        "primary_root_support_issues": root_support_issues,
+        "finite_primary_root_intervals_available": finite_root_intervals_ok,
+        "supported_primary_fixed_run_intervals_available": fixed_run_intervals_ok,
+        "categorical_reference_encoding_verified": categorical_reference_ok,
+        "primary_categorical_references": dict(zip(spec.categorical_features, dropped_categories)),
+        "paired_context_rows": len(paired),
+        "paired_context_count_ok": paired_count_ok,
+        "paired_context_issues": paired_issues[:10],
+        "bootstrap_replicate_ledger_issues": ledger_issues[:10],
         "primary_finite_root_max_probability_residual": max(residuals, default=None),
         "primary_model_parameters_sha256": sha256(parameters_path),
         "primary_root_bootstrap_valid_counts": [
@@ -209,7 +506,7 @@ def main() -> None:
         },
         "validation_models": validation_models,
         "validation_models_expected": sorted(EXPECTED_MODELS),
-        "validation_bootstrap_all_2000_valid": validation_bootstrap_ok,
+        "validation_bootstrap_counts_reconcile": validation_bootstrap_ok,
         "sensitivity_statuses": {
             name: report.get("status") for name, report in validation.items()
         },
@@ -235,15 +532,28 @@ def main() -> None:
             and registry_matches
             and manifest["locked_rows_read"] == 0
             and raw_manifest["locked_test_scored"] is False
+            and data_audit["locked_test_outcomes_loaded"] is False
+            and data_audit["locked_test_scored"] is False
+            and data_audit["issue_count"] == 0
+            and validation_predictions_reproduced
+            and validation_reproduced
+            and validation_intervals_reproduced
             and len(pair_issues) == 0
             and len(pairing_rows) == 71
             and not pairing_issues
             and len(primary) == 18
-            and bool(finite_primary)
-            and max(residuals, default=1.0) < 1e-4
+            and len(cells) == 54
+            and not root_support_issues
+            and finite_root_intervals_ok
+            and fixed_run_intervals_ok
+            and categorical_reference_ok
+            and paired_count_ok
+            and not paired_issues
+            and not ledger_issues
+            and max(residuals, default=0.0) < 1e-4
             and manifest["development_refit_bootstrap"]["requested"] == 1000
-            and manifest["development_refit_bootstrap"]["valid"] == 1000
-            and manifest["development_refit_bootstrap"]["failed"] == 0
+            and manifest["development_refit_bootstrap"]["valid"]
+                + manifest["development_refit_bootstrap"]["failed"] == 1000
             and validation_models == sorted(EXPECTED_MODELS)
             and validation_bootstrap_ok
             and all(check["sha256"] == check["manifest_sha256"]

@@ -111,8 +111,36 @@ contain 1,600 development innings **and all 142 validation innings**.
 The first implementation incorrectly took that positional slice for its
 primary fit, complete-case fit and spline diagnostic. Two ignored
 `artifacts/ssac27_tradeoff_smoke*` pilot releases are invalid and must not
-be cited. The final code filters `split=development` **before any fit**;
-the regression test changes interleaved 2024 labels and verifies unchanged
-primary-fit probabilities. Independent recomputation of the corrected
-development-only fitted model verifies supported numerical roots reproduce
-the target win probability to within `3e-5`. No 2025+ outcomes were loaded.
+be cited. The `18c3716` interim release filtered `split=development`
+**before any fit**, and its regression test changed interleaved 2024
+labels to verify unchanged development-only probabilities. Its supported
+numerical roots reproduced their target fitted win probabilities to within
+`3e-5`; no 2025+ outcomes were loaded. The interim model-derived outputs are
+now **superseded** by the corrective reference-encoding, target-wicket root
+bound and paired-context-inference work described in the protocol addendum.
+That earlier paragraph does not establish the corrected estimates below.
+
+## Corrected final fit and independent statistical QA
+
+The corrected, amended-source run again reads only the 942 pre-2025 registry
+matches/1,884 team innings. It explicitly filters development to 871 matches
+and 1,742 innings before every training fit; 71 matches/142 innings from 2024
+remain temporal validation. The 2025+ registry count (152) remains
+**metadata-only**: the source manifest, full-cohort audit and statistical QA
+all report no locked outcomes loaded or scored. No pitch-source field is a
+tradeoff predictor.
+
+The primary reference-dropped categorical encoding and development-only
+interaction alias check passed. The target-wicket support rule yields three
+bounded primary 1→2 roots in 18 fixed contexts, with maximal independent
+root-probability residual `3.02e-5`. The full development match bootstrap
+completed **1,000/1,000** fits, recording all 45 fixed-run between-context
+comparisons and 45 separate root-comparison statuses from the same indexed
+refits. All eight prespecified 2024 model fits each completed **2,000/2,000**
+whole-match fixed-prediction validation resamples. Independent statistical QA
+recomputed primary validation probabilities, performance, calibration and
+2,000-replicate intervals; verified aligned paired percentiles/undefined
+counts, support and source/output hashes; and passed with zero pairing,
+context or ledger issues. The numerical claims and **rights-restricted,
+ignored local** release hashes are in `docs/ssac27_numeric_handoff.md`.
+This does not establish equality with the missing September 10 ZIP.
