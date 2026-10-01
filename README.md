@@ -5,6 +5,12 @@
 
 **SSAC27 open-source research repository.** This project studies the context-dependent association between first-10-over runs, wickets lost, and match win probability in men's One Day Internationals (ODIs). The current submission analysis is observational: it estimates a run-wicket exchange rate within development-data support and does **not** claim a causal coaching rule or universal wicket price.
 
+
+> ### Key result
+> A finite run compensation for losing a second powerplay wicket was supported in only **3 of 18 prespecified match contexts**: **14.1, 13.2, and 29.8 additional runs**. In the other **15 contexts**, no finite compensation was supported within the observed run range. The central finding is therefore that **one universal wicket-to-runs conversion is not supported across these contexts**.
+
+![SSAC27 key result: only 3 of 18 contexts support a finite run compensation](docs/assets/ssac27_key_result.svg)
+
 ## Introduction
 
 A powerplay score is not defined by runs alone. Scoring faster can improve a team's position, while losing wickets reduces resources for the remaining 40 overs. The value of that tradeoff can also depend on match context.
@@ -27,7 +33,7 @@ Pitch measurements are excluded from this analysis. No 2025+ match outcomes were
 
 ## Results
 
-Only **3 of 18** supported primary contexts have finite 1→2 wicket exchange-rate roots:
+A finite run compensation for the primary 1→2 wicket contrast is supported in only **3 of 18** prespecified contexts:
 
 | Innings | Elo difference | Prior venue PP mean | Additional runs | Conditional 95% interval |
 |---|---:|---:|---:|---:|
@@ -35,7 +41,7 @@ Only **3 of 18** supported primary contexts have finite 1→2 wicket exchange-ra
 | Batting first | +107.473 | 53.014 | **13.248** | 4.713–17.481 |
 | Chasing | +107.473 | 53.014 | **29.763** | 13.844–30.934 |
 
-The remaining **15 roots are undefined, not zero**.
+In the other **15 contexts**, no finite compensation is supported within the observed run range. Those cases are **undefined rather than zero**; they are part of the finding, not missing estimates to be averaged into a universal wicket value.
 
 At neutral Elo and median prior-venue scoring, moving from one to two wickets at 47 runs changes modeled win probability by **−10.505 percentage points batting first** and **−15.690 points chasing**. The paired first-minus-chase difference is **+5.185 points (95% interval −0.457 to +11.182)**, so the interval includes zero.
 
@@ -43,7 +49,7 @@ On untouched 2024 validation, the primary model has **ROC-AUC 0.6626 (95% interv
 
 ## Conclusion
 
-The modeled run-wicket exchange rate is context-dependent and often not identifiable as a finite supported value. The supported estimates should be interpreted as **conditional observational associations**, not causal effects, a universal wicket price, or instructions to trade wickets for runs. The strongest current contribution is therefore not a single number, but a reproducible framework for estimating when a run-wicket tradeoff is supported and when it is not.
+The central result is that a powerplay wicket does **not** have one supported run value across match contexts. A finite exchange rate appears only in a small subset of the prespecified contexts, and its magnitude varies substantially when it is supported. The estimates are **conditional observational associations**, not causal effects or instructions to trade wickets for runs.
 
 ## Start here
 
