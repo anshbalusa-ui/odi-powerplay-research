@@ -4,10 +4,12 @@ This page separates the **current SSAC27 submission evidence** from supporting m
 
 ## Start here — current SSAC27 submission
 
-- [`ssac27_abstract_skeleton.md`](ssac27_abstract_skeleton.md) — current abstract.
+- [`ssac27_abstract_final.md`](ssac27_abstract_final.md) — final submission-ready abstract.
 - [`ssac27_submission_source_of_truth.md`](ssac27_submission_source_of_truth.md) — authoritative current title, research question, claim boundary, Figure 1/Table 1 inputs, and evidence navigation.
 - [`ssac27_numeric_handoff.md`](ssac27_numeric_handoff.md) — verified corrected numbers, uncertainty, limitations, hashes, and reproduction commands.
-- [`ssac27_data_availability.md`](ssac27_data_availability.md) — exact public data source, frozen archive hash, cohort selection, and reproduction path.\n- [`ssac27_submission_checklist.md`](ssac27_submission_checklist.md) — final submission fields, claim guardrails, and portal checks.\n- [`ssac27_manuscript_structure.md`](ssac27_manuscript_structure.md) — Sloan-style full-manuscript organization built from the existing research.
+- [`ssac27_data_availability.md`](ssac27_data_availability.md) — exact public data source, frozen archive hash, cohort selection, and reproduction path.
+- [`ssac27_submission_checklist.md`](ssac27_submission_checklist.md) — final submission fields, claim guardrails, and portal checks.
+- [`ssac27_manuscript_structure.md`](ssac27_manuscript_structure.md) — Sloan-style full-manuscript organization built from the existing research.
 - [`research_question_and_introduction.md`](research_question_and_introduction.md) — current title, question, introduction, and claim boundary.
 - [`results.md`](results.md) — current corrected result narrative at the top; older results are explicitly marked superseded.
 
