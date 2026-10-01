@@ -68,4 +68,4 @@ The current research claim set is controlled by:
 
 - `docs/ssac27_submission_source_of_truth.md`
 - `docs/ssac27_numeric_handoff.md`
-- `docs/ssac27_abstract_skeleton.md`
+- `docs/ssac27_abstract_final.md`
