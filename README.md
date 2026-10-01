@@ -7,7 +7,7 @@
 
 
 > ### Key result
-> A finite run compensation for losing a second powerplay wicket was supported in only **3 of 18 prespecified match contexts**: **14.1, 13.2, and 29.8 additional runs**. In the other **15 contexts**, no finite compensation was supported within the observed run range. The central finding is therefore that **one universal wicket-to-runs conversion is not supported across these contexts**.
+> All **18 prespecified contexts** supported estimates of the win-probability cost of losing a second powerplay wicket, but only **3** supported a finite run-equivalent within the observed scoring range: **14.1, 13.2, and 29.8 additional runs**. The central finding is therefore that **one universal wicket-to-runs conversion is not supported across these contexts**.
 
 ![SSAC27 key result: only 3 of 18 contexts support a finite run compensation](docs/assets/ssac27_key_result.svg)
 
