@@ -16,6 +16,8 @@ The amended-source unlocked cohort contains **942 clean men's ODI matches, 1,884
 
 ## Supported results and limits
 
+**Interpretation first:** the absence of a finite root in 15 contexts is not a failed analysis or a zero-valued wicket. Within the observed development-data run range, the model does not support a finite number of added powerplay runs that restores the same modeled win probability after the second wicket in those contexts. The central result is therefore that a single universal wicket-to-runs conversion is not supported across the prespecified contexts.
+
 All 18 primary **fixed-run wicket-loss probability contrasts** at 47 runs have development support and match-refit intervals. Only **3/18** primary added-run roots are finite, nonnegative and bracketed within the local second-wicket run envelope. The remaining **15 are undefined, not zero**; never average defined roots into a universal wicket value. The three **individual-root** percentile intervals below condition on refits where that particular bounded root exists:
 
 | Batting innings | Elo difference | Earlier-date venue mean | Additional runs for 1→2 wickets | Conditional 95% interval | Root-valid development refits / 1,000 |
