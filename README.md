@@ -19,11 +19,7 @@ In plain language: **What is a powerplay wicket worth in runs, and does that val
 
 The corrected SSAC27 analysis uses **942 clean men's ODI matches (1,884 paired innings) from 2015–2024** from the official September 29 amended Cricsheet source. Development contains **871 matches / 1,742 innings through 2023** and untouched temporal validation contains **71 matches / 142 innings from 2024**. Both innings from a match remain together in splits and resamples.
 
-The primary estimand is the nonnegative, bounded run increment (d) solving
-
-[
-p(R+d, W+1, C)=p(R,W,C)
-]
+The primary estimand is the nonnegative, bounded run increment `d` solving `p(R+d, W+1, C) = p(R, W, C)`
 
 at **47 powerplay runs** and a change from **one to two wickets**, for context (C). The frozen primary model is an L2 logistic regression with six prespecified interactions using innings order, leakage-safe pre-match Elo strength, and strictly earlier-date prior venue scoring environment. Development uncertainty uses whole-match refits; 2024 validation uncertainty uses whole-match resampling.
 
@@ -53,14 +49,16 @@ The modeled run-wicket exchange rate is context-dependent and often not identifi
 
 For reviewers or researchers entering the repository for the first time:
 
-1. **[SSAC27 abstract](docs/ssac27_abstract_skeleton.md)** — current abstract text.
+1. **[Final SSAC27 abstract](docs/ssac27_abstract_final.md)** — submission-ready abstract text.
 2. **[Submission source of truth](docs/ssac27_submission_source_of_truth.md)** — current title, claim boundary, figure/table inputs, and evidence navigation.
 3. **[Verified numerical handoff](docs/ssac27_numeric_handoff.md)** — exact corrected numbers, uncertainty, provenance, and QA.
-4. **[Data availability & reproduction](docs/ssac27_data_availability.md)** — public input source, frozen source hash, cohort selection, and exact reproduction path.\n5. **[Sloan-style manuscript structure](docs/ssac27_manuscript_structure.md)** — current full-paper organization without changing the research claims.
+4. **[Data availability & reproduction](docs/ssac27_data_availability.md)** — public input source, frozen source hash, cohort selection, and exact reproduction path.
+5. **[Sloan-style manuscript structure](docs/ssac27_manuscript_structure.md)** — current full-paper organization without changing the research claims.
 6. **[Current results](docs/results.md)** — corrected submission narrative followed by clearly marked historical material.
 7. **[Statistical specification](docs/ssac27_tradeoff_statistical_spec.md)** — frozen modeling and uncertainty specification.
 8. **[Data audit](docs/ssac27_tradeoff_data_audit.md)** — cohort and extraction audit.
-9. **[Submission checklist](docs/ssac27_submission_checklist.md)** — final portal and claim checks.\n10. **[Documentation map](docs/README.md)** — current, historical, and secondary documents grouped by purpose.
+9. **[Submission checklist](docs/ssac27_submission_checklist.md)** — final portal and claim checks.
+10. **[Documentation map](docs/README.md)** — current, historical, and secondary documents grouped by purpose.
 
 ## Reproduce the current SSAC27 analysis
 
@@ -127,7 +125,8 @@ The pre-restructure README, including the full historical narrative previously s
 Match data originate from Cricsheet. The current analysis uses a separately identified and checksummed September 29 archive; the unavailable September 10 archive is not claimed as reproduced. Raw third-party data are not relicensed by this repository.
 
 See:
-- [data availability and exact reproduction](docs/ssac27_data_availability.md)\n- [limitations and rights boundaries](docs/limitations.md)
+- [data availability and exact reproduction](docs/ssac27_data_availability.md)
+- [limitations and rights boundaries](docs/limitations.md)
 - [data dictionary](docs/data_dictionary.md)
 - [transformation log](docs/transformation_log.md)
 - [source documentation](docs/sources.md)
