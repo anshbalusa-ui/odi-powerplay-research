@@ -14,7 +14,7 @@
 
 Use only:
 
-`docs/ssac27_abstract_skeleton.md`
+`docs/ssac27_abstract_final.md`
 
 Do not copy results from older historical sections elsewhere in the repository.
 
@@ -72,7 +72,7 @@ code / tests / aggregate evidence
 
 Immediately before submitting:
 
-1. paste the abstract directly from `docs/ssac27_abstract_skeleton.md`;
+1. paste the abstract directly from `docs/ssac27_abstract_final.md`;
 2. confirm the portal's own word counter is below 500;
 3. submit the public repository URL above;
 4. select **Other Sports** if the portal asks for a track;
