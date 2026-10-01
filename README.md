@@ -56,11 +56,11 @@ For reviewers or researchers entering the repository for the first time:
 1. **[SSAC27 abstract](docs/ssac27_abstract_skeleton.md)** — current abstract text.
 2. **[Submission source of truth](docs/ssac27_submission_source_of_truth.md)** — current title, claim boundary, figure/table inputs, and evidence navigation.
 3. **[Verified numerical handoff](docs/ssac27_numeric_handoff.md)** — exact corrected numbers, uncertainty, provenance, and QA.
-4. **[Sloan-style manuscript structure](docs/ssac27_manuscript_structure.md)** — current full-paper organization without changing the research claims.
-5. **[Current results](docs/results.md)** — corrected submission narrative followed by clearly marked historical material.
-6. **[Statistical specification](docs/ssac27_tradeoff_statistical_spec.md)** — frozen modeling and uncertainty specification.
-7. **[Data audit](docs/ssac27_tradeoff_data_audit.md)** — cohort and extraction audit.
-8. **[Documentation map](docs/README.md)** — current, historical, and secondary documents grouped by purpose.
+4. **[Data availability & reproduction](docs/ssac27_data_availability.md)** — public input source, frozen source hash, cohort selection, and exact reproduction path.\n5. **[Sloan-style manuscript structure](docs/ssac27_manuscript_structure.md)** — current full-paper organization without changing the research claims.
+6. **[Current results](docs/results.md)** — corrected submission narrative followed by clearly marked historical material.
+7. **[Statistical specification](docs/ssac27_tradeoff_statistical_spec.md)** — frozen modeling and uncertainty specification.
+8. **[Data audit](docs/ssac27_tradeoff_data_audit.md)** — cohort and extraction audit.
+9. **[Submission checklist](docs/ssac27_submission_checklist.md)** — final portal and claim checks.\n10. **[Documentation map](docs/README.md)** — current, historical, and secondary documents grouped by purpose.
 
 ## Reproduce the current SSAC27 analysis
 
@@ -127,7 +127,7 @@ The pre-restructure README, including the full historical narrative previously s
 Match data originate from Cricsheet. The current analysis uses a separately identified and checksummed September 29 archive; the unavailable September 10 archive is not claimed as reproduced. Raw third-party data are not relicensed by this repository.
 
 See:
-- [limitations and rights boundaries](docs/limitations.md)
+- [data availability and exact reproduction](docs/ssac27_data_availability.md)\n- [limitations and rights boundaries](docs/limitations.md)
 - [data dictionary](docs/data_dictionary.md)
 - [transformation log](docs/transformation_log.md)
 - [source documentation](docs/sources.md)
